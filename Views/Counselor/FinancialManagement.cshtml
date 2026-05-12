@@ -1,0 +1,159 @@
+﻿@model IEnumerable<EduPsych_Web.Models.CounselSession>
+@{
+    Layout = "_CounselorLayout";
+    ViewData["Title"] = "الإدارة المالية للمرشد";
+    // استخدام الأسماء الصغيرة حسب تصحيح قاعدة البيانات الأخير
+    var counselor = ViewBag.Counselor as EduPsych_Web.Models.Counselor;
+}
+
+<div class="container-fluid animate__animated animate__fadeIn" dir="rtl">
+    
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7 text-end">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-white" style="background: linear-gradient(135deg, #1eb2a6 0%, #148a81 100%);">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="opacity-75 mb-1 fw-bold">إجمالي الأرباح المتاحة للسحب</p>
+                        <h1 class="display-5 fw-900">@ViewBag.WalletBalance <small class="fs-6">دج</small></h1>
+                        <button class="btn btn-light rounded-pill px-4 fw-bold mt-3 text-teal" style="color: #1eb2a6;" onclick="requestWithdrawal()">
+                            <i class="fas fa-hand-holding-usd me-1"></i> تقديم طلب سحب
+                        </button>
+                    </div>
+                    <i class="fas fa-vault fa-4x opacity-25"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5 text-end">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                <div class="d-flex justify-content-between mb-3 align-items-center">
+                    <h6 class="fw-bold m-0"><i class="fas fa-university me-1 text-teal" style="color: #1eb2a6;"></i> معلومات الحساب البنكي</h6>
+                    <button class="btn btn-sm btn-outline-teal rounded-pill border-1" data-bs-toggle="modal" data-bs-target="#bankModal">
+                        <i class="fas fa-edit me-1"></i> تعديل
+                    </button>
+                </div>
+                <div class="bg-light p-3 rounded-3 mb-2">
+                    <small class="text-muted d-block small">رقم الحساب البريدي (CCP):</small>
+                    <span class="fw-bold text-dark">@(string.IsNullOrEmpty(counselor?.ccp_number) ? "لم يُدخل بعد" : counselor.ccp_number)</span>
+                </div>
+                <div class="bg-light p-3 rounded-3">
+                    <small class="text-muted d-block small">رقم الـ RIB (20 رقم):</small>
+                    <span class="fw-bold text-dark">@(string.IsNullOrEmpty(counselor?.rib_number) ? "لم يُدخل بعد" : counselor.rib_number)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 bg-white text-end">
+        <h5 class="fw-bold mb-4 border-bottom pb-3"><i class="fas fa-file-invoice-dollar me-2 text-teal" style="color: #1eb2a6;"></i> سجل الدفعات المستلمة (نظام 50/50)</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="text-end">الطالب</th>
+                        <th class="text-center">تاريخ الجلسة</th>
+                        <th class="text-center">حصتك (50%)</th>
+                        <th class="text-center">إجمالي المبلغ</th>
+                        <th class="text-center">الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var session in Model)
+                    {
+                        <tr>
+                            <td class="text-end">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-teal-soft text-teal rounded-circle ms-2 d-flex align-items-center justify-content-center" style="width:35px; height:35px; background:#e0f2f1; color: #1eb2a6;">
+                                        <i class="fas fa-user-graduate"></i>
+                                    </div>
+                                    <span class="fw-bold">@session.Student?.User?.first_name @session.Student?.User?.last_name</span>
+                                </div>
+                            </td>
+                            <td class="text-center small">@session.scheduled_at.ToString("yyyy/MM/dd HH:mm")</td>
+                            @* تم التصحيح: ربح المرشد هو المبلغ المدفوع مقسوماً على 2 *@
+                            <td class="text-center fw-bold text-success">+@(session.amount_paid / 2) دج</td>
+                            <td class="text-center text-muted">@session.amount_paid دج</td>
+                            <td class="text-center"><span class="badge bg-success bg-opacity-10 text-success px-3 rounded-pill">مضافة للمحفظة</span></td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">لا توجد دفعات مكتملة أو مؤكدة في سجلاتك المالية حتى الآن.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="bankModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 bg-light p-3">
+                <h5 class="fw-bold m-0 text-dark">تحديث البيانات المالية</h5>
+                <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="UpdateBankDetails" asp-controller="Counselor" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body p-4 text-end">
+                    <div class="alert alert-info small border-0 rounded-3">
+                        <i class="fas fa-info-circle me-1"></i> يرجى التأكد من دقة البيانات المدخلة لضمان وصول مستحقاتك دون تأخير.
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">رقم الحساب البريدي (CCP)</label>
+                        <input type="text" name="ccp" value="@counselor?.ccp_number" class="form-control rounded-3" placeholder="مثال: 0012345678 Clé 12" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">رقم الـ RIB</label>
+                        <input type="text" name="rib" value="@counselor?.rib_number" class="form-control rounded-3" placeholder="20 رقم" />
+                    </div>
+                    <button type="submit" class="btn btn-dark w-100 py-2 fw-bold" style="background: #1eb2a6; border:none;">حفظ التغييرات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function requestWithdrawal() {
+        Swal.fire({
+        title: 'طلب سحب رصيد',
+        text: 'الحد الأدنى للسحب هو 2000 دج. أدخل المبلغ المراد سحبه:',
+        input: 'number',
+        inputAttributes: {
+        min: 2000,
+        step: 100
+        },
+        showCancelButton: true,
+        confirmButtonText: 'إرسال الطلب',
+        confirmButtonColor: '#1eb2a6',
+        cancelButtonText: 'تراجع',
+        preConfirm: (value) => {
+        if (!value || value < 2000) {
+        Swal.showValidationMessage('الحد الأدنى للسحب هو 2000 دج');
+        }
+        return value;
+        }
+        }).then((result) => {
+        if (result.isConfirmed) {
+        $.ajax({
+        url: '/Counselor/RequestWithdrawal',
+        type: 'POST',
+        data: { amount: result.value },
+        success: function(response) {
+        if (response.success) {
+        Swal.fire('تم بنجاح!', response.message, 'success').then(() => location.reload());
+        } else {
+        Swal.fire('خطأ!', response.message, 'error');
+        }
+        }
+        });
+        }
+        });
+        }
+    </script>
+}

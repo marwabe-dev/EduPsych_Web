@@ -1,0 +1,181 @@
+﻿@model IEnumerable<EduPsych_Web.Models.Student>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "إدارة التلاميذ";
+}
+
+<style>
+    .students-card {
+        border: none;
+        border-radius: 24px;
+        background: #ffffff;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+    }
+
+    /* تحسين شكل الجدول */
+    .table thead th {
+        background-color: #f8fafc;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        border: none;
+        padding: 1.25rem 1rem;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: 0.2s;
+    }
+
+        .table tbody tr:hover {
+            background-color: #fcfdfe !important;
+            transform: scale(1.002);
+        }
+
+    .student-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 2px solid #f1f5f9;
+    }
+
+    /* الأزرار والبادجات */
+    .btn-view {
+        background: #f0fdfa;
+        color: #1eb2a6;
+        border: none;
+        font-weight: 700;
+        font-size: 0.75rem;
+        border-radius: 10px;
+        padding: 8px 16px;
+        transition: 0.3s;
+    }
+
+        .btn-view:hover {
+            background: #1eb2a6;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(30, 178, 166, 0.2);
+        }
+
+    .badge-level {
+        background: rgba(30, 178, 166, 0.1);
+        color: #1eb2a6;
+        font-weight: 700;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.7rem;
+    }
+
+    .search-filter-box {
+        background: #fff;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid #e2e8f0;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-900 text-dark mb-1">إدارة التلاميذ</h3>
+            <p class="text-muted small mb-0">يمكنك هنا تتبع بيانات التلاميذ المسجلين ومستوياتهم الدراسية.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                <i class="bi bi-file-earmark-excel me-1"></i> تصدير Excel
+            </button>
+            <span class="badge bg-dark rounded-pill p-2 px-3 d-flex align-items-center">
+                إجمالي المسجلين: @Model.Count()
+            </span>
+        </div>
+    </div>
+
+    <div class="card students-card overflow-hidden">
+        <div class="card-header bg-white py-4 px-4 border-0">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <h6 class="fw-900 mb-0">قائمة التلاميذ</h6>
+                </div>
+                <div class="col-md-8">
+                </div>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover align-middle text-end mb-0">
+                <thead>
+                    <tr>
+                        <th class="px-4">التلميذ</th>
+                        <th>البريد الإلكتروني</th>
+                        <th>المستوى الدراسي</th>
+                        <th>تاريخ الانضمام</th>
+                        <th class="text-center">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="py-4">
+                                    <i class="bi bi-people text-muted opacity-25" style="font-size: 4rem;"></i>
+                                    <h6 class="text-muted mt-3 fw-bold">قائمة التلاميذ فارغة حالياً</h6>
+                                    <a asp-action="Students" class="btn btn-sm btn-teal-light mt-2">تحديث الصفحة</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var student in Model)
+                    {
+                        <tr>
+                            <td class="px-4">
+                                <div class="d-flex align-items-center">
+                                    <img src="https://ui-avatars.com/api/?name=@student.User?.first_name+@student.User?.last_name&background=1eb2a6&color=fff&bold=true"
+                                         class="student-avatar" alt="avatar">
+                                    <div class="ms-3">
+                                        <div class="fw-900 text-dark small">@student.User?.first_name @student.User?.last_name</div>
+                                        <div class="text-muted" style="font-size: 0.65rem;">ID: #STU-@student.id</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="text-muted small">@student.User?.email</span>
+                            </td>
+                            <td>
+                                <span class="badge-level text-nowrap">
+                                    <i class="bi bi-mortarboard-fill me-1"></i> @student.Class?.name
+                                </span>
+                            </td>
+                            <td>
+                                <span class="small text-muted">@student.User?.created_at.ToString("yyyy/MM/dd")</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a href="/Admin/StudentDetails/@student.id" class="btn btn-view">
+                                        <i class="bi bi-eye-fill me-1"></i> التفاصيل
+                                    </a>
+                                    <button class="btn btn-sm btn-light rounded-circle" title="تعديل">
+                                        <i class="bi bi-pencil-square text-muted"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="card-footer bg-light border-0 py-3 px-4">
+            <div class="row align-items-center">
+                <div class="col-sm-6 text-center text-sm-end">
+                    <p class="mb-0 small text-muted">عرض @Model.Count() من إجمالي البيانات</p>
+                </div>
+                <div class="col-sm-6 mt-3 mt-sm-0 d-flex justify-content-center justify-content-sm-start">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>v>

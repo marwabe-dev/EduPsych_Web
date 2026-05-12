@@ -1,0 +1,339 @@
+﻿@model IEnumerable<EduPsych_Web.Models.CounselSession>
+@{
+    ViewData["Title"] = "أرشيف الجلسات - إبداع";
+    Layout = "_Layout";
+
+    // جلب الاسم من السيشن أو الموديل لضمان الظهور في الهيدر
+    var fullName = Context.Session.GetString("UserName") ?? "تلميذنا العزيز";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    :root {
+        --creative-teal: #1eb2a6;
+        --dark-teal: #114b4d;
+        --soft-teal: #e6f7f6;
+        --status-gray: #718096;
+    }
+
+    body {
+        background: radial-gradient(circle at top right, #ffffff 0%, #f0f7f7 100%);
+        font-family: 'Cairo', 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* إخفاء الهيدر الافتراضي */
+    nav, .sidebar, header:not(.edu-header) {
+        display: none !important;
+    }
+
+    /* --- الهيدر العائم (الكبسولة) المتناسق مع الرئيسية --- */
+    .edu-header {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(30, 178, 166, 0.15);
+        padding: 12px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 15px;
+        margin: 10px 20px 30px;
+        z-index: 1050;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        border-radius: 50px;
+    }
+
+    .edu-header .btn {
+        border-radius: 50px !important;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: 0.3s;
+    }
+
+    /* --- بطاقات الجلسات --- */
+    .session-creative-card {
+        background: white;
+        border-radius: 30px;
+        border: 1px solid rgba(30, 178, 166, 0.1);
+        margin-bottom: 25px;
+        transition: all 0.4s ease;
+        display: flex;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.02);
+    }
+
+    .session-creative-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(30, 178, 166, 0.12);
+        border-color: var(--creative-teal);
+    }
+
+    .card-visual-zone {
+        width: 110px;
+        background: linear-gradient(180deg, var(--creative-teal) 0%, var(--dark-teal) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .icon-wrapper {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(5px);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.8rem;
+    }
+
+    .card-content-zone {
+        flex-grow: 1;
+        padding: 25px 35px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .counselor-title {
+        color: var(--dark-teal);
+        font-weight: 800;
+        font-size: 1.4rem;
+        margin-bottom: 4px;
+    }
+
+    .session-badge-type {
+        color: var(--creative-teal);
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 15px;
+    }
+
+    .info-pill-container {
+        display: flex;
+        gap: 15px;
+    }
+
+    .info-pill {
+        background: var(--soft-teal);
+        padding: 8px 18px;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        color: var(--dark-teal);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .card-action-zone {
+        width: 240px;
+        background: #fafcfc;
+        border-right: 1px solid #f0f5f5;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .status-pill {
+        padding: 6px 15px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .status-pending { background: #f0f4f8; color: var(--status-gray); }
+    .status-approved { background: #e6f7f6; color: var(--creative-teal); }
+    .status-confirmed { background: #edf7ed; color: #28a745; }
+
+    .btn-main-teal {
+        background: var(--creative-teal);
+        color: white !important;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 15px;
+        font-weight: 700;
+        transition: 0.3s;
+        box-shadow: 0 8px 20px rgba(30, 178, 166, 0.25);
+        text-decoration: none;
+        width: 100%;
+        text-align: center;
+    }
+
+    .btn-main-teal:hover {
+        background: var(--dark-teal);
+        transform: translateY(-2px);
+    }
+
+    .reveal-item {
+        animation: revealUp 0.6s ease forwards;
+        opacity: 0;
+    }
+
+    @@keyframes revealUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @@media (max-width: 992px) {
+        .session-creative-card { flex-direction: column; }
+        .card-visual-zone { width: 100%; height: 80px; }
+        .card-action-zone { width: 100%; border-right: none; border-top: 1px solid #f0f5f5; }
+        .info-pill-container { flex-wrap: wrap; }
+    }
+</style>
+
+<div class="container-fluid p-0 text-end" dir="rtl">
+    
+    @* --- الهيدر العائم المستبدل --- *@
+    <header class="edu-header">
+        <div class="d-flex align-items-center">
+            <div class="bg-turquoise text-white p-2 rounded-3 ms-3" style="background-color: var(--creative-teal);">
+                <i class="bi bi-mortarboard-fill"></i>
+            </div>
+            <div class="d-flex flex-column">
+                <h4 class="m-0 fw-bold text-dark">منصة <span style="color:var(--creative-teal);">EducPsycho</span></h4>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("Index", "Student")" class="btn btn-light shadow-sm text-dark border">الرئيسية</a>
+            <a href="@Url.Action("MyWallet", "Student")" class="btn btn-white shadow-sm text-dark border">محفظتي</a>
+            <a href="@Url.Action("Courses", "Student")" class="btn btn-white shadow-sm text-dark border">متجر الدورات</a>
+            <a href="@Url.Action("MyEducationalLessons", "Student")" class="btn btn-white shadow-sm text-dark border">حصصي التعليمية</a>
+            <a href="@Url.Action("MyCounselSessions", "Student")" class="btn shadow-sm border" style="background-color: var(--creative-teal); color: white;">حصصي النفسية</a>
+        </div>
+
+        <div class="dropdown">
+            <button class="btn btn-light rounded-circle shadow-sm" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-person-fill" style="color:var(--creative-teal);"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2">
+                <li><a class="dropdown-item py-3 text-danger fw-bold" href="@Url.Action("Logout", "Account")"><i class="bi bi-box-arrow-right ms-2"></i>تسجيل الخروج</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="container py-4">
+        <div class="row mb-5 reveal-item">
+            <div class="col-12 text-center text-md-end">
+                <h2 class="fw-bold text-dark"> جدول الحصص  <span style="color:var(--creative-teal)">النفسية</span></h2>
+                <p class="text-muted">، مرحباً بك @fullName  تتبع حصصك النفسية وفق الجدول التالي وانضم الى الحصة بالضغط على الرابط بعد اتمام عملية الدفع في صفحة محفظتي الموجودة في الاْعلى .</p>
+            </div>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model.Select((value, index) => new { value, index }))
+            {
+                var session = item.value;
+                var index = item.index;
+                var statusLower = session.status?.Trim().ToLower() ?? "pending";
+
+                <div class="col-12 reveal-item" style="animation-delay: @(index * 0.1)s">
+                    <div class="card session-creative-card border-0 shadow-sm">
+                        
+                        <div class="card-visual-zone">
+                            <div class="icon-wrapper">
+                                @if (statusLower == "confirmed" || statusLower == "paid")
+                                {
+                                    <i class="bi bi-shield-check"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-heart-pulse-fill"></i>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="card-content-zone">
+                            <h3 class="counselor-title">أ. @(session.Counselor?.User?.first_name) @(session.Counselor?.User?.last_name)</h3>
+                            <div class="session-badge-type">
+                                <i class="bi bi-patch-check"></i>
+                                <span>جلسة @session.session_type</span>
+                            </div>
+
+                            <div class="info-pill-container">
+                                <div class="info-pill">
+                                    <i class="bi bi-calendar3"></i>
+                                    <strong>@session.scheduled_at.ToString("dd MMMM, yyyy")</strong>
+                                </div>
+                                <div class="info-pill">
+                                    <i class="bi bi-clock"></i>
+                                    <strong>@session.scheduled_at.ToString("HH:mm tt")</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-action-zone">
+                            @{
+                                string statusClass = "status-pending";
+                                string statusText = "قيد المراجعة";
+
+                                if (statusLower == "approved") { statusClass = "status-approved"; statusText = "بانتظار الدفع"; }
+                                else if (statusLower == "confirmed" || statusLower == "paid") { statusClass = "status-confirmed"; statusText = "تم التأكيد"; }
+                                else if (statusLower == "cancelled") { statusClass = "status-pending"; statusText = "ملغاة"; }
+                            }
+
+                            <div class="status-pill @statusClass">
+                                <i class="bi bi-record-circle-fill"></i>
+                                @statusText
+                            </div>
+
+                            @if (statusLower == "approved")
+                            {
+                                <a href="@Url.Action("MyWallet", "Student", new { payCounselId = session.id })" class="btn btn-main-teal">
+                                    تأكيد ودفع <i class="bi bi-arrow-left ms-1"></i>
+                                </a>
+                            }
+                            else if (statusLower == "confirmed" || statusLower == "paid")
+                            {
+                                <div class="text-center w-100 px-3">
+                                    <span class="text-success small fw-bold d-block mb-2">
+                                        <i class="bi bi-check-all"></i> موعد محجوز ومؤكد
+                                    </span>
+                                    
+                                    @if (!string.IsNullOrEmpty(session.meeting_link))
+                                    {
+                                        <a href="@(session.meeting_link.StartsWith("http") ? session.meeting_link : "https://" + session.meeting_link)" target="_blank" class="btn btn-main-teal animate__animated animate__pulse animate__infinite">
+                                            دخول الجلسة المباشرة <i class="bi bi-camera-video ms-1"></i>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-muted border px-3 py-2 rounded-pill w-100">
+                                            بانتظار الرابط من المرشد...
+                                        </span>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-muted small text-center">بانتظار موافقة المستشار</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-folder2-open display-1 text-light"></i>
+                <h4 class="text-muted mt-3">لا يوجد سجل جلسات في الوقت الحالي</h4>
+            </div>
+        }
+    </div>
+</div>

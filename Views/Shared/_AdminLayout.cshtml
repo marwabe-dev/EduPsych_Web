@@ -1,0 +1,254 @@
+﻿<!DOCTYPE html><html lang="ar" dir="rtl"><head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>لوحة الإدارة - @ViewData["Title"]</title>
+    
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    
+    @* إضافة مكتبة jQuery UI لتشغيل ميزة البحث التلقائي *@
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+    <style>
+        :root { 
+            --sidebar-width: 280px; 
+            --brand-dark: #0f172a;    /* Midnight Navy */
+            --brand-teal: #1eb2a6;    /* Teal المعتمد */
+            --brand-bg: #f1f5f9; 
+        }
+
+        body { 
+            background-color: var(--brand-bg); 
+            font-family: 'Cairo', sans-serif; 
+            overflow-x: hidden; 
+        }
+        
+        /* Sidebar الفاخر المحدث */
+        .sidebar { 
+            width: var(--sidebar-width); 
+            background: var(--brand-dark); 
+            height: 100vh; 
+            position: fixed; 
+            right: 0; 
+            top: 0; 
+            color: white; 
+            transition: 0.3s; 
+            z-index: 1000;
+            border-left: 1px solid rgba(255,255,255,0.05);
+            overflow-y: auto; 
+            scrollbar-width: thin; 
+            scrollbar-color: var(--brand-teal) var(--brand-dark); 
+        }
+
+        .sidebar::-webkit-scrollbar { width: 5px; }
+        .sidebar::-webkit-scrollbar-thumb { background-color: var(--brand-teal); border-radius: 10px; }
+        .sidebar::-webkit-scrollbar-track { background: var(--brand-dark); }
+
+        .sidebar .nav-link { 
+            color: #94a3b8; 
+            padding: 0.8rem 1.5rem; 
+            margin: 5px 15px;
+            border-radius: 12px;
+            transition: 0.3s; 
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .sidebar .nav-link i { font-size: 1.2rem; }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { 
+            color: white !important; 
+            background: var(--brand-teal) !important; 
+            box-shadow: 0 4px 15px rgba(30, 178, 166, 0.3);
+        }
+
+        .sidebar-heading { 
+            font-size: 0.7rem; 
+            text-transform: uppercase; 
+            padding: 1.5rem 2rem 0.5rem; 
+            color: #475569; 
+            font-weight: 800; 
+            letter-spacing: 1px;
+        }
+
+        .main-content { 
+            margin-right: var(--sidebar-width); 
+            padding: 0; 
+            transition: 0.3s; 
+            min-height: 100vh; 
+        }
+
+        .topbar { 
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            height: 75px; 
+            display: flex; 
+            align-items: center; 
+            padding: 0 2rem; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+        
+        .user-avatar {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            border: 2px solid var(--brand-teal);
+            object-fit: cover;
+        }
+
+        /* تنسيق نتائج البحث المنسدلة */
+        .ui-autocomplete {
+            z-index: 2000 !important;
+            border-radius: 15px !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+            border: 1px solid #eee !important;
+            padding: 10px !important;
+            background: white !important;
+            font-family: 'Cairo', sans-serif !important;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        .ui-menu-item { border-radius: 8px; margin-bottom: 2px; }
+        .ui-state-active { background: var(--brand-teal) !important; border: none !important; color: white !important; }
+
+        @@media (max-width: 992px) {
+            .sidebar { right: calc(var(--sidebar-width) * -1); }
+            .main-content { margin-right: 0; }
+            .sidebar.active { right: 0; }
+        }
+    </style></head><body>
+
+    <div class="sidebar shadow-lg">
+        <div class="text-center py-5">
+            <h4 class="fw-900 mb-0">Edu<span style="color: var(--brand-teal)">Psych</span></h4>
+            <p class="small opacity-50 mb-0" style="font-size: 0.7rem;">ADMIN DASHBOARD</p>
+        </div>
+        
+        <nav class="nav flex-column">
+            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")" 
+               asp-controller="Admin" asp-action="Index">
+                <i class="bi bi-grid-1x2-fill"></i> الرئيسية
+            </a>
+            
+            <div class="sidebar-heading">إدارة الأفراد</div>
+            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Students" ? "active" : "")" 
+               asp-controller="Admin" asp-action="Students">
+                <i class="bi bi-people-fill"></i> التلاميذ
+            </a>
+            <a class="nav-link" asp-controller="Admin" asp-action="StaffList">
+                <i class="bi bi-person-workspace"></i> الأساتذة والمشرفون
+            </a>
+
+            <div class="sidebar-heading">الإدارة المالية</div>
+            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "PendingDeposits" ? "active" : "")" 
+               asp-controller="Admin" asp-action="PendingDeposits">
+                <i class="bi bi-cash-stack"></i> طلبات الشحن
+            </a>
+            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "FinancialReports" ? "active" : "")" 
+              asp-controller="Admin" asp-action="FinancialReports">
+                  <i class="bi bi-file-earmark-bar-graph"></i> تقارير الأرباح
+            </a>
+
+            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "WithdrawalRequests" ? "active" : "")" 
+               asp-controller="Admin" asp-action="WithdrawalRequests">
+                <i class="bi bi-currency-exchange"></i> طلبات السحب
+            </a>
+
+            <div class="sidebar-heading">أقسام الدعم</div>
+            <a class="nav-link" asp-controller="Admin" asp-action="PsychSupportManagement">
+                <i class="bi bi-heart-pulse-fill"></i> الدعم النفسي
+            </a>
+            <a class="nav-link" asp-controller="Admin" asp-action="EduAcademicPerformance">
+                <i class="bi bi-journal-check"></i> الدعم البيداغوجي
+            </a>
+
+            <div class="sidebar-heading">الإعدادات</div>
+            <a class="nav-link" href="#"><i class="bi bi-sliders"></i> ضبط النظام</a>
+            <a class="nav-link text-danger mt-4" asp-controller="Account" asp-action="Logout">
+                <i class="bi bi-power"></i> تسجيل الخروج
+            </a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <header class="topbar justify-content-between">
+            <div class="search-bar-container position-relative">
+                <div class="input-group">
+                    @* شريط البحث الشامل *@
+                    <input type="text" id="globalSearchInput" class="form-control" style="border-radius: 12px;" placeholder="ابحث عن تلميذ، أستاذ، أو مستشار...">
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center">
+                <div class="dropdown me-4">
+                    <a class="position-relative cursor-pointer" id="notifDrop" data-bs-toggle="dropdown" style="color: var(--brand-dark)">
+                        <i class="bi bi-bell-fill fs-5"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                            3
+                        </span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-start shadow-lg border-0 mt-3 p-0" style="width: 300px; border-radius: 15px;">
+                        <li class="bg-dark text-white p-2 text-center small">الإشعارات</li>
+                        <li><a class="dropdown-item small border-bottom" href="#">طلب شحن جديد قيد الانتظار</a></li>
+                        <li><a class="dropdown-item text-center small py-2 text-teal" href="#">مشاهدة الكل</a></li>
+                    </ul>
+                </div>
+
+                <div class="d-flex align-items-center border-start ps-4">
+                    <div class="text-end me-3 d-none d-sm-block">
+                        <p class="small fw-bold mb-0">@Context.Session.GetString("UserName")</p>
+                        <p class="mb-0 opacity-50" style="font-size: 0.6rem;">Super Admin</p>
+                    </div>
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=1eb2a6&color=fff" class="user-avatar shadow-sm">
+                </div>
+            </div>
+        </header>
+
+        <main class="p-4 animate__animated animate__fadeIn">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        $(document).ready(function () {
+            // تفعيل البحث الشامل
+            if ($("#globalSearchInput").length > 0) {
+                $("#globalSearchInput").autocomplete({
+                    source: "/Admin/GlobalSearch",
+                    minLength: 2,
+                    select: function (event, ui) {
+                        window.location.href = ui.item.url;
+                    }
+                }).autocomplete("instance")._renderItem = function (ul, item) {
+                    return $("<li>")
+                        .append(`<div class="p-2 d-flex justify-content-between align-items-center" style="cursor:pointer">
+                                    <div>
+                                        <i class="bi bi-person-circle me-2 opacity-50"></i>
+                                        <span class="fw-bold small">${item.name}</span>
+                                    </div>
+                                    <span class="badge bg-light text-dark small" style="font-size: 0.6rem;">${item.role}</span>
+                                 </div>`)
+                        .appendTo(ul);
+                };
+            }
+
+            // زر تصغير القائمة الجانبية للهواتف
+            $('#sidebarCollapse').on('click', function () {
+                $('.sidebar').toggleClass('active');
+            });
+        });
+    </script>
+</body>

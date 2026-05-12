@@ -1,0 +1,141 @@
+﻿@model EduPsych_Web.Models.Course
+@{
+    Layout = "_Layout";
+    var firstLesson = Model.Lessons.OrderBy(l => l.id).FirstOrDefault();
+}
+
+<style>
+    body { background-color: #f8fbfb; font-family: 'Cairo', sans-serif; }
+    nav, .sidebar, header:not(.edu-header) { display: none !important; }
+
+    .view-container { display: flex; height: 100vh; overflow: hidden; }
+
+    /* قائمة الدروس الجانبية */
+    .lessons-sidebar {
+        width: 350px; background: white; border-left: 1px solid #eee;
+        display: flex; flex-direction: column; z-index: 100;
+    }
+    .sidebar-header { padding: 20px; background: #1eb2a6; color: white; }
+    .lesson-item { 
+        padding: 15px 20px; border-bottom: 1px solid #f1f5f5; 
+        cursor: pointer; transition: 0.3s; text-decoration: none; color: #333;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .lesson-item:hover { background: #e6f7f6; }
+    .lesson-item.active { background: #1eb2a6; color: white; }
+
+    /* منطقة المحتوى الرئيسية */
+    .main-content { flex: 1; overflow-y: auto; padding: 30px; }
+    .video-wrapper { 
+        background: black; border-radius: 20px; overflow: hidden; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 25px;
+    }
+    .resource-card {
+        background: white; border-radius: 15px; padding: 20px;
+        margin-top: 20px; border: 1px solid #eee;
+    }
+</style>
+
+<div class="container-fluid p-0 text-end" dir="rtl">
+    <div class="view-container">
+        
+        <div class="lessons-sidebar">
+            <div class="sidebar-header">
+                <h5 class="m-0 fw-bold">محتوى الدورة</h5>
+                <small class="opacity-75">@Model.title</small>
+            </div>
+            <div class="overflow-auto">
+                @if (Model.Lessons != null && Model.Lessons.Any())
+                {
+                    int i = 1;
+                    foreach (var lesson in Model.Lessons.OrderBy(l => l.id))
+                    {
+                        <a href="javascript:void(0)" onclick="loadLesson('@lesson.video_url', '@lesson.title', '@lesson.description', '@lesson.pdf_url')" 
+                           class="lesson-item @(i == 1 ? "active" : "")" id="lesson-@lesson.id">
+                            <i class="bi bi-play-circle fs-5"></i>
+                            <div>
+                                <div class="fw-bold small">الدرس @i</div>
+                                <div class="small opacity-75">@lesson.title</div>
+                            </div>
+                        </a>
+                        i++;
+                    }
+                }
+                else
+                {
+                    <div class="p-4 text-center text-muted">لا توجد دروس مضافة لهذه الدورة بعد.</div>
+                }
+            </div>
+            <div class="mt-auto p-3 border-top">
+                <a href="@Url.Action("MyCourses", "Student")" class="btn btn-outline-secondary w-100 rounded-pill">
+                    <i class="bi bi-arrow-right me-1"></i> العودة لدوراتي
+                </a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            @if (firstLesson != null)
+            {
+                <div id="video-section" class="video-wrapper">
+                    @if (!string.IsNullOrEmpty(firstLesson.video_url))
+                    {
+                        <div class="ratio ratio-16x9">
+                            <iframe id="mainVideo" src="@firstLesson.video_url" allowfullscreen></iframe>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-5 text-center text-white bg-dark">لا يوجد فيديو لهذا الدرس</div>
+                    }
+                </div>
+
+                <div class="resource-card shadow-sm">
+                    <h3 id="lessonTitle" class="fw-bold text-dark">@firstLesson.title</h3>
+                    <p id="lessonDesc" class="text-muted">@firstLesson.description</p>
+                    <hr>
+                    <div id="pdfSection">
+                        @if (!string.IsNullOrEmpty(firstLesson.pdf_url))
+                        {
+                            <a id="lessonPdf" href="@firstLesson.pdf_url" target="_blank" class="btn btn-danger rounded-pill px-4">
+                                <i class="bi bi-file-earmark-pdf me-1"></i> تحميل ملخص الدرس (PDF)
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info text-center mt-5">مرحباً بك! الأستاذ سيبدأ برفع الدروس قريباً.</div>
+            }
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function loadLesson(videoUrl, title, desc, pdfUrl) {
+        // تحديث الفيديو
+        const videoFrame = document.getElementById('mainVideo');
+        if(videoUrl) {
+            videoFrame.src = videoUrl;
+        }
+
+        // تحديث النصوص
+        document.getElementById('lessonTitle').innerText = title;
+        document.getElementById('lessonDesc').innerText = desc;
+
+        // تحديث ملف الـ PDF
+        const pdfSection = document.getElementById('pdfSection');
+        if(pdfUrl && pdfUrl !== 'null' && pdfUrl !== '') {
+            pdfSection.innerHTML = `<a href="${pdfUrl}" target="_blank" class="btn btn-danger rounded-pill px-4">
+                                        <i class="bi bi-file-earmark-pdf me-1"></i> تحميل ملخص الدرس (PDF)
+                                    </a>`;
+        } else {
+            pdfSection.innerHTML = '';
+        }
+
+        // تغيير الحالة النشطة في القائمة
+        document.querySelectorAll('.lesson-item').forEach(item => item.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+    }
+</script>

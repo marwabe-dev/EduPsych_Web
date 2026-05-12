@@ -1,0 +1,200 @@
+﻿@model EduPsych_Web.Models.Counselor
+
+@{
+    ViewData["Title"] = "تحديد موعد الجلسة - إبداع";
+    Layout = "_Layout";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    body {
+        background-color: #f4fdfc;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* الهيدر العائم الموحد */
+    .edu-header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(30, 178, 166, 0.1);
+        padding: 12px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 15px;
+        margin: 10px 20px;
+        z-index: 1000;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+        border-radius: 50px;
+    }
+
+    .text-turquoise {
+        color: #1eb2a6 !important;
+    }
+
+    /* بطاقة الحجز الفاخرة */
+    .booking-wrapper {
+        max-width: 600px;
+        margin: 40px auto;
+        perspective: 1000px;
+    }
+
+    .booking-card-fancy {
+        background: white;
+        border-radius: 40px;
+        border: none;
+        overflow: hidden;
+        box-shadow: 0 40px 80px rgba(17, 75, 77, 0.1) !important;
+    }
+
+    .booking-card-header {
+        background: linear-gradient(135deg, #1eb2a6 0%, #114b4d 100%);
+        padding: 40px 20px;
+        color: white;
+        text-align: center;
+        position: relative;
+    }
+
+    .counselor-mini-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 25px;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        object-fit: cover;
+        margin-bottom: 15px;
+    }
+
+    /* تنسيق حقول الإدخال */
+    .form-group-custom {
+        margin-bottom: 25px;
+    }
+
+    .form-label-fancy {
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 12px;
+        display: block;
+        font-size: 0.95rem;
+    }
+
+    .input-stylish {
+        border-radius: 20px;
+        padding: 15px 20px;
+        border: 2px solid #eef7f6;
+        background-color: #fcfdfe;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+
+        .input-stylish:focus {
+            border-color: #1eb2a6;
+            box-shadow: 0 0 0 5px rgba(30, 178, 166, 0.1);
+            background-color: white;
+            outline: none;
+        }
+
+    /* أزرار الحجز */
+    .btn-submit-booking {
+        background: linear-gradient(135deg, #1eb2a6 0%, #15938a 100%);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 18px;
+        font-weight: 800;
+        font-size: 1.1rem;
+        transition: 0.4s;
+        box-shadow: 0 15px 30px rgba(30, 178, 166, 0.2);
+    }
+
+        .btn-submit-booking:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(30, 178, 166, 0.3);
+            color: white;
+        }
+
+    /* أيقونات توضيحية */
+    .session-icon-box {
+        background: #f0fdfc;
+        color: #1eb2a6;
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 15px;
+    }
+</style>
+
+<div class="container-fluid p-0 text-end" dir="rtl">
+
+    <header class="edu-header">
+        <div class="d-flex align-items-center">
+            <h3 class="m-0 fw-bold text-turquoise">EducPsycho</h3>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="history.back()" class="btn btn-light rounded-pill px-4 shadow-sm border text-turquoise fw-bold">تراجع</button>
+        </div>
+    </header>
+
+    <div class="container py-4">
+        <div class="booking-wrapper">
+            <div class="card booking-card-fancy">
+                <div class="booking-card-header">
+                    <img src="https://ui-avatars.com/api/?name=@(Model.User?.first_name)+@(Model.User?.last_name)&background=fff&color=1eb2a6&size=128"
+                         class="counselor-mini-avatar" alt="Counselor">
+                    <h4 class="fw-bold mb-1">حجز موعد جديد</h4>
+                    <p class="opacity-75 small mb-0">مع المستشار: أ. @Model.User.first_name @Model.User.last_name</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <form asp-action="ConfirmCounselBooking" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="counselorId" value="@Model.id" />
+
+                        <div class="form-group-custom">
+                            <label class="form-label-fancy">
+                                <i class="bi bi-calendar-check text-turquoise ms-1"></i> اختر التاريخ والوقت المناسب:
+                            </label>
+                            <input type="datetime-local" name="scheduledAt" class="form-control input-stylish" required
+                                   min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")">
+                            <small class="text-muted mt-2 d-block px-2">ملاحظة: المواعيد تتبع التوقيت المحلي لبلدك.</small>
+                        </div>
+
+                        <div class="form-group-custom">
+                            <label class="form-label-fancy">
+                                <i class="bi bi-camera-video text-turquoise ms-1"></i> نوع وسيلة التواصل:
+                            </label>
+                            <div class="d-flex align-items-center">
+                                <select name="sessionType" class="form-select input-stylish">
+                                    <option value="Video">📹 جلسة فيديو أونلاين</option>
+                                   
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-4 bg-light border-end border-turquoise border-4 mb-4">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-shield-lock-fill text-turquoise ms-2 fs-5"></i>
+                                <p class="small m-0 text-muted">سيصل طلبك للمستشار فوراً، وسيتم إخبارك بمجرد القبول عبر الإشعارات .</p>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-3">
+                            <button type="submit" class="btn btn-submit-booking">
+                                إرسال طلب الحجز الآن <i class="bi bi-send-fill me-2"></i>
+                            </button>
+                            <a href="javascript:history.back()" class="btn btn-light rounded-pill py-3 fw-bold text-muted border-0">
+                                إلغاء وتراجع
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            
+        </div>
+    </div>
+</div>

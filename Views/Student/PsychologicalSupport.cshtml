@@ -1,0 +1,190 @@
+﻿@model IEnumerable<EduPsych_Web.Models.PsychSpecialization>
+
+@{
+    ViewData["Title"] = "مركز الدعم النفسي - إبداع";
+    Layout = "_Layout";
+
+    // جلب اسم المستخدم للهيدر لضمان التناسق
+    var fullName = Context.Session.GetString("UserName") ?? "تلميذنا العزيز";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    :root {
+        --primary-teal: #1eb2a6;
+        --dark-teal: #114b4d;
+        --glass-white: rgba(255, 255, 255, 0.85);
+    }
+
+    body {
+        background-color: #f4fdfc;
+        font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* إخفاء الهيدر الافتراضي لفرض التصميم الجديد */
+    nav, .sidebar, header:not(.edu-header) {
+        display: none !important;
+    }
+
+    /* --- الهيدر العائم (الكبسولة) الموحد --- */
+    .edu-header {
+        background: var(--glass-white);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(30, 178, 166, 0.15);
+        padding: 12px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 15px;
+        margin: 10px 20px 30px;
+        z-index: 1050;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        border-radius: 50px;
+    }
+
+    .edu-header .btn {
+        border-radius: 50px !important;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: 0.3s;
+    }
+
+    /* بطاقة التخصص النفسي */
+    .psych-card {
+        background: white;
+        border-radius: 40px;
+        border: 1px solid rgba(0,0,0,0.02);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .psych-card:hover {
+        transform: translateY(-12px);
+        box-shadow: 0 25px 50px rgba(30, 178, 166, 0.15) !important;
+    }
+
+    .psych-icon-box {
+        width: 85px;
+        height: 85px;
+        background: #f0fdfc;
+        border-radius: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 2.5rem;
+        color: var(--primary-teal);
+        transition: all 0.5s ease;
+    }
+
+    .psych-card:hover .psych-icon-box {
+        background: var(--primary-teal);
+        color: white;
+        animation: breathe 3s ease-in-out infinite;
+    }
+
+    @@keyframes breathe {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    .btn-explore-psych {
+        background: #f8fbfb;
+        color: var(--primary-teal);
+        border-radius: 20px;
+        padding: 10px 25px;
+        font-weight: 700;
+        transition: 0.3s;
+    }
+
+    .psych-card:hover .btn-explore-psych {
+        background: var(--primary-teal);
+        color: white;
+    }
+
+    .text-turquoise { color: #1eb2a6 !important; }
+    .bg-turquoise { background-color: #1eb2a6 !important; }
+</style>
+
+<div class="container-fluid p-0 text-end" dir="rtl">
+
+    @* --- الهيدر العائم المستبدل --- *@
+    <header class="edu-header">
+        <div class="d-flex align-items-center">
+            <div class="bg-turquoise text-white p-2 rounded-3 ms-3">
+                <i class="bi bi-mortarboard-fill"></i>
+            </div>
+            <div class="d-flex flex-column">
+                <h4 class="m-0 fw-bold text-dark">منصة <span class="text-turquoise">EducPsycho</span></h4>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("Index", "Student")" class="btn btn-light shadow-sm text-dark border">الرئيسية</a>
+            <a href="@Url.Action("MyWallet", "Student")" class="btn btn-white shadow-sm text-dark border">محفظتي</a>
+            <a href="@Url.Action("Courses", "Student")" class="btn btn-white shadow-sm text-dark border">متجر الدورات</a>
+            <a href="@Url.Action("MyEducationalLessons", "Student")" class="btn btn-white shadow-sm text-dark border">حصصي التعليمية</a>
+            <a href="@Url.Action("MyCounselSessions", "Student")" class="btn btn-white shadow-sm text-dark border">حصصي النفسية</a>
+        </div>
+
+        <div class="dropdown">
+            <button class="btn btn-light rounded-circle shadow-sm" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-person-fill text-turquoise"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2">
+                <li><a class="dropdown-item py-3 text-danger fw-bold" href="@Url.Action("Logout", "Account")"><i class="bi bi-box-arrow-right ms-2"></i>تسجيل الخروج</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <span class="badge bg-white shadow-sm text-turquoise px-4 py-2 rounded-pill mb-3 fw-bold border">🍃 ركن الراحة النفسية</span>
+            <h1 class="display-5 fw-bold text-dark mt-2">هل تعاني من مشاكل نفسية تعيق عليك تعلمك، @fullName؟</h1>
+            <p class="text-muted fs-5 mx-auto" style="max-width: 650px;">
+                خصوصيتك أولويتنا.. اختر المجال الذي يصف احتياجك لنوصلك بنخبة من المختصين النفسيين المعتمدين.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            @foreach (var spec in Model.Select((value, index) => new { value, index }))
+            {
+                <div class="col-lg-4 col-md-6">
+                    <a href="@Url.Action("FilterCounselors", new { specId = spec.value.id })" class="text-decoration-none">
+                        <div class="psych-card shadow-sm p-4 text-center h-100 d-flex flex-column">
+                            <span class="badge rounded-pill bg-turquoise bg-opacity-10 text-turquoise px-3 py-1 position-absolute" style="top:20px; right:25px; font-size: 0.7rem;">جلسات خاصة</span>
+                            
+                            <div class="psych-icon-box shadow-sm">
+                                @if (spec.value.name.Contains("قلق") || spec.value.name.Contains("توتر")) 
+                                { <i class="bi bi-feather"></i> }
+                                else if (spec.value.name.Contains("توجيه") || spec.value.name.Contains("دراسي")) 
+                                { <i class="bi bi-lightbulb-fill"></i> }
+                                else if (spec.value.name.Contains("سلوك") || spec.value.name.Contains("نفسي")) 
+                                { <i class="bi bi-flower1"></i> }
+                                else if (spec.value.name.Contains("اكتئاب") || spec.value.name.Contains("حزن"))
+                                { <i class="bi bi-sun-fill"></i> }
+                                else 
+                                { <i class="bi bi-water"></i> }
+                            </div>
+
+                            <h3 class="fw-bold text-dark mb-3">@spec.value.name</h3>
+                            <p class="text-muted small mb-4 flex-grow-1">
+                                استشارات مهنية ودعم نفسي متخصص في مجال <strong>@spec.value.name</strong> تحت إشراف طاقم متخصص بخصوصية تامة.
+                            </p>
+                            
+                            <div class="mt-auto">
+                                <span class="btn-explore-psych shadow-sm d-inline-block">
+                                    استعراض المستشارين <i class="bi bi-arrow-left ms-2"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

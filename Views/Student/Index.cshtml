@@ -1,0 +1,269 @@
+﻿@model EduPsych_Web.Models.Student
+
+@{
+    Layout = "_Layout";
+    // جلب الاسم واللقب معاً
+    var fullName = Model.User != null ? $"{Model.User.first_name} {Model.User.last_name}" : "تلميذنا العزيز";
+    var className = Model.Class?.name ?? "غير محدد";
+    var streamName = ViewBag.StreamName ?? "عام";
+}
+
+<style>
+    body {
+        background-color: #f0f7f7;
+        font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    nav, .sidebar, header:not(.edu-header) {
+        display: none !important;
+    }
+
+    /* --- الهيدر --- */
+    .edu-header {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(30, 178, 166, 0.15);
+        padding: 12px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 15px;
+        margin: 10px 20px 30px;
+        z-index: 1050;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        border-radius: 50px;
+    }
+
+    .edu-header .btn {
+        border-radius: 50px !important;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    /* --- البطاقات --- */
+    .hero-section {
+        display: flex;
+        gap: 20px;
+        padding: 40px;
+        flex-wrap: wrap;
+    }
+
+    .main-card {
+        flex: 1;
+        min-width: 300px;
+        height: 380px;
+        border-radius: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: white;
+        transition: 0.4s;
+        text-align: center;
+    }
+
+    .main-card:hover { transform: translateY(-10px); color: white; }
+    .bg-edu-gradient { background: linear-gradient(135deg, #1eb2a6 0%, #2bd2c5 100%); }
+    .bg-shop-gradient { background: linear-gradient(135deg, #148d84 0%, #1eb2a6 100%); }
+    .bg-psych-gradient { background: linear-gradient(135deg, #247a7d 0%, #114b4d 100%); }
+
+    /* --- الشات الذكي --- */
+    #ai-chat-launcher {
+        position: fixed; 
+        bottom: 30px; 
+        right: 30px;
+        background: #1eb2a6; 
+        color: white; 
+        padding: 12px 25px;
+        border-radius: 50px; 
+        cursor: pointer; 
+        z-index: 1001;
+        display: flex; 
+        align-items: center; 
+        gap: 10px;
+        box-shadow: 0 10px 25px rgba(30, 178, 166, 0.3);
+        transition: visibility 0s, opacity 0.3s linear;
+    }
+
+    #ai-sidebar {
+        position: fixed; 
+        top: 0; 
+        right: -400px; 
+        width: 400px; 
+        height: 100vh;
+        background: white; 
+        z-index: 2002;
+        transition: 0.5s cubic-bezier(0.05, 0.74, 0.2, 0.99);
+        display: flex; 
+        flex-direction: column;
+        box-shadow: -10px 0 40px rgba(0,0,0,0.1);
+    }
+
+    .ai-sidebar-open { right: 0 !important; }
+
+    .ai-sidebar-footer {
+        padding: 15px;
+        background: white;
+        border-top: 1px solid #eee;
+    }
+
+    .ai-input-group {
+        display: flex;
+        background: #f8fbfb;
+        border-radius: 30px;
+        padding: 5px 15px;
+        border: 1px solid #e0eeee;
+    }
+
+    .ai-input-group input {
+        flex: 1; border: none; background: transparent; padding: 10px; outline: none;
+    }
+
+    .info-badge { font-size: 0.75rem; background: #f0f7f7; color: #1eb2a6; padding: 5px 12px; border-radius: 20px; font-weight: bold; }
+</style>
+
+<div class="container-fluid p-0 text-end" dir="rtl">
+
+    <header class="edu-header">
+        <div class="d-flex align-items-center">
+            <div class="bg-turquoise text-white p-2 rounded-3 ms-3" style="background-color: #1eb2a6;">
+                <i class="bi bi-mortarboard-fill"></i>
+            </div>
+            <div class="d-flex flex-column">
+                <h4 class="m-0 fw-bold text-dark">منصة <span style="color:#1eb2a6;">EducPsycho</span></h4>
+                <div class="d-flex gap-1 mt-1 d-none d-lg-flex">
+                    <span class="info-badge">@className</span>
+                    <span class="info-badge">@streamName</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("Index", "Student")" class="btn btn-light shadow-sm text-dark border">الرئيسية</a>
+            <a href="@Url.Action("MyWallet", "Student")" class="btn btn-white shadow-sm text-dark border">محفظتي</a>
+            <a href="@Url.Action("Courses", "Student")" class="btn btn-white shadow-sm text-dark border">متجر الدورات</a>
+            <a href="@Url.Action("MyEducationalLessons", "Student")" class="btn btn-white shadow-sm text-dark border">حصصي التعليمية</a>
+            <a href="@Url.Action("MyCounselSessions", "Student")" class="btn btn-white shadow-sm text-dark border">حصصي النفسية</a>
+        </div>
+
+        <div class="dropdown">
+            <button class="btn btn-light rounded-circle shadow-sm" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-person-fill" style="color:#1eb2a6;"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2">
+                <li><a class="dropdown-item py-3 text-danger fw-bold" href="@Url.Action("Logout", "Account")"><i class="bi bi-box-arrow-right ms-2"></i>تسجيل الخروج</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="text-center mt-4">
+        @* تم وضع fullName هنا لظهور الاسم واللقب *@
+        <h2 class="fw-bold">مرحباً بك،@fullName! </h2>
+        <p class="text-muted">نحن هنا لندعم تميزك الدراسي ونفسيتك المتزنة اختر شعبتك و مستواك الدراسي لاكتشاف الاساتذة و حجز حصص تعليمية و توجيهات نفسية مباشرة في وقت اْنت تختاره كما يمكنك التسوق في متجر الدورات لشراء دورات مسجلة من طرف اْساتذة ذوي خبرة مختارين بعناية.    </p>
+    </div>
+
+    <div class="hero-section">
+        <a href="@Url.Action("EducationalPath", "Student")" class="main-card bg-edu-gradient shadow-lg">
+            <i class="bi bi-mortarboard-fill" style="font-size: 4rem;"></i>
+            <h2 class="fw-bold mt-3">المسار التعليمي</h2>
+            <p class="opacity-75">دروسك، تمارينك، وأساتذتك</p>
+            <span class="badge rounded-pill bg-white px-4 py-2 mt-2" style="color:#1eb2a6;">استكشف الآن</span>
+        </a>
+
+        <a href="@Url.Action("Courses", "Student")" class="main-card bg-shop-gradient shadow-lg">
+            <i class="bi bi-cart-check-fill" style="font-size: 4rem;"></i>
+            <h2 class="fw-bold mt-3">متجر الدورات</h2>
+            <p class="opacity-75">دورات احترافية ومحتوى مميز</p>
+            <span class="badge rounded-pill bg-white px-4 py-2 mt-2" style="color:#148a80;">تسوق الآن</span>
+        </a>
+
+        <a href="@Url.Action("PsychologicalSupport", "Student")" class="main-card bg-psych-gradient shadow-lg">
+            <i class="bi bi-heart-pulse-fill" style="font-size: 4rem;"></i>
+            <h2 class="fw-bold mt-3">الدعم النفسي</h2>
+            <p class="opacity-75">تواصل مع مرشدك النفسي</p>
+            <span class="badge rounded-pill bg-white text-dark px-4 py-2 mt-2">احجز حصة</span>
+        </a>
+    </div>
+
+    @* زر "اسأل إبداع" *@
+    <div id="ai-chat-launcher" onclick="toggleAiSidebar()">
+        <i class="bi bi-robot fs-4"></i>
+        <span class="fw-bold">اسأل EducPsycho</span>
+    </div>
+
+    <div id="ai-sidebar">
+        <div class="ai-sidebar-header" style="background: linear-gradient(135deg, #1eb2a6 0%, #2bd2c5 100%); padding: 20px; color: white;">
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <span class="fw-bold"><i class="bi bi-stars"></i> مساعد EducPsycho </span>
+                <button onclick="toggleAiSidebar()" class="btn-close btn-close-white"></button>
+            </div>
+        </div>
+        <div id="ai-chat-messages" style="flex:1; overflow-y:auto; padding:20px; background:#f8fbfb;">
+            <div class="ai-bubble" style="background:white; padding:10px 15px; border-radius:15px; border:1px solid #eee; margin-bottom:10px;">
+                مرحباً @fullName! كيف يمكنني مساعدتك اليوم؟ ✨
+            </div>
+        </div>
+        <div class="ai-sidebar-footer">
+            <div class="ai-input-group">
+                <input type="text" id="ai-sidebar-input" placeholder="اكتب سؤالك هنا..." onkeypress="if(event.key==='Enter') sendSidebarMessage()">
+                <button onclick="sendSidebarMessage()" style="border:none; background:#1eb2a6; color:white; border-radius:50%; width:35px; height:35px;"><i class="bi bi-send-fill"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleAiSidebar() {
+        const sidebar = document.getElementById('ai-sidebar');
+        const launcher = document.getElementById('ai-chat-launcher');
+        
+        sidebar.classList.toggle('ai-sidebar-open');
+        
+        // إخفاء الزر تماماً عند فتح الشات لكي لا يغطي شريط الكتابة نهائياً
+        if (sidebar.classList.contains('ai-sidebar-open')) {
+            launcher.style.display = 'none'; 
+        } else {
+            launcher.style.display = 'flex';
+        }
+    }
+
+    async function sendSidebarMessage() {
+        const input = document.getElementById('ai-sidebar-input');
+        const msg = input.value.trim();
+        if (!msg) return;
+
+        appendMsg(msg, 'user');
+        input.value = '';
+
+        // هنا تضع كود الـ Fetch الخاص بالاتصال بالـ API للذكاء الاصطناعي
+    }
+
+    function appendMsg(text, sender) {
+        const area = document.getElementById('ai-chat-messages');
+        const div = document.createElement('div');
+        div.style.marginBottom = "10px";
+        div.style.padding = "10px 15px";
+        div.style.borderRadius = "15px";
+        div.style.maxWidth = "85%";
+        
+        if(sender === 'user') {
+            div.style.background = "#1eb2a6";
+            div.style.color = "white";
+            div.style.marginRight = "auto";
+            div.style.marginLeft = "0";
+            div.style.textAlign = "right";
+        } else {
+            div.style.background = "white";
+            div.style.border = "1px solid #eee";
+            div.style.marginLeft = "auto";
+            div.style.marginRight = "0";
+            div.style.textAlign = "right";
+        }
+        
+        div.innerText = text;
+        area.appendChild(div);
+        area.scrollTop = area.scrollHeight;
+    }
+</script>

@@ -1,0 +1,62 @@
+﻿@model IEnumerable<EduPsych_Web.Models.CourseEnrollment>
+
+<div class="container mt-4 text-end" dir="rtl">
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-white py-3">
+            <h4 class="fw-bold m-0" style="color: #1eb2a6;">
+                <i class="bi bi-graph-up-arrow ms-2"></i> سجل العمليات المالية والأرباح
+            </h4>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>التلميذ</th>
+                            <th>الدورة</th>
+                            <th>الأستاذ</th>
+                            <th>المبلغ الكلي</th>
+                            <th>حصة الأستاذ</th>
+                            <th>ربح المنصة</th>
+                            <th>التاريخ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                @* استخدام علامة الاستفهام للحماية من القيم الفارغة Null Check *@
+                                <td>@(item.Student?.User?.first_name) @(item.Student?.User?.last_name)</td>
+                                <td><span class="badge bg-light text-dark border">@item.Course?.title</span></td>
+                                <td class="fw-bold text-primary">
+                                    <i class="bi bi-person-badge ms-1"></i>
+                                    @(item.Course?.Teacher?.User?.first_name) @(item.Course?.Teacher?.User?.last_name)
+                                </td>
+                                <td class="fw-bold">@item.amount_paid دج</td>
+                                <td class="text-success">@item.teacher_commission دج</td>
+                                <td class="text-info">@item.platform_commission دج</td>
+                                <td class="small text-muted">@item.enrolled_at.ToString("yyyy/MM/dd HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-light p-3">
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <small class="text-muted d-block">إجمالي المبيعات</small>
+                    <span class="h5 fw-bold text-dark">@Model.Sum(x => x.amount_paid) دج</span>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted d-block">مستحقات الأساتذة</small>
+                    <span class="h5 fw-bold text-success">@Model.Sum(x => x.teacher_commission) دج</span>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted d-block">صافي ربح المنصة</small>
+                    <span class="h5 fw-bold text-info">@Model.Sum(x => x.platform_commission) دج</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

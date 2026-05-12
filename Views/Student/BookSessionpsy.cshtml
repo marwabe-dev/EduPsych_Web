@@ -1,0 +1,57 @@
+﻿@model EduPsych_Web.Models.Counselor
+@{
+    ViewData["Title"] = "تأكيد حجز جلسة";
+    // في الجانب النفسي غالباً الجلسات تكون افتراضية أو نعتمد نوعاً واحداً، 
+    // لكن سأتركها كما هي لتطابق كود الأستاذ تماماً
+    var sessionType = ViewBag.SessionType ?? "Online"; 
+}
+
+<div class="container mt-5" dir="rtl">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h4 class="mb-0">🗓️ تأكيد موعد الجلسة</h4>
+                </div>
+                <div class="card-body p-4 text-end">
+                    <div class="text-center mb-4">
+                        <img src="https://ui-avatars.com/api/?name=@(Model.User?.first_name)+@(Model.User?.last_name)&background=random"
+                             class="rounded-circle mb-2" width="70 shadow-sm">
+                        <h5 class="fw-bold">المستشار: @Model.User?.first_name @Model.User?.last_name</h5>
+                        <span class="badge @(sessionType == "Online" ? "bg-info" : "bg-warning") text-dark rounded-pill px-3">
+                            نوع الجلسة: @(sessionType == "Online" ? "عبر الإنترنت (Online)" : "حضورية (In-Person)")
+                        </span>
+                    </div>
+
+                    @* تم تغيير الأكشن إلى SendBookingRequest ليتوافق مع ميثود الحفظ التي أنشأناها *@
+                    <form asp-action="SendBookingRequest" asp-controller="Student" method="post">
+                        @Html.AntiForgeryToken()
+                        
+                        @* إرسال ID المستشار *@
+                        <input type="hidden" name="counselorId" value="@Model.id" />
+                        <input type="hidden" name="type" value="@sessionType" />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">اختر التاريخ والوقت المناسب:</label>
+                            <input type="datetime-local" name="scheduledAt" class="form-control rounded-3" required
+                                   min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")">
+                        </div>
+
+                        @if (sessionType == "In-Person")
+                        {
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">اقتراح مكان اللقاء (اختياري):</label>
+                                <input type="text" name="location" class="form-control rounded-3" placeholder="مثلاً: العيادة، مكان عام...">
+                            </div>
+                        }
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg rounded-pill fw-bold">تأكيد طلب الحجز</button>
+                            <a href="javascript:history.back()" class="btn btn-light rounded-pill">تراجع</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,264 @@
+﻿@model IEnumerable<EduPsych_Web.Models.EducationalSession>
+@{
+    ViewData["Title"] = "دروسي المحجوزة - إبداع";
+    // نجعل اللايوت فارغاً أو نستخدم التنسيق الذي يخفي الهيدر القديم
+    Layout = "_Layout"; 
+    
+    // جلب بيانات الطالب (تأكد من إرسالها من الكنترولر أو جلبها هنا)
+    // ملاحظة: إذا كان الموديل هنا هو قائمة جلسات، نحتاج لجلب بيانات المستخدم من أول جلسة أو عبر الكنترولر
+    var firstSession = Model.FirstOrDefault();
+    var fullName = Context.Session.GetString("UserName") ?? "تلميذنا العزيز";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    :root {
+        --primary-teal: #1eb2a6;
+        --dark-teal: #114b4d;
+        --soft-gold: #b8860b;
+        --glass-white: rgba(255, 255, 255, 0.85);
+    }
+
+    body {
+        background: radial-gradient(circle at top right, #f4fdfc 0%, #e8f8f7 100%);
+        font-family: 'Cairo', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* إخفاء هيدر اللايوت الأصلي */
+    nav, .sidebar, header:not(.edu-header) {
+        display: none !important;
+    }
+
+    /* هيدر الكبسولة العائم (نفس تصميم الصفحة الرئيسية) */
+    .edu-header {
+        background: var(--glass-white);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(30, 178, 166, 0.15);
+        padding: 12px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 15px;
+        margin: 10px 20px 30px;
+        z-index: 1050;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        border-radius: 50px;
+    }
+
+    .edu-header .btn {
+        border-radius: 50px !important;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: 0.3s;
+    }
+
+    .edu-header .btn:hover {
+        transform: translateY(-2px);
+    }
+
+    /* بطاقة الحصة */
+    .session-card-pro {
+        background: white;
+        border-radius: 35px;
+        border: none;
+        padding: 30px;
+        margin-bottom: 25px;
+        transition: all 0.4s ease;
+        box-shadow: 0 10px 30px rgba(30, 178, 166, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .session-card-pro:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 50px rgba(30, 178, 166, 0.12);
+    }
+
+    .icon-wrapper {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #f0fdfc 0%, #e0f7f6 100%);
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: var(--primary-teal);
+    }
+
+    .status-pill {
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .pill-pending { background: #fdf7e6; color: var(--soft-gold); border: 1px solid #f1e0b0; }
+    .pill-accepted { background: #e8f8f7; color: var(--primary-teal); border: 1px solid #c5edeb; }
+    .pill-confirmed { background: #eaf6ec; color: #28a745; border: 1px solid #c3e6cb; }
+
+    .time-box {
+        background: #f8fbfb;
+        padding: 10px 20px;
+        border-radius: 20px;
+        border: 1px dashed rgba(30, 178, 166, 0.2);
+    }
+
+    .btn-pay-premium {
+        background: var(--dark-teal);
+        color: white !important;
+        border-radius: 18px;
+        padding: 10px 25px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .text-turquoise { color: #1eb2a6 !important; }
+    .btn-turquoise { background-color: #1eb2a6 !important; color: white !important; }
+
+    .fade-in-slide {
+        animation: revealUp 0.6s ease forwards;
+        opacity: 0;
+    }
+
+    @@keyframes revealUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="container-fluid p-0 text-end" dir="rtl">
+
+    @* --- الهيدر الجديد المستبدل --- *@
+    <header class="edu-header">
+        <div class="d-flex align-items-center">
+            <div class="bg-turquoise text-white p-2 rounded-3 ms-3" style="background-color: #1eb2a6;">
+                <i class="bi bi-mortarboard-fill"></i>
+            </div>
+            <div class="d-flex flex-column">
+                <h4 class="m-0 fw-bold text-dark">منصة <span style="color:#1eb2a6;">EducPsycho</span></h4>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("Index", "Student")" class="btn btn-light shadow-sm text-dark border">الرئيسية</a>
+            <a href="@Url.Action("MyWallet", "Student")" class="btn btn-white shadow-sm text-dark border">محفظتي</a>
+            <a href="@Url.Action("Courses", "Student")" class="btn btn-white shadow-sm text-dark border">متجر الدورات</a>
+            <a href="@Url.Action("MyEducationalLessons", "Student")" class="btn btn-turquoise shadow-sm border">حصصي التعليمية</a>
+            <a href="@Url.Action("MyCounselSessions", "Student")" class="btn btn-white shadow-sm text-dark border">حصصي النفسية</a>
+        </div>
+
+        <div class="dropdown">
+            <button class="btn btn-light rounded-circle shadow-sm" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-person-fill" style="color:#1eb2a6;"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2">
+                <li><a class="dropdown-item py-3 text-danger fw-bold" href="@Url.Action("Logout", "Account")"><i class="bi bi-box-arrow-right ms-2"></i>تسجيل الخروج</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="container pb-5">
+        <div class="row mb-5 fade-in-slide">
+            <div class="col-12">
+                <span class="badge bg-white text-turquoise px-3 py-2 rounded-pill shadow-sm mb-3 border">الجدول الدراسي</span>
+                <h1 class="display-6 fw-bold text-dark">أهلاً بك في <span class="text-turquoise">مساحتك التعليمية</span></h1>
+          <p class="text-muted fs-5"> هنا تجد جميع حصصك التي قمت بحجزها، يمكنك متابعة الدفع عند الضغط على محفظتي في الاْعلى و الانضمام للدروس المباشرة عند ارسال الْاستاذ لرابط الحصة في هذه الصفحة.</p>            </div>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="row">
+                @foreach (var (session, index) in Model.Select((s, i) => (s, i)))
+                {
+                    <div class="col-12 fade-in-slide" style="animation-delay: @(index * 0.1)s">
+                        <div class="session-card-pro">
+                            
+                            <div class="d-flex align-items-center gap-4">
+                                <div class="icon-wrapper">
+                                    <i class="bi bi-lightning-charge-fill"></i>
+                                </div>
+                                <div>
+                                    <h4 class="fw-bold text-dark mb-1">@session.Lesson?.title</h4>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://ui-avatars.com/api/?name=@session.Lesson?.Teacher?.User?.first_name&background=1eb2a6&color=fff" class="rounded-circle" width="25">
+                                        <span class="text-muted">أ. @session.Lesson?.Teacher?.User?.first_name @session.Lesson?.Teacher?.User?.last_name</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="time-box d-none d-lg-block">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="text-center border-start ps-3 ms-3">
+                                        <div class="small text-muted">التاريخ</div>
+                                        <div class="fw-bold">@session.scheduled_at.ToString("dd MMMM")</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="small text-muted">الوقت</div>
+                                        <div class="fw-bold text-turquoise">@session.scheduled_at.ToString("HH:mm")</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-3">
+                                @if (session.status == "Pending")
+                                {
+                                    <span class="status-pill pill-pending">
+                                        <i class="bi bi-clock-history"></i> قيد المراجعة
+                                    </span>
+                                }
+                                else if (session.status == "Accepted")
+                                {
+                                    <div class="text-start">
+                                        <span class="status-pill pill-accepted mb-2">
+                                            <i class="bi bi-check2-all"></i> مقبول - بانتظار الدفع
+                                        </span>
+                                        <br />
+                                        <a href="@Url.Action("MyWallet", "Student", new { paySessionId = session.id })" class="btn btn-pay-premium mt-2">
+                                            دفع الرسوم <i class="bi bi-credit-card-2-back ms-2"></i>
+                                        </a>
+                                    </div>
+                                }
+                                else if (session.status == "Confirmed" || session.status == "Paid")
+                                {
+                                    <div class="text-start text-center">
+                                        <span class="status-pill pill-confirmed mb-2">
+                                            <i class="bi bi-shield-check"></i> تم التأكيد والدفع
+                                        </span>
+                                        <br />
+                                        @if (!string.IsNullOrEmpty(session.meeting_link))
+                                        {
+                                            <a href="@(session.meeting_link.StartsWith("http") ? session.meeting_link : "https://" + session.meeting_link)" 
+                                               target="_blank" 
+                                               class="btn btn-turquoise rounded-pill px-4 mt-2 fw-bold shadow-sm">
+                                                دخول الحصة مباشر <i class="bi bi-camera-video ms-2"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small d-block mt-2">بانتظار الرابط من الأستاذ</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5 bg-white rounded-5 shadow-sm">
+                <i class="bi bi-calendar-x display-1 text-light"></i>
+                <h3 class="text-muted mt-3">لا توجد دروس محجوزة حالياً</h3>
+                <a href="/Student/Index" class="btn btn-turquoise text-white rounded-pill px-5 py-2 mt-3 fw-bold">استكشف الدروس المتاحة</a>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,141 @@
+﻿@model EduPsych_Web.Models.Subject
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "محتوى المادة - " + Model.name;
+    
+    // جلب البيانات من الـ ViewBag كما تم تعريفها في الميثود عندك
+    var lessons = ViewBag.Lessons as IEnumerable<EduPsych_Web.Models.Lesson>;
+    var exercises = ViewBag.Exercises as IEnumerable<EduPsych_Web.Models.Exercise>;
+    var exams = ViewBag.Exams as IEnumerable<EduPsych_Web.Models.Exam>;
+    
+    // جلب الاسم من السيشن للهيدر
+    var fullName = Context.Session.GetString("UserName") ?? "تلميذنا العزيز";
+}
+
+<style>
+    body { background-color: #f0f7f7; font-family: 'Cairo', sans-serif; }
+    nav, .sidebar, header:not(.edu-header) { display: none !important; }
+
+    /* الهيدر العائم */
+    .edu-header {
+        background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px);
+        border: 1px solid rgba(30, 178, 166, 0.15); padding: 12px 30px;
+        display: flex; justify-content: space-between; align-items: center;
+        position: sticky; top: 15px; margin: 10px 20px 30px; z-index: 1050;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); border-radius: 50px;
+    }
+
+    .content-section { background: white; border-radius: 30px; padding: 30px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); }
+    .section-title { color: #1eb2a6; font-weight: 800; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
+    
+    .lesson-item { background: #f8fbfb; border-radius: 20px; padding: 20px; border: 1px solid #eef7f6; transition: 0.3s; margin-bottom: 15px; }
+    .lesson-item:hover { transform: translateX(-5px); border-color: #1eb2a6; background: white; }
+
+    .btn-turquoise { background-color: #1eb2a6 !important; color: white !important; border-radius: 50px; font-weight: 600; padding: 8px 25px; }
+    .text-turquoise { color: #1eb2a6 !important; }
+</style>
+
+<div class="container-fluid p-0 text-end" dir="rtl">
+    @* الهيدر الموحد *@
+    <header class="edu-header">
+        <div class="d-flex align-items-center">
+            <div class="bg-turquoise text-white p-2 rounded-3 ms-3" style="background-color: #1eb2a6;">
+                <i class="bi bi-journal-bookmark-fill"></i>
+            </div>
+            <h4 class="m-0 fw-bold text-dark">محتوى مادة: <span class="text-turquoise">@Model.name</span></h4>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("Index", "Student")" class="btn btn-light rounded-pill px-4 border shadow-sm fw-bold">الرئيسية</a>
+            <a href="javascript:history.back()" class="btn btn-white rounded-pill px-4 border shadow-sm fw-bold">عودة</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="content-section">
+            <h4 class="section-title"><i class="bi bi-collection-play-fill"></i> الدروس المسجلة وملخصات PDF</h4>
+            @if (lessons != null && lessons.Any())
+            {
+                <div class="row">
+                    @foreach (var lesson in lessons)
+                    {
+                        <div class="col-12">
+                            <div class="lesson-item d-md-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="fw-bold mb-1">@lesson.title</h5>
+                                    <p class="text-muted small mb-0">@lesson.description</p>
+                                </div>
+                                <div class="mt-3 mt-md-0 d-flex gap-2">
+                                    @if (!string.IsNullOrEmpty(lesson.video_url))
+                                    {
+                                        <a href="@lesson.video_url" target="_blank" class="btn btn-turquoise btn-sm">
+                                            <i class="bi bi-play-circle me-1"></i> فيديو
+                                        </a>
+                                    }
+                                    @if (!string.IsNullOrEmpty(lesson.pdf_summary_url))
+                                    {
+                                        <a href="@lesson.pdf_summary_url" target="_blank" class="btn btn-outline-info btn-sm rounded-pill px-3">
+                                            <i class="bi bi-file-pdf me-1"></i> ملخص
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-center text-muted py-4">لا توجد دروس مضافة حالياً.</p>
+            }
+        </div>
+
+        <div class="content-section">
+            <h4 class="section-title"><i class="bi bi-pencil-square"></i> التمارين التفاعلية والمرفقات</h4>
+            @if (exercises != null && exercises.Any())
+            {
+                <div class="row g-3">
+                    @foreach (var exercise in exercises)
+                    {
+                        <div class="col-md-6">
+                            <div class="lesson-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold">@exercise.title</span>
+                                    <a href="@exercise.file_url" target="_blank" class="text-turquoise">تحميل الملف <i class="bi bi-download"></i></a>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-center text-muted py-4">لا توجد تمارين متاحة لهذه المادة.</p>
+            }
+        </div>
+
+        <div class="content-section mb-5">
+            <h4 class="section-title"><i class="bi bi-file-earmark-ruled"></i> نماذج الفروض والاختبارات</h4>
+            @if (exams != null && exams.Any())
+            {
+                <div class="row g-3">
+                    @foreach (var exam in exams)
+                    {
+                        <div class="col-md-4">
+                            <div class="lesson-item text-center">
+                                <i class="bi bi-file-pdf text-danger display-6 mb-2"></i>
+                                <h6 class="fw-bold">@exam.title</h6>
+                                <p class="small text-muted">@exam.exam_type</p>
+                                <a href="@exam.file_url" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill w-100 mt-2">عرض النموذج</a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-center text-muted py-4">لم يتم رفع نماذج اختبارات بعد.</p>
+            }
+        </div>
+    </div>
+</div>

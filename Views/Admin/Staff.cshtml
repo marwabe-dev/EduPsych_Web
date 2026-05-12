@@ -1,0 +1,148 @@
+﻿@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "طاقم العمل";
+    // جلب القائمة ككائنات ديناميكية
+    var allStaff = ViewBag.AllStaff as IEnumerable<dynamic>;
+}
+
+<style>
+    .staff-card {
+        border: none;
+        border-radius: 24px;
+        background: #ffffff;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+    }
+
+    /* ستايل الجدول */
+    .table thead th {
+        background-color: #f8fafc;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 0.8rem;
+        border: none;
+        padding: 1.25rem 1rem;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: 0.2s;
+    }
+
+    /* تصنيف الألوان */
+    .badge-teacher {
+        background: rgba(30, 178, 166, 0.1);
+        color: #1eb2a6;
+        border: 1px solid rgba(30, 178, 166, 0.2);
+    }
+
+    .badge-counselor {
+        background: rgba(124, 58, 237, 0.1);
+        color: #7c3aed;
+        border: 1px solid rgba(124, 58, 237, 0.2);
+    }
+
+    .btn-details {
+        border: 1.5px solid #e2e8f0;
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.75rem;
+        border-radius: 12px;
+        padding: 6px 16px;
+        transition: 0.3s;
+    }
+
+        .btn-details:hover {
+            background: #0f172a;
+            color: #ffffff;
+            border-color: #0f172a;
+        }
+
+    .staff-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        object-fit: cover;
+    }
+</style>
+
+<div class="container-fluid py-4" dir="rtl">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-900 text-dark mb-1">طاقم العمل</h3>
+            <p class="text-muted small mb-0">إدارة الأساتذة والمستشارين النفسيين المسجلين في المنصة.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-white shadow-sm rounded-pill px-3 fw-bold small border">
+                <i class="bi bi-person-plus-fill me-1 text-teal"></i> إضافة عضو جديد
+            </button>
+        </div>
+    </div>
+
+    <div class="card staff-card overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 text-end">
+                    <thead>
+                        <tr>
+                            <th class="px-4">الاسم الكامل</th>
+                            <th>البريد الإلكتروني</th>
+                            <th>التصنيف الوظيفي</th>
+                            <th class="text-center">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (allStaff != null)
+                        {
+                            foreach (var member in allStaff)
+                            {
+                                <tr>
+                                    <td class="px-4">
+                                        <div class="d-flex align-items-center">
+                                            @{
+                                                var avatarColor = member.Type == "Teacher" ? "1eb2a6" : "7c3aed";
+                                            }
+                                            <img src="https://ui-avatars.com/api/?name=@member.FullName&background=@avatarColor&color=fff&bold=true&rounded=true"
+                                                 class="staff-avatar shadow-sm" alt="avatar">
+                                            <div class="ms-3">
+                                                <span class="fw-900 text-dark d-block small">@member.FullName</span>
+                                                <span class="text-muted" style="font-size: 0.65rem;">ID: #STF-@member.Id</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted small">@member.Email</span>
+                                    </td>
+                                    <td>
+                                        @if (member.Type == "Teacher")
+                                        {
+                                            <span class="badge rounded-pill badge-teacher px-3 py-2">
+                                                <i class="bi bi-mortarboard-fill me-1"></i> أستاذ بيداغوجي
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge rounded-pill badge-counselor px-3 py-2">
+                                                <i class="bi bi-heart-pulse-fill me-1"></i> مرشد نفسي
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <a asp-action="StaffDetails" asp-route-id="@member.Id" class="btn btn-details">
+                                            <i class="bi bi-info-circle me-1"></i> عرض الملف
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">لا يوجد أعضاء طاقم مسجلين حالياً.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

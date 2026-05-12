@@ -1,0 +1,242 @@
+﻿@using EduPsych_Web.Models
+@model Teacher
+
+@{
+    Layout = "_TeacherLayout";
+    ViewData["Title"] = "لوحة التحكم";
+
+    var pending = ViewBag.PendingRequests as IEnumerable<dynamic>;
+    var upcoming = ViewBag.UpcomingSessions as IEnumerable<dynamic>;
+    var teacherLessons = ViewBag.TeacherLessons as IEnumerable<dynamic>;
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<style>
+    :root {
+        --turq-color: #1eb2a6;
+        --turq-dark: #14837a;
+        --dark-navy: #0f172a;
+        --bg-light: #f8fafc;
+    }
+
+    body { background-color: var(--bg-light); font-family: 'Cairo', sans-serif; }
+
+    /* 1. تصميم الهيدر المطور */
+    .welcome-card {
+        background: linear-gradient(135deg, var(--dark-navy) 0%, #1e293b 100%);
+        border-radius: 20px;
+        padding: 35px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 30px;
+        border: none;
+    }
+    .welcome-card::after {
+        content: ''; position: absolute; top: -20px; left: -20px; width: 100px; height: 100px;
+        background: rgba(30, 178, 166, 0.2); border-radius: 50%;
+    }
+
+    /* 2. تصميم كروت الإحصائيات */
+    .stat-premium-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        border: none;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        transition: all 0.3s ease;
+        position: relative;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .stat-premium-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(30, 178, 166, 0.1); }
+    
+    .stat-icon-wrap {
+        width: 55px; height: 55px;
+        border-radius: 15px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem;
+        margin-bottom: 15px;
+    }
+
+    /* 3. تصميم المربعات الرئيسية */
+    .main-glass-card { background: white; border-radius: 20px; padding: 25px; border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.02); }
+    .btn-turq { background: var(--turq-color); color: white; border: none; border-radius: 10px; padding: 10px; font-weight: bold; width: 100%; transition: 0.3s; }
+    .btn-turq:hover { background: var(--turq-dark); color: white; transform: scale(1.02); }
+    
+    .request-item-card {
+        background: #fff; border-radius: 15px; padding: 18px; margin-bottom: 15px;
+        border: 1px solid #f1f5f9; transition: 0.3s;
+    }
+    .request-item-card:hover { border-color: var(--turq-color); background: #fafdfd; }
+
+    .date-badge {
+        background: var(--turq-color);
+        padding: 12px 25px;
+        font-size: 0.95rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(30, 178, 166, 0.2);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+</style>
+
+<div class="container-fluid py-4" dir="rtl">
+    
+    @* الهيدر الرئيسي الجديد مع التاريخ *@
+    <div class="welcome-card animate__animated animate__fadeIn">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="fw-900 mb-2">طاب يومك، أستاذ @Model.User.first_name</h2>
+                <p class="opacity-75 mb-0">نحن فخورون بوجودك معنا. إليك ملخص سريع لما تحتاج لمتابعته اليوم في منصة النخبة.</p>
+            </div>
+            <div class="col-md-4 text-md-start text-center mt-3 mt-md-0">
+                @* تم وضع التاريخ هنا مكان حساب معلم معتمد *@
+                <span class="badge date-badge animate__animated animate__flipInX animate__delay-1s">
+                    <i class="bi bi-calendar3 me-2"></i> @DateTime.Now.ToString("dd MMMM, yyyy")
+                </span>
+            </div>
+        </div>
+    </div>
+
+    @* كروت الإحصائيات *@
+    <div class="row g-4 mb-5 text-end">
+        <div class="col-md-6 animate__animated animate__fadeInUp">
+            <div class="stat-premium-card border-bottom border-4" style="border-color: var(--turq-color) !important;">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-icon-wrap" style="background: rgba(30, 178, 166, 0.1); color: var(--turq-color);">
+                            <i class="bi bi-wallet2"></i>
+                        </div>
+                        <span class="text-muted small fw-bold">الأرباح المتاحة للسحب</span>
+                        <h3 class="fw-900 mt-1 mb-0" style="color: var(--dark-navy)">@(ViewBag.WalletBalance ?? 0) <small style="font-size: 1rem">دج</small></h3>
+                    </div>
+                    <a href="@Url.Action("Wallet", "Teacher")" class="btn btn-light rounded-pill px-4 fw-bold shadow-sm" style="color: var(--turq-color)">إدارة المحفظة</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 animate__animated animate__fadeInUp animate__delay-1s">
+            <div class="stat-premium-card border-bottom border-4" style="border-color: var(--dark-navy) !important;">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-icon-wrap" style="background: rgba(15, 23, 42, 0.1); color: var(--dark-navy);">
+                            <i class="bi bi-collection-play"></i>
+                        </div>
+                        <span class="text-muted small fw-bold">إجمالي المحتوى التعليمي</span>
+                        <h3 class="fw-900 mt-1 mb-0" style="color: var(--dark-navy)">@(teacherLessons != null ? teacherLessons.Count() : 0) <small style="font-size: 1rem">درس منشور</small></h3>
+                    </div>
+                    <a href="@Url.Action("Lessons", "Teacher")" class="btn btn-light rounded-pill px-4 fw-bold shadow-sm text-dark">عرض المكتبة</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        @* جدول الحصص القادمة *@
+        <div class="col-lg-8">
+            <div class="main-glass-card text-end">
+                <h5 class="fw-bold mb-4 pb-2 border-bottom"><i class="bi bi-calendar-check me-2 text-teal" style="color: var(--turq-color)"></i> جدول الحصص المباشرة المعتمدة</h5>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="bg-light small">
+                            <tr>
+                                <th>اسم التلميذ</th>
+                                <th>عنوان الدرس</th>
+                                <th>التوقيت الرسمي</th>
+                                <th>رابط البث (Zoom/Meet)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (upcoming != null && upcoming.Any()) {
+                                @foreach (var s in upcoming) {
+                                    <tr>
+                                        <td class="fw-bold text-dark">@s.SName</td>
+                                        <td class="small text-muted">@s.LTitle</td>
+                                        <td>
+                                            <div class="small fw-bold">@s.Date.ToString("yyyy/MM/dd")</div>
+                                            <div class="badge rounded-pill bg-light text-dark border">@s.Date.ToString("HH:mm")</div>
+                                        </td>
+                                        <td>
+                                            <form asp-action="UpdateMeetingLink" method="post" class="d-flex gap-1">
+                                                <input type="hidden" name="sessionId" value="@s.Id" />
+                                                <input type="text" name="meetingLink" value="@s.Link" class="form-control form-control-sm border-light" placeholder="لصق الرابط هنا">
+                                                <button type="submit" class="btn btn-sm btn-turq" style="width: auto;"><i class="bi bi-save"></i></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            } else {
+                                <tr><td colspan="4" class="text-center py-5 text-muted small">لا توجد حصص مجدولة حالياً.</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        @* طلبات الحجز والعبارة التسويقية *@
+        <div class="col-lg-4">
+            <div class="main-glass-card text-end">
+                <h6 class="fw-bold mb-4 d-flex align-items-center">
+                    <i class="bi bi-lightning-fill text-warning me-2"></i> طلبات حجز جديدة
+                </h6>
+                
+                @if (pending != null && pending.Any()) {
+                    @foreach (var p in pending) {
+                        <div class="request-item-card shadow-sm">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="badge bg-soft-teal text-teal">@p.CName</span>
+                                <small class="text-muted">@p.Date.ToString("MM/dd")</small>
+                            </div>
+                            <div class="fw-bold text-dark mb-1">الطالب: @p.SName</div>
+                            <p class="small text-muted mb-3">حجز درس: @p.LTitle</p>
+                            
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <form asp-action="AcceptSession" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="sessionId" value="@p.Id" />
+                                        <button type="submit" class="btn-turq">قبول الطلب</button>
+                                    </form>
+                                </div>
+                                <div class="col-6">
+                                    <form asp-action="RejectSession" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="sessionId" value="@p.Id" />
+                                        <button type="submit" class="btn btn-light w-100 fw-bold" style="border-radius: 10px; padding: 10px;">رفض</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                } else {
+                    <div class="text-center py-4 bg-light rounded-4 mb-4">
+                        <p class="small text-muted mb-0">صندوق الطلبات فارغ حالياً.</p>
+                    </div>
+                }
+
+                @* العبارة التسويقية والتعليمية *@
+                <div class="mt-4 p-4 rounded-4 shadow-sm animate__animated animate__pulse animate__infinite animate__slow" style="background: #f0fdfa; border: 1px solid #ccfbf1;">
+                    <div class="d-flex align-items-start">
+                        <div class="text-teal me-3 fs-3" style="color: var(--turq-color)"><i class="bi bi-lightbulb-fill"></i></div>
+                        <div>
+                            <h6 class="fw-bold mb-1 text-dark" style="color: var(--turq-dark)">كيف تبدأ حصصك المباشرة؟</h6>
+                            <p class="extra-small mb-0 text-secondary" style="line-height: 1.6">
+                                الأمر بسيط! أنشئ رابط اجتماع عبر <b>Google Meet</b> أو <b>Zoom</b>، ثم قم بلصقه في الجدول بجانب اسم الطالب. سيصل الرابط للتلميذ فوراً ليبدأ التعلم معك.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .fw-900 { font-weight: 900; }
+    .extra-small { font-size: 0.75rem; }
+    .bg-soft-teal { background: rgba(30, 178, 166, 0.1); color: var(--turq-color); }
+</style>

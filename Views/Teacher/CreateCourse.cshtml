@@ -1,0 +1,96 @@
+﻿@model EduPsych_Web.Models.Course
+
+@{
+    ViewData["Title"] = "إضافة دورة جديدة";
+    Layout = "_TeacherLayout";
+}
+
+<div class="container mt-4 text-end" dir="rtl">
+    <div class="card shadow-sm border-0" style="border-radius: 15px;">
+        <div class="card-header bg-white py-3">
+            <h4 class="fw-bold m-0" style="color: #1eb2a6;">
+                <i class="bi bi-plus-circle-fill ms-2"></i>إنشاء دورة تعليمية جديدة
+            </h4>
+        </div>
+        <div class="card-body p-4">
+            <form asp-action="CreateCourse" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">عنوان الدورة</label>
+                        <input asp-for="title" class="form-control rounded-pill" placeholder="مثلاً: مراجعة الفيزياء للبكالوريا" required />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">السعر (دج)</label>
+                        <input asp-for="price" type="number" class="form-control rounded-pill" placeholder="0.00" required />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">المادة</label>
+                        <select asp-for="subject_id" class="form-select rounded-pill" required>
+                            <option value="">اختر المادة</option>
+                            @foreach (var sub in ViewBag.Subjects)
+                            {
+                                <option value="@sub.id">@sub.name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">المستوى الدراسي المستهدف</label>
+                        <select asp-for="class_id" class="form-select rounded-pill" required>
+                            <option value="">-- اختر الصف الدراسي --</option>
+                            @foreach (var cls in ViewBag.Classes)
+                            {
+                                <option value="@cls.id">@cls.name</option>
+                            }
+                        </select>
+                        <small class="text-info"><i class="bi bi-info-circle me-1"></i> هذا يضمن ظهور الدورة للتلاميذ في هذا المستوى فقط.</small>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">رابط الفيديو التعريفي (Youtube/Vimeo)</label>
+                        <input asp-for="promo_video_url" class="form-control rounded-pill" placeholder="https://youtube.com/..." />
+                    </div>
+
+                    <div class="col-12 mb-3">
+                        <label class="form-label fw-bold">وصف الدورة</label>
+                        <textarea asp-for="description" class="form-control" rows="4" style="border-radius: 15px;" placeholder="اكتب تفاصيل حول محتوى الدورة وما سيستفيده الطالب..."></textarea>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label fw-bold">صورة غلاف الدورة (Thumbnail)</label>
+                        <input type="file" name="thumbnail" class="form-control" style="border-radius: 10px;" accept="image/*" />
+                        <div class="form-text text-muted">هذه الصورة هي أول ما يراه التلميذ في المتجر.</div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success px-5 py-2 fw-bold rounded-pill">
+                        <i class="bi bi-cloud-arrow-up-fill ms-2"></i>حفظ ونشر الدورة
+                    </button>
+                    <a asp-action="Courses" class="btn btn-outline-secondary px-5 py-2 rounded-pill">إلغاء</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus, .form-select:focus {
+        border-color: #1eb2a6;
+        box-shadow: 0 0 0 0.25rem rgba(30, 178, 166, 0.25);
+    }
+    .btn-success {
+        background-color: #1eb2a6;
+        border-color: #1eb2a6;
+    }
+    .btn-success:hover {
+        background-color: #17998f;
+        border-color: #17998f;
+    }
+</style>

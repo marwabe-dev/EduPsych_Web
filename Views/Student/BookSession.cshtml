@@ -1,0 +1,195 @@
+﻿@model EduPsych_Web.Models.Teacher
+@{
+    ViewData["Title"] = "تأكيد الحجز - إبداع";
+    var sessionType = ViewBag.SessionType;
+    var lessonId = ViewBag.LessonId;
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    body {
+        background-color: #f4fdfc;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* الهيدر العائم */
+    .edu-header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(30, 178, 166, 0.1);
+        padding: 12px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 15px;
+        margin: 10px 20px;
+        z-index: 1000;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+        border-radius: 50px;
+    }
+
+    .text-turquoise { color: #1eb2a6 !important; }
+    .bg-turquoise { background-color: #1eb2a6 !important; }
+
+    /* بطاقة تأكيد الحجز */
+    .booking-card {
+        background: white;
+        border-radius: 40px;
+        border: none;
+        overflow: hidden;
+        box-shadow: 0 25px 50px rgba(30, 178, 166, 0.1) !important;
+    }
+
+    .booking-header {
+        background: linear-gradient(135deg, #1eb2a6 0%, #114b4d 100%);
+        padding: 40px 20px;
+        text-align: center;
+        color: white;
+    }
+
+    .teacher-circle-img {
+        width: 90px;
+        height: 90px;
+        border-radius: 30px; /* Squircle */
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        object-fit: cover;
+        margin-bottom: 15px;
+    }
+
+    /* تنسيق حقول الإدخال */
+    .form-control {
+        border-radius: 15px;
+        padding: 12px 20px;
+        border: 2px solid #eef7f6;
+        background-color: #fcfdfe;
+        transition: 0.3s;
+    }
+
+    .form-control:focus {
+        border-color: #1eb2a6;
+        box-shadow: 0 0 0 4px rgba(30, 178, 166, 0.1);
+        background-color: white;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    /* الأزرار */
+    .btn-confirm {
+        background: linear-gradient(135deg, #1eb2a6 0%, #15938a 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 15px;
+        font-weight: 700;
+        border: none;
+        transition: 0.3s;
+    }
+
+    .btn-confirm:hover {
+        background: #114b4d;
+        color: white;
+        box-shadow: 0 10px 20px rgba(30, 178, 166, 0.2);
+        transform: translateY(-2px);
+    }
+
+    /* شارة نوع الحصة */
+    .type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .bg-online { background: rgba(30, 178, 166, 0.1); color: #1eb2a6; }
+    .bg-person { background: rgba(36, 122, 125, 0.1); color: #247a7d; }
+</style>
+
+<div class="container-fluid p-0 text-end" dir="rtl">
+
+    <header class="edu-header">
+        <div class="d-flex align-items-center">
+            <h3 class="m-0 fw-bold text-turquoise">إبـداع</h3>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="javascript:history.back()" class="btn btn-light rounded-pill px-4 shadow-sm border text-turquoise fw-bold">تراجع</a>
+        </div>
+    </header>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                
+                <div class="booking-card shadow-lg">
+                    <div class="booking-header">
+                        <img src="https://ui-avatars.com/api/?name=@(Model.User?.first_name)+@(Model.User?.last_name)&background=fff&color=1eb2a6&size=128"
+                             class="teacher-circle-img shadow-sm">
+                        <h4 class="fw-bold mb-1">أ. @Model.User?.first_name @Model.User?.last_name</h4>
+                        <p class="opacity-75 mb-3">تأكيد تفاصيل الموعد التعليمي</p>
+                        
+                        <div class="type-badge @(sessionType == "Online" ? "bg-online" : "bg-person")">
+                            @if(sessionType == "Online") {
+                                <i class="bi bi-laptop"></i> <span>حصة عبر الإنترنت</span>
+                            } else {
+                                <i class="bi bi-geo-alt"></i> <span>حصة حضورية</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4 p-md-5">
+                        <form asp-action="ConfirmBooking" asp-controller="Student" method="post">
+                            @Html.AntiForgeryToken()
+                            
+                            <input type="hidden" name="lessonId" value="@lessonId" />
+                            <input type="hidden" name="type" value="@sessionType" />
+
+                            <div class="mb-4">
+                                <label class="form-label"><i class="bi bi-calendar-event ms-2 text-turquoise"></i>اختر التاريخ والوقت:</label>
+                                <input type="datetime-local" name="scheduledAt" class="form-control" required
+                                       min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")">
+                                <small class="text-muted mt-2 d-block">يرجى اختيار وقت يناسب جدولك الدراسي.</small>
+                            </div>
+
+                            @if (sessionType == "In-Person")
+                            {
+                                <div class="mb-4">
+                                    <label class="form-label"><i class="bi bi-map ms-2 text-turquoise"></i>اقتراح مكان اللقاء (اختياري):</label>
+                                    <input type="text" name="location" class="form-control" placeholder="مثلاً: المكتبة المركزية، قاعة الدعم...">
+                                </div>
+                            }
+
+                            <div class="info-box bg-light p-3 rounded-4 mb-4 border-end border-turquoise border-4">
+                                <p class="small m-0 text-muted">
+                                    <i class="bi bi-info-circle-fill text-turquoise ms-1"></i>
+                                    عند الضغط على تأكيد، سيتم إرسال طلبك للأستاذ. ستتلقى تنبيهاً فور قبول الموعد.
+                                </p>
+                            </div>
+
+                            <div class="d-grid gap-3">
+                                <button type="submit" class="btn btn-confirm btn-lg">
+                                    تأكيد طلب الحجز <i class="bi bi-check-all me-2"></i>
+                                </button>
+                                <a href="javascript:history.back()" class="btn btn-light rounded-pill py-3 fw-bold text-muted border-0">
+                                    إلغاء العملية
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <p class="text-muted small">هل واجهت مشكلة؟ <a href="#" class="text-turquoise fw-bold text-decoration-none">اتصل بالدعم الفني</a></p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

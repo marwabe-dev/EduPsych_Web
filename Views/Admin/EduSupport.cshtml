@@ -1,0 +1,181 @@
+﻿@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "مركز الدعم البيداغوجي";
+    var teachers = ViewBag.TeacherStats as IEnumerable<dynamic>;
+}
+
+<style>
+    :root {
+        --brand-teal: #1eb2a6;
+        --brand-dark: #0f172a;
+    }
+
+    /* الكروت العلوية المحدثة */
+    .edu-stat-card {
+        border: none;
+        border-radius: 20px;
+        transition: 0.3s;
+    }
+
+    .card-teal-gradient {
+        background: linear-gradient(135deg, var(--brand-teal) 0%, #149187 100%);
+        color: white;
+    }
+
+    .icon-box-light {
+        width: 55px; height: 55px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        display: flex; align-items: center; justify-content: center;
+    }
+
+    /* جدول الأساتذة */
+    .teacher-table thead th {
+        background-color: #f8fafc;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 0.8rem;
+        border: none;
+        padding: 1.25rem 1rem;
+    }
+
+    .teacher-avatar-box {
+        width: 40px; height: 40px;
+        background-color: #f0fdfa;
+        color: var(--brand-teal);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    /* تصنيفات الأداء */
+    .badge-performance {
+        padding: 6px 14px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.75rem;
+    }
+
+    .perf-high { background: #ecfdf5; color: #10b981; border: 1px solid #d1fae5; }
+    .perf-active { background: #eff6ff; color: #3b82f6; border: 1px solid #dbeafe; }
+    .perf-none { background: #f8fafc; color: #94a3b8; border: 1px solid #e2e8f0; }
+</style>
+
+<div class="container-fluid py-4" dir="rtl">
+    
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <h3 class="fw-900 text-dark mb-1">مركز الدعم البيداغوجي</h3>
+            <p class="text-muted small">تحليل أداء الأساتذة، حجم المبيعات، ومعدل استهلاك الدروس الخصوصية.</p>
+        </div>
+        <div class="col-md-4 text-start">
+            <button class="btn btn-white shadow-sm rounded-pill px-4 fw-bold border btn-sm">
+                <i class="bi bi-funnel me-1"></i> فلترة النتائج
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card edu-stat-card card-teal-gradient shadow-lg p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 fw-bold opacity-75 small">إجمالي مبيعات الدروس</p>
+                        <h2 class="fw-900 mb-0">@teachers.Sum(x => (decimal)x.Revenue).ToString("N0") <small class="fs-6">دج</small></h2>
+                    </div>
+                    <div class="icon-box-light">
+                        <i class="bi bi-cash-coin fs-2 text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card edu-stat-card bg-white shadow-sm p-4 border-end border-teal border-5" style="border-right-color: var(--brand-teal) !important;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 fw-bold small">إجمالي الجلسات التعليمية</p>
+                        <h2 class="fw-900 mb-0 text-dark">@teachers.Sum(x => (int)x.LessonCount) <small class="fs-6 text-muted">حصة</small></h2>
+                    </div>
+                    <div class="icon-box-light bg-light">
+                        <i class="bi bi-mortarboard fs-2 text-teal" style="color: var(--brand-teal);"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white py-4 px-4 border-0">
+            <h6 class="fw-900 mb-0"><i class="bi bi-bar-chart-line-fill text-teal me-2" style="color: var(--brand-teal);"></i> ترتيب الأساتذة حسب الكفاءة المالية</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 teacher-table text-end">
+                <thead>
+                    <tr>
+                        <th class="px-4">الأستاذ</th>
+                        <th>النشاط التعليمي</th>
+                        <th>إجمالي العوائد</th>
+                        <th class="text-center">تقييم الأداء الإداري</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (teachers != null && teachers.Any())
+                    {
+                        foreach (var t in teachers)
+                        {
+                            <tr>
+                                <td class="px-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="teacher-avatar-box ms-3">
+                                            <i class="bi bi-person-workspace"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-900 text-dark small">@t.FullName</div>
+                                            <small class="text-muted" style="font-size: 0.65rem;">أستاذ مادة تخصص</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge rounded-pill bg-light text-dark border px-3 fw-bold">
+                                        @t.LessonCount حصة
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="fw-900 text-dark">@t.Revenue.ToString("N0")</span>
+                                    <small class="text-muted">دج</small>
+                                </td>
+                                <td class="text-center">
+                                    @if (t.Revenue > 10000)
+                                    {
+                                        <span class="badge-performance perf-high">
+                                            <i class="bi bi-star-fill me-1"></i> أداء استثنائي
+                                        </span>
+                                    }
+                                    else if (t.LessonCount > 0)
+                                    {
+                                        <span class="badge-performance perf-active">
+                                            أستاذ نشط
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-performance perf-none">
+                                            بدون نشاط
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-5">لا توجد بيانات بيداغوجية حالياً.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

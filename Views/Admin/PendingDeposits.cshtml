@@ -1,0 +1,126 @@
+﻿@model IEnumerable<EduPsych_Web.Models.DepositRequest>
+
+<div class="container-fluid mt-4 text-end" dir="rtl">
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold m-0"><i class="bi bi-clock-history ms-2"></i> طلبات الشحن قيد الانتظار</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>التلميذ</th>
+                                <th>المبلغ</th>
+                                <th>الوصل</th>
+                                <th>التاريخ</th>
+                                <th>الإجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.Any())
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center py-5 text-muted">لا توجد طلبات شحن معلقة حالياً</td>
+                                </tr>
+                            }
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.Student.User.first_name @item.Student.User.last_name</td>
+                                    <td class="fw-bold text-primary">@item.amount دج</td>
+                                    <td>
+                                        <a href="@item.receipt_image_url" target="_blank" class="btn btn-sm btn-outline-info">
+                                            <i class="bi bi-eye"></i> عرض الوصل
+                                        </a>
+                                    </td>
+                                    <td class="small">@item.created_at.ToString("yyyy/MM/dd")</td>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            <form asp-action="ApproveDeposit" method="post">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="requestId" value="@item.id" />
+                                                <button type="submit" class="btn btn-sm btn-success px-3 shadow-sm">قبول</button>
+                                            </form>
+                                            
+                                            <button class="btn btn-sm btn-danger px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#rejectModal@(item.id)">رفض</button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                @* مودال الرفض الخاص بكل طلب *@
+                                <div class="modal fade" id="rejectModal@(item.id)" tabindex="-1">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content border-0 shadow-lg rounded-4">
+                                            <form asp-action="RejectDeposit" method="post">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@item.id" />
+                                                <div class="modal-header border-0 pb-0">
+                                                    <h5 class="fw-bold text-danger">تأكيد رفض الطلب</h5>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <label class="form-label small fw-bold text-secondary">سبب الرفض (سيصل كإشعار للتلميذ):</label>
+                                                    <textarea name="reason" class="form-control rounded-3" rows="3" placeholder="مثلاً: صورة الوصل غير واضحة..." required></textarea>
+                                                </div>
+                                                <div class="modal-footer border-0">
+                                                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">إلغاء</button>
+                                                    <button type="submit" class="btn btn-danger rounded-pill px-4">إرسال الرفض</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 position-sticky" style="top: 100px;">
+                <div class="card-header py-3 rounded-top-4" style="background-color: #0f172a; color: white;">
+                    <h6 class="m-0 fw-bold"><i class="bi bi-tags-fill ms-2 text-teal"></i> أسعار الدورات المنشورة</h6>
+                </div>
+                <div class="card-body p-0 overflow-auto" style="max-height: 500px;">
+                    <ul class="list-group list-group-flush">
+                        @if (ViewBag.CoursePrices != null && ((IEnumerable<dynamic>)ViewBag.CoursePrices).Any())
+                        {
+                            @foreach (var course in (IEnumerable<dynamic>)ViewBag.CoursePrices)
+                            {
+                                <li class="list-group-item py-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small fw-bold text-dark">@course.title</span>
+                                        <span class="badge rounded-pill bg-teal-soft text-teal">@course.price دج</span>
+                                    </div>
+                                    <small class="text-muted extra-small">نظام: الدفع مقابل الدورة</small>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="list-group-item text-center py-5 text-muted small">
+                                <i class="bi bi-info-circle d-block mb-2 fs-4"></i>
+                                لا توجد دورات مضافة من قبل الأساتذة حالياً
+                            </li>
+                        }
+                    </ul>
+                </div>
+                <div class="card-footer bg-light small text-muted text-center py-3 border-0 rounded-bottom-4">
+                    <i class="bi bi-info-circle ms-1"></i> يتم تحديث هذه الأسعار تلقائياً عند إضافة أي محتوى جديد.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ألوان النخبة المخصصة */
+    .text-teal { color: #1eb2a6 !important; }
+    .bg-teal-soft { background-color: rgba(30, 178, 166, 0.1); color: #1eb2a6; }
+    .table thead th { font-size: 0.82rem; color: #64748b; font-weight: 700; border-bottom-width: 1px; }
+    .extra-small { font-size: 0.7rem; }
+    .btn-sm { padding: 0.45rem 1rem; font-weight: 700; border-radius: 8px; }
+    .card { box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); }
+</style>

@@ -1,0 +1,78 @@
+﻿@model IEnumerable<EduPsych_Web.Models.Class>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <title>اختيار الصف الدراسي - EduPsych</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+        .page-header { background: #00b894; color: white; padding: 40px 0; margin-bottom: 40px; border-radius: 0 0 30px 30px; }
+        .class-card {
+            border: none;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .class-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border: 2px solid #00b894;
+        }
+        .class-icon { font-size: 50px; color: #00b894; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <div class="page-header text-center shadow">
+        <div class="container">
+            <h2 class="fw-bold"><i class="fas fa-graduation-cap"></i> اختيار الصف الدراسي</h2>
+            <p>من فضلك اختر الصف الذي تدرس فيه حالياً</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row g-4">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <div class="col-md-4 col-lg-3">
+                        <a href="@Url.Action("SelectStream", "Student", new { classId = item.id })" class="text-decoration-none text-dark">
+                            <div class="card class-card p-4">
+                                <div class="class-icon">
+                                    <i class="fas fa-chalkboard"></i>
+                                </div>
+                                <h4 class="fw-bold">@item.name</h4>
+                                <span class="badge bg-light text-dark border">اضغط للاختيار</span>
+                            </div>
+                        </a>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <p class="text-muted">لا توجد صفوف دراسية مضافة حالياً في قاعدة البيانات.</p>
+                </div>
+            }
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="@Url.Action("Index", "Student")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-right"></i> العودة للرئيسية
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>

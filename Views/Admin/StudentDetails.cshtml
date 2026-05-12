@@ -1,0 +1,216 @@
+﻿@model EduPsych_Web.Models.Student
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "تفاصيل التلميذ";
+    var payments = ViewBag.Payments as List<EduPsych_Web.Models.Payment>;
+    var eduSessions = ViewBag.EduSessions as List<EduPsych_Web.Models.EducationalSession>;
+    var psychSessions = ViewBag.PsychSessions as List<EduPsych_Web.Models.CounselSession>;
+}
+
+<style>
+    :root {
+        --brand-teal: #1eb2a6;
+        --brand-dark: #0f172a;
+    }
+
+    /* كارت الهوية العلوي */
+    .profile-header-card {
+        background: linear-gradient(135deg, var(--brand-dark) 0%, #1e293b 100%);
+        border-radius: 24px;
+        color: white;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .profile-header-card ::after {
+        content: "";
+        position: absolute;
+        top: -50px;
+        left: -50px;
+        width: 150px;
+        height: 150px;
+        background: rgba(30, 178, 166, 0.1);
+        border-radius: 50%;
+    }
+
+    /* كروت الإحصائيات المصغرة */
+    .revenue-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+    }
+
+    /* التبويبات */
+    .nav-custom {
+        background: #f8fafc;
+        padding: 6px;
+        border-radius: 14px;
+        display: inline-flex;
+    }
+
+    .nav-custom .nav-link {
+        border-radius: 10px;
+        padding: 8px 20px;
+        color: #64748b;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .nav-custom .nav-link.active {
+        background: white !important;
+        color: var(--brand-teal) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    /* الجداول والقوائم */
+    .details-panel {
+        background: white;
+        border-radius: 24px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+    }
+
+    .table thead th {
+        background: #f8fafc;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: none;
+        padding: 1rem;
+    }
+
+    .badge-edu { background: rgba(30, 178, 166, 0.1); color: var(--brand-teal); }
+    .badge-psych { background: rgba(124, 58, 237, 0.1); color: #7c3aed; }
+
+    .payment-item {
+        transition: 0.2s;
+        border-radius: 12px;
+        margin-bottom: 8px;
+        border: 1px solid #f1f5f9;
+    }
+    .payment-item:hover { background: #fcfdfe; border-color: var(--brand-teal); }
+</style>
+
+<div class="container-fluid py-4" dir="rtl">
+    
+    <div class="card profile-header-card border-0 shadow-lg mb-4">
+        <div class="card-body p-4 p-md-5">
+            <div class="row align-items-center">
+                <div class="col-md-7">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://ui-avatars.com/api/?name=@Model.User?.first_name+@Model.User?.last_name&background=1eb2a6&color=fff&size=128" 
+                             class="rounded-circle border border-4 border-white shadow-sm me-3" width="80">
+                        <div class="ms-3">
+                            <h1 class="fw-900 mb-1">@Model.User?.first_name @Model.User?.last_name</h1>
+                            <span class="badge rounded-pill bg-success-subtle text-success">
+                                <i class="bi bi-patch-check-fill me-1"></i> تلميذ نشط
+                            </span>
+                            <span class="text-white-50 ms-2 small">| قسم @Model.Class?.name</span>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3">
+                        <div class="small text-white-50"><i class="bi bi-envelope me-1"></i> @Model.User?.email</div>
+                        <div class="small text-white-50"><i class="bi bi-calendar-event me-1"></i> عضو منذ @Model.User?.created_at.ToString("yyyy/MM")</div>
+                    </div>
+                </div>
+                <div class="col-md-5 mt-4 mt-md-0">
+                    <div class="revenue-card p-4 text-center text-md-start">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="text-white-50 small mb-1 fw-bold">إجمالي المدفوعات المحصلة</p>
+                                <h2 class="fw-900 mb-0">@ViewBag.TotalRevenue.ToString("N0") <small class="fs-6">دج</small></h2>
+                            </div>
+                            <div class="icon-box bg-white text-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                <i class="bi bi-currency-dollar fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card details-panel p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div class="nav nav-custom" id="pills-tab" role="tablist">
+                <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#pills-history">سجل الخدمات</button>
+                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#pills-payments">السجل المالي</button>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-light rounded-pill px-3 fw-bold text-muted"><i class="bi bi-printer me-1"></i> طباعة التقرير</button>
+                <a asp-action="Students" class="btn btn-sm btn-teal-light rounded-pill px-3 fw-bold text-teal" style="background:#f0fdfa; color:#1eb2a6;">العودة للقائمة</a>
+            </div>
+        </div>
+
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="pills-history">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="vr me-2 text-teal" style="width: 4px; height: 20px; border-radius: 2px;"></div>
+                    <h6 class="fw-900 mb-0">الجلسات التعليمية والنفسية المستهلكة</h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle text-end">
+                        <thead>
+                            <tr>
+                                <th class="px-4">النوع</th>
+                                <th>الموضوع / المسؤول</th>
+                                <th>التاريخ والوقت</th>
+                                <th class="text-center">الحالة الضريبية</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in eduSessions)
+                            {
+                                <tr>
+                                    <td class="px-4"><span class="badge rounded-pill badge-edu px-3 py-2 small">تعليمية</span></td>
+                                    <td class="fw-bold text-dark">@s.Lesson?.title</td>
+                                    <td class="text-muted small">@s.scheduled_at.ToString("yyyy/MM/dd | HH:mm")</td>
+                                    <td class="text-center"><span class="text-success fw-bold small"><i class="bi bi-check-circle-fill me-1"></i> تم الدفع</span></td>
+                                </tr>
+                            }
+                            @foreach (var p in psychSessions)
+                            {
+                                <tr>
+                                    <td class="px-4"><span class="badge rounded-pill badge-psych px-3 py-2 small">نفسية</span></td>
+                                    <td class="fw-bold text-dark">المرشد النفسي (ID: @p.Counselor?.id)</td>
+                                    <td class="text-muted small">@p.scheduled_at.ToString("yyyy/MM/dd | HH:mm")</td>
+                                    <td class="text-center"><span class="text-success fw-bold small"><i class="bi bi-check-circle-fill me-1"></i> تم الدفع</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="pills-payments">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="vr me-2 text-success" style="width: 4px; height: 20px; border-radius: 2px;"></div>
+                    <h6 class="fw-900 mb-0">كشف العمليات المالية الناجحة</h6>
+                </div>
+                <div class="row g-3">
+                    @foreach (var pay in payments)
+                    {
+                        <div class="col-md-6">
+                            <div class="payment-item p-3 d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded-3 p-2 me-3">
+                                        <i class="bi bi-receipt text-teal fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-900 text-dark small">عملية دفع #@pay.id</div>
+                                        <div class="text-muted small" style="font-size: 0.7rem;">تاريخ المعالجة: @pay.created_at.ToShortDateString()</div>
+                                    </div>
+                                </div>
+                                <div class="text-start">
+                                    <div class="fw-900 text-success">@pay.amount.ToString("N0") دج</div>
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.6rem;">مكتمل ومؤكد</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

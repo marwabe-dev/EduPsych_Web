@@ -1,0 +1,132 @@
+﻿@model IEnumerable<EduPsych_Web.Models.Course>
+@{
+    Layout = "_Layout";
+    var enrolledIds = ViewBag.EnrolledCourseIds as List<long>;
+    var userName = Context.Session.GetString("UserName") ?? "تلميذنا";
+}
+
+<style>
+    body {
+        background-color: #f0f7f7;
+        font-family: 'Cairo', sans-serif;
+    }
+    /* إخفاء الهيدر العام لاستخدام الهيدر العائم الخاص بك */
+    nav, .sidebar, header:not(.edu-header) {
+        display: none !important;
+    }
+
+    .edu-header {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(30, 178, 166, 0.15);
+        padding: 12px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 15px;
+        margin: 10px 20px 30px;
+        z-index: 1050;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        border-radius: 50px;
+    }
+
+    .course-card {
+        border-radius: 30px;
+        border: none;
+        transition: 0.3s;
+        overflow: hidden;
+        background: white;
+    }
+
+        .course-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+        }
+
+    .alert-custom {
+        border-radius: 50px;
+        margin: 10px 20px;
+        text-align: center;
+        font-weight: bold;
+    }
+</style>
+
+<div class="container-fluid p-0 text-end" dir="rtl">
+    <header class="edu-header">
+        <div class="d-flex align-items-center">
+            <div class="bg-info text-white p-2 rounded-3 ms-3" style="background-color:#1eb2a6 !important">
+                <i class="bi bi-shop"></i>
+            </div>
+            <h4 class="m-0 fw-bold text-dark">متجر <span style="color:#1eb2a6">الدورات</span></h4>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("Index", "Student")" class="btn btn-light rounded-pill px-3 border shadow-sm fw-bold">
+                <i class="bi bi-house-door ms-1"></i> الرئيسية
+            </a>
+        </div>
+    </header>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-custom shadow-sm animate__animated animate__fadeInDown">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-custom shadow-sm animate__animated animate__fadeInDown">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+        </div>
+    }
+
+    <div class="container mt-4">
+        <div class="row">
+            @if (!Model.Any())
+            {
+                <div class="col-12 text-center py-5">
+                    <i class="bi bi-box2-heart text-muted display-1"></i>
+                    <h4 class="text-muted mt-3">لا توجد دورات متاحة حالياً.. انتظرنا قريباً!</h4>
+                </div>
+            }
+            else
+            {
+                @foreach (var course in Model)
+                {
+                    bool isBought = enrolledIds?.Contains(course.id) ?? false;
+                    <div class="col-md-4 mb-4">
+                        <div class="card course-card shadow-sm h-100">
+                            <img src="@(string.IsNullOrEmpty(course.thumbnail_url) ? "/images/default.jpg" : course.thumbnail_url)" class="card-img-top" style="height:200px; object-fit:cover;">
+                            <div class="card-body">
+                                <h5 class="fw-bold">@course.title</h5>
+                                <p class="text-muted small">@course.description</p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <span class="fw-bold text-success fs-5">@course.price دج</span>
+                                    
+                                    @if (isBought)
+                                    {
+                                        <a href="@Url.Action("ViewCourse", "Student", new { id = course.id })" class="btn btn-success rounded-pill px-4 shadow-sm">
+                                            <i class="bi bi-play-fill me-1"></i> دخول
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        @* نموذج إرسال طلب الشراء إلى الكنترولر *@
+                                        <form asp-action="BuyCourse" asp-controller="Student" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="courseId" value="@course.id" />
+                                            <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm"
+                                                    onclick="return confirm('هل أنت متأكد من رغبتك في شراء هذه الدورة؟')">
+                                                <i class="bi bi-cart-plus me-1"></i> شراء الآن
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>

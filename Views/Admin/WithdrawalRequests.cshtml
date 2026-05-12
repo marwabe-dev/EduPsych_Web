@@ -1,0 +1,134 @@
+﻿@model IEnumerable<EduPsych_Web.Models.WithdrawalRequest>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "إدارة السحوبات";
+}
+
+<style>
+    .btn-teal { background: #1eb2a6; color: white; border: none; }
+    .btn-teal:hover { background: #179b91; color: white; }
+    .finance-info { background: #f8fafb; padding: 8px; border-radius: 10px; border: 1px solid #edf2f7; }
+    
+    /* حل قسري لمشكلة التضليل */
+    .modal-backdrop { display: none !important; }
+    body.modal-open { overflow: auto !important; padding-right: 0 !important; }
+</style>
+
+<div class="dashboard-container p-4 text-end" dir="rtl">
+    <h4 class="fw-900 text-dark mb-4">إدارة طلبات سحب الأرباح</h4>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light fw-bold small">
+                    <tr>
+                        <th class="py-3">الأستاذ</th>
+                        <th>بيانات الحساب (CCP/RIB)</th>
+                        <th>المبلغ</th>
+                        <th>الحالة</th>
+                        <th class="text-center">الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-bold">@item.Teacher?.User?.first_name @item.Teacher?.User?.last_name</div>
+                                <small class="text-muted">@item.CreatedAt.ToString("yyyy/MM/dd HH:mm")</small>
+                            </td>
+                            <td>
+                                <div class="finance-info small">
+                                    <div><i class="bi bi-credit-card ms-1"></i> <b>CCP:</b> @(item.Teacher?.ccp_number ?? "---")</div>
+                                    <div><i class="bi bi-bank ms-1"></i> <b>RIB:</b> @(item.Teacher?.rib_number ?? "---")</div>
+                                </div>
+                            </td>
+                            <td class="fw-bold text-success">@item.Amount.ToString("N0") دج</td>
+                            <td>
+                                <span class="badge rounded-pill @(item.Status == "Pending" ? "bg-warning text-dark" : "bg-success") px-3">
+                                    @item.Status
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                @if (item.Status == "Pending")
+                                {
+                                    <button class="btn btn-sm btn-teal rounded-pill px-4"
+                                            onclick="openApproveModal('@item.Id', '@item.Amount', '@(item.Teacher?.User?.first_name) @(item.Teacher?.User?.last_name)')">
+                                        تحويل ورفع وصل
+                                    </button>
+                                }
+                                else
+                                {
+                                    <a href="@item.TransferReceiptUrl" target="_blank" class="btn btn-sm btn-light border rounded-pill">
+                                        عرض الوصل
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* التعديل: إضافة data-bs-backdrop="false" لمنع الطبقة السوداء نهائياً *@
+<div class="modal fade shadow-lg" id="approveModal" tabindex="-1" aria-hidden="true" 
+     style="z-index: 2050;" data-bs-backdrop="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden" style="border: 1px solid #eee !important;">
+            <div class="modal-header bg-light border-0">
+                <h5 class="fw-bold m-0 text-dark">تأكيد عملية التحويل للأستاذ</h5>
+                <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="ApproveWithdrawal" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="modal-body p-4 text-end">
+                    <input type="hidden" name="requestId" id="modalRequestId" />
+                    
+                    <div class="p-3 rounded-3 mb-3" style="background: #e6fffa; border: 1px solid #b2f5ea;">
+                        <div class="small text-muted">اسم الأستاذ: <b id="modalTeacherName" class="text-dark"></b></div>
+                        <div class="fw-bold text-dark fs-5 mt-1">المبلغ: <span id="modalAmountDisplay"></span> دج</div>
+                    </div>
+
+                    <label class="form-label small fw-bold">قم برفع صورة الوصل (BaridiMob أو CCP):</label>
+                    <input type="file" name="receiptFile" class="form-control mb-2 shadow-sm" accept="image/*" required />
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4 shadow-sm" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-teal rounded-pill px-4 shadow-sm fw-bold">إرسال الوصل وتأكيد</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openApproveModal(id, amount, teacherName) {
+            // 1. تعبئة البيانات
+            document.getElementById('modalRequestId').value = id;
+            document.getElementById('modalAmountDisplay').innerText = amount;
+            document.getElementById('modalTeacherName').innerText = teacherName;
+            
+            // 2. تنظيف قسري لأي تضليل عالق أو قديم
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').css('padding-right', '');
+
+            // 3. فتح المودال مع تعطيل التضليل برمجياً
+            var modalElement = document.getElementById('approveModal');
+            var myModal = new bootstrap.Modal(modalElement, {
+                backdrop: false,
+                keyboard: true
+            });
+            
+            myModal.show();
+        }
+        
+        // إجراء إضافي: التأكد من حذف التضليل في حال تم إغلاق المودال يدوياً
+        $(document).on('hidden.bs.modal', '.modal', function () {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open');
+        });
+    </script>
+}

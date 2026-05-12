@@ -1,0 +1,105 @@
+﻿@model EduPsych_Web.Models.Teacher
+
+@{
+    Layout = "_TeacherLayout";
+    ViewData["Title"] = "الملف الشخصي للتخصص";
+    
+    // جلب الجلسات من ViewBag بدلاً من الموديل لتجنب أخطاء التعليق والعمود الوهمي
+    var sessions = ViewBag.TeacherSessions as IEnumerable<EduPsych_Web.Models.EducationalSession>;
+    var confirmedSessionsCount = sessions?.Count(s => s.status == "Confirmed" || s.status == "Paid") ?? 0;
+}
+
+<div class="container-fluid" dir="rtl">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                <div class="card-header bg-white border-0 pt-4 text-center">
+                    <div class="avatar-placeholder mb-3">
+                        <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                            <i class="bi bi-person-badge fs-1 text-primary"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold">@Model.User?.first_name @Model.User?.last_name</h4>
+                    <span class="badge bg-soft-primary text-primary px-3 py-2 rounded-pill">
+                        أستاذ @(Model.Specialization?.name ?? "تخصص غير محدد")
+                    </span>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        @* معلومات الحساب *@
+                        <div class="col-md-6 text-end">
+                            <label class="text-muted small d-block mb-1">البريد الإلكتروني</label>
+                            <p class="fw-bold border-bottom pb-2">
+                                <i class="bi bi-envelope me-2 text-primary"></i> @Model.User?.email
+                            </p>
+                        </div>
+                        
+                        <div class="col-md-6 text-end">
+                            <label class="text-muted small d-block mb-1">رقم الهاتف</label>
+                            <p class="fw-bold border-bottom pb-2">
+                                <i class="bi bi-telephone me-2 text-primary"></i> @(Model.User?.phone_number ?? "غير مسجل")
+                            </p>
+                        </div>
+
+                        @* معلومات التخصص *@
+                        <div class="col-12 text-end">
+                            <div class="p-3 bg-light rounded-3">
+                                <h6 class="fw-bold"><i class="bi bi-info-circle me-2"></i> نبذة عن التخصص</h6>
+                                <p class="mb-0 text-secondary">
+                                    @if (!string.IsNullOrEmpty(Model.bio))
+                                    {
+                                        @Model.bio
+                                    }
+                                    else
+                                    {
+                                        <span>أستاذ متخصص في تدريس مادة @(Model.Specialization?.name) لمختلف المستويات التعليمية، مع التركيز على المنهج الدراسي الوطني.</span>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+
+                        @* إحصائيات سريعة *@
+                        <div class="col-md-4 text-center">
+                            <div class="p-3 border rounded-3">
+                                <h5 class="fw-bold mb-1 text-primary">@(ViewBag.LessonsCount ?? 0)</h5>
+                                <small class="text-muted">درس منشور</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 text-center">
+                            <div class="p-3 border rounded-3">
+                                <h5 class="fw-bold mb-1 text-success">@(ViewBag.ConfirmedSessionsCount ?? 0)</h5>
+                                <small class="text-muted">حصة مكتملة</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 text-center">
+                            <div class="p-3 border rounded-3">
+                                <h5 class="fw-bold mb-1 text-warning">@(Model.created_at.ToString("yyyy/MM"))</h5>
+                                <small class="text-muted">تاريخ الانضمام</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white border-0 p-4 pt-0">
+                    <button class="btn btn-main w-100 py-3 fw-bold" onclick="window.print()">
+                        <i class="bi bi-printer me-2"></i> طباعة بيانات الاعتماد
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-soft-primary { background-color: #e0f2fe; }
+    .btn-main { background-color: #1eb2a6; color: white; border-radius: 10px; transition: 0.3s; }
+    .btn-main:hover { background-color: #14837a; color: white; }
+    /* تنسيق للطباعة */
+    @@media print {
+        .btn-main, .sidebar, .navbar { display: none !important; }
+        .card { border: 1px solid #eee !important; box-shadow: none !important; }
+    }
+</style>

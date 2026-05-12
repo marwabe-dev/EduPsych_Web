@@ -1,0 +1,304 @@
+﻿@model EduPsych_Web.Models.TeacherWallet
+
+@{
+    ViewData["Title"] = "المحفظة والسحوبات";
+    Layout = "~/Views/Shared/_TeacherLayout.cshtml";
+}
+
+<style>
+    /* تصميم النافذة المنبثقة اليدوية المضمونة */
+    .custom-overlay {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.6); z-index: 9999; backdrop-filter: blur(5px);
+    }
+    .custom-modal {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        background: white; padding: 25px; border-radius: 20px; width: 95%; max-width: 450px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+    .close-modal { cursor: pointer; float: left; font-size: 24px; color: #999; line-height: 1; }
+    .close-modal:hover { color: red; }
+    
+    /* تنسيقات الجداول */
+    .table-responsive { max-height: 400px; overflow-y: auto; }
+    .student-name { color: #1eb2a6; font-weight: 600; font-size: 0.85rem; }
+    .item-title { font-weight: bold; display: block; margin-bottom: 2px; }
+
+    /* تنسيقات إضافية للسجلات */
+    .badge-pending { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+    .badge-approved { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+</style>
+
+<div class="container mt-4 text-end" dir="rtl">
+    
+    @* عرض التنبيهات العامة *@
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success rounded-4 mb-4 border-0 shadow-sm animate__animated animate__fadeIn">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+        </div>
+    }
+
+    @* 1. تنبيه البيانات المالية الناقصة (الجديد) *@
+    @if (string.IsNullOrEmpty(Model.Teacher?.ccp_number))
+    {
+        <div class="alert alert-warning border-0 shadow-sm mb-4 d-flex align-items-center rounded-4 p-3 animate__animated animate__pulse">
+            <i class="bi bi-exclamation-triangle-fill fs-3 me-3 text-warning"></i>
+            <div class="flex-grow-1">
+                <strong class="d-block mb-1">بيانات الدفع ناقصة!</strong>
+                <p class="small mb-0 text-dark">يرجى إضافة رقم الـ CCP أو RIB الخاص بك لكي نتمكن من تحويل أرباحك إليك.</p>
+            </div>
+            <button class="btn btn-dark btn-sm rounded-pill px-3 fw-bold ms-3" onclick="showBankModal()">إضافة الآن</button>
+        </div>
+    }
+
+    @* بطاقة الرصيد *@
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-white" style="background: linear-gradient(45deg, #1eb2a6, #14837a);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="opacity-75 fw-bold">الرصيد القابل للسحب حالياً</h6>
+                        <h1 class="fw-bold mb-0">@((Model.total_earned - Model.withdrawn_amount).ToString("N0")) دج</h1>
+                    </div>
+                    <div class="d-flex gap-2">
+                         <button type="button" onclick="showBankModal()" class="btn btn-outline-light rounded-pill px-3 border-white border-opacity-25 shadow-sm">
+                            <i class="bi bi-bank me-1"></i> الحساب البنكي
+                        </button>
+                        <button type="button" onclick="showWalletModal()" class="btn btn-white bg-white text-dark rounded-pill px-4 fw-bold shadow-sm border-0">
+                            <i class="bi bi-cash-draw me-1"></i> تقديم طلب سحب
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* 2. جدول سجل طلبات السحب (الجديد) *@
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header py-3 border-0 bg-white d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold m-0"><i class="bi bi-clock-history me-2 text-warning"></i> تاريخ طلبات السحب والوصولات</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table align-middle small mb-0 text-end">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>التاريخ</th>
+                                    <th>المبلغ</th>
+                                    <th>الحالة</th>
+                                    <th>وصل التحويل</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (ViewBag.WithdrawalHistory != null)
+                                {
+                                    var history = ViewBag.WithdrawalHistory as List<EduPsych_Web.Models.WithdrawalRequest>;
+                                    if (history.Any())
+                                    {
+                                        foreach (var req in history)
+                                        {
+                                            <tr>
+                                                <td class="text-muted">@req.CreatedAt.ToString("yyyy/MM/dd")</td>
+                                                <td class="fw-bold">@req.Amount.ToString("N0") دج</td>
+                                                <td>
+                                                    <span class="badge rounded-pill @(req.Status == "Pending" ? "badge-pending" : "badge-approved")">
+                                                        @(req.Status == "Pending" ? "قيد المعالجة" : "تم التحويل بنجاح")
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    @if (!string.IsNullOrEmpty(req.TransferReceiptUrl))
+                                                    {
+                                                        <a href="@req.TransferReceiptUrl" target="_blank" class="btn btn-sm btn-outline-teal rounded-pill">
+                                                            <i class="bi bi-file-earmark-image me-1"></i> عرض الوصل
+                                                        </a>
+                                                    }
+                                                    else { <span class="text-muted small">---</span> }
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr><td colspan="4" class="text-center py-4 text-muted small">لم تقم بأي عمليات سحب سابقة</td></tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* السجلات السابقة (الدورات والحصص) *@
+    <div class="row">
+        @* سجل أرباح الدورات *@
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                <div class="card-header py-3 border-0 bg-white">
+                    <h6 class="fw-bold m-0 text-primary"><i class="bi bi-play-circle me-2"></i> أرباح مبيعات الدورات</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table align-middle small mb-0 text-end">
+                            <thead class="bg-light text-secondary">
+                                <tr>
+                                    <th>الدورة / الطالب</th>
+                                    <th>ربحك</th>
+                                    <th>التاريخ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var courseSales = ViewBag.CourseSales as List<EduPsych_Web.Models.CourseEnrollment>;
+                                    if (courseSales != null && courseSales.Any())
+                                    {
+                                        foreach (var sale in courseSales)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <span class="item-title">@sale.Course?.title</span>
+                                                    <span class="student-name"><i class="bi bi-person me-1"></i> @(sale.Student?.User?.first_name) @(sale.Student?.User?.last_name)</span>
+                                                </td>
+                                                <td class="text-success fw-bold">+@sale.teacher_commission.ToString("N0") دج</td>
+                                                <td class="text-muted small">@sale.enrolled_at.ToString("yyyy/MM/dd")</td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr><td colspan="3" class="text-center py-5 text-muted">لا توجد مبيعات مسجلة حتى الآن</td></tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* سجل أرباح الحصص المباشرة *@
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                <div class="card-header py-3 border-0 bg-white">
+                    <h6 class="fw-bold m-0 text-info"><i class="bi bi-calendar-check me-2"></i> أرباح الحصص المحجوزة</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table align-middle small mb-0 text-end">
+                            <thead class="bg-light text-secondary">
+                                <tr>
+                                    <th>الحصة / الطالب</th>
+                                    <th>الربح</th>
+                                    <th>التاريخ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var sessionEarnings = ViewBag.SessionEarnings as List<EduPsych_Web.Models.EducationalSession>;
+                                    if (sessionEarnings != null && sessionEarnings.Any())
+                                    {
+                                        foreach (var session in sessionEarnings)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <span class="item-title">@session.session_type - @session.Lesson?.title</span>
+                                                    <span class="student-name"><i class="bi bi-person me-1"></i> @(session.Student?.User?.first_name) @(session.Student?.User?.last_name)</span>
+                                                </td>
+                                                <td class="text-success fw-bold">+@(((session.Lesson?.Teacher?.hourly_price ?? 0m) * 0.50m).ToString("N0")) دج</td>
+                                                <td class="text-muted small">@session.scheduled_at.ToString("yyyy/MM/dd")</td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr><td colspan="3" class="text-center py-5 text-muted">لا توجد حصص مكتملة حالياً</td></tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* --- النوافذ المنبثقة اليدوية --- *@
+
+@* 1. نافذة تقديم طلب سحب *@
+<div id="walletOverlay" class="custom-overlay">
+    <div class="custom-modal text-end">
+        <span class="close-modal" onclick="hideWalletModal()">&times;</span>
+        <h5 class="fw-bold text-primary mb-3">تقديم طلب سحب رصيد</h5>
+        <form asp-action="RequestWithdrawal" asp-controller="Teacher" method="post">
+            @Html.AntiForgeryToken()
+            <p class="small text-muted mb-4">يُرجى إدخال المبلغ المطلوب. الحد الأدنى للسحب 2000 دج.</p>
+            
+            <div class="mb-4">
+                <label class="form-label small fw-bold">المبلغ المطلوب (دج)</label>
+                <input type="number" name="amount" 
+                       max="@(Model.total_earned - Model.withdrawn_amount)" 
+                       min="2000" 
+                       class="form-control form-control-lg rounded-3 text-center fw-bold" 
+                       placeholder="2000 دج فما فوق" required>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary rounded-pill py-3 fw-bold border-0" style="background-color: #1eb2a6;">تأكيد الطلب</button>
+                <button type="button" onclick="hideWalletModal()" class="btn btn-light rounded-pill py-2">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* 2. نافذة تحديث بيانات الحساب البنكي (الجديدة) *@
+<div id="bankOverlay" class="custom-overlay">
+    <div class="custom-modal text-end">
+        <span class="close-modal" onclick="hideBankModal()">&times;</span>
+        <h5 class="fw-bold text-dark mb-3">بيانات الحساب البريدي / البنكي</h5>
+        <form asp-action="UpdateBankDetails" asp-controller="Teacher" method="post">
+            @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <label class="form-label small fw-bold">رقم الحساب البريدي (CCP):</label>
+                <input type="text" name="ccp" class="form-control rounded-3" value="@Model.Teacher?.ccp_number" placeholder="مثال: 0012345678 Clé 12" required />
+            </div>
+            <div class="mb-4">
+                <label class="form-label small fw-bold">رقم الـ RIB البنكي (اختياري):</label>
+                <input type="text" name="rib" class="form-control rounded-3" value="@Model.Teacher?.rib_number" placeholder="رقم الـ RIB المكون من 20 رقم" />
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-dark rounded-pill py-3 fw-bold border-0">حفظ البيانات</button>
+                <button type="button" onclick="hideBankModal()" class="btn btn-light rounded-pill py-2">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // التحكم بمودال السحب
+    function showWalletModal() { document.getElementById('walletOverlay').style.display = 'block'; }
+    function hideWalletModal() { document.getElementById('walletOverlay').style.display = 'none'; }
+    
+    // التحكم بمودال البنك
+    function showBankModal() { document.getElementById('bankOverlay').style.display = 'block'; }
+    function hideBankModal() { document.getElementById('bankOverlay').style.display = 'none'; }
+    
+    // إغلاق عند الضغط بالخارج
+    window.onclick = function(event) {
+        if (event.target.className === 'custom-overlay') {
+            hideWalletModal();
+            hideBankModal();
+        }
+    }
+</script>
+
+<style>
+    .btn-outline-teal { color: #1eb2a6; border-color: #1eb2a6; }
+    .btn-outline-teal:hover { background-color: #1eb2a6; color: white; }
+    .btn-white:hover { background-color: #f8f9fa !important; transform: scale(1.05); transition: 0.2s; }
+</style>

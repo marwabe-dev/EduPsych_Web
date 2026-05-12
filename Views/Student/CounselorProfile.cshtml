@@ -1,0 +1,280 @@
+﻿@model EduPsych_Web.Models.Counselor
+
+@{
+    ViewData["Title"] = "الملف الشخصي للمستشار - إبداع";
+    Layout = "_Layout";
+
+    // جلب اسم المستخدم للهيدر لضمان التناسق
+    var fullName = Context.Session.GetString("UserName") ?? "تلميذنا العزيز";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    :root {
+        --primary-teal: #1eb2a6;
+        --dark-teal: #114b4d;
+        --glass-white: rgba(255, 255, 255, 0.85);
+    }
+
+    body {
+        background-color: #f4fdfc;
+        font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* إخفاء الهيدر الافتراضي */
+    nav, .sidebar, header:not(.edu-header) {
+        display: none !important;
+    }
+
+    /* --- الهيدر العائم (الكبسولة) الموحد --- */
+    .edu-header {
+        background: var(--glass-white);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(30, 178, 166, 0.15);
+        padding: 12px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 15px;
+        margin: 10px 20px 30px;
+        z-index: 1050;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        border-radius: 50px;
+    }
+
+        .edu-header .btn {
+            border-radius: 50px !important;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: 0.3s;
+        }
+
+    .text-turquoise {
+        color: #1eb2a6 !important;
+    }
+
+    /* البطاقة الرئيسية للملف الشخصي */
+    .profile-master-card {
+        background: white;
+        border-radius: 50px;
+        border: none;
+        overflow: hidden;
+        box-shadow: 0 30px 60px rgba(30, 178, 166, 0.08);
+    }
+
+    .counselor-sidebar {
+        background: linear-gradient(180deg, #ffffff 0%, #f0fdfc 100%);
+        border-left: 1px solid rgba(30, 178, 166, 0.05);
+        padding: 60px 40px;
+    }
+
+    .img-frame {
+        position: relative;
+        width: 180px;
+        height: 180px;
+        margin: 0 auto 25px;
+    }
+
+        .img-frame img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50px; /* Squircle */
+            object-fit: cover;
+            border: 6px solid white;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.07);
+        }
+
+    .cert-badge {
+        position: absolute;
+        bottom: -5px;
+        right: -5px;
+        background: var(--primary-teal);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 15px;
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+
+    .section-label {
+        color: var(--primary-teal);
+        font-weight: 800;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .info-card-mini {
+        background: #fcfdfe;
+        border: 1px solid #f0f7f6;
+        border-radius: 25px;
+        padding: 20px;
+        transition: 0.3s;
+    }
+
+    .price-pill {
+        background: var(--dark-teal);
+        color: white;
+        padding: 10px 25px;
+        border-radius: 50px;
+        display: inline-block;
+        font-weight: 700;
+    }
+
+    /* أزرار الإجراءات */
+    .btn-chat-alt {
+        background: white;
+        color: var(--primary-teal) !important;
+        border: 2px solid var(--primary-teal);
+        border-radius: 20px;
+        padding: 15px 30px;
+        font-weight: 700;
+        transition: 0.3s;
+        text-decoration: none;
+    }
+
+    .btn-book-master {
+        background: linear-gradient(135deg, #1eb2a6 0%, #114b4d 100%);
+        color: white !important;
+        border: none;
+        border-radius: 20px;
+        padding: 15px 40px;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 10px 25px rgba(17, 75, 77, 0.2);
+    }
+
+    .bg-turquoise {
+        background-color: #1eb2a6 !important;
+    }
+</style>
+
+<div class="container-fluid p-0 text-end" dir="rtl">
+
+    @* --- الهيدر العائم المستبدل --- *@
+    <header class="edu-header">
+        <div class="d-flex align-items-center">
+            <div class="bg-turquoise text-white p-2 rounded-3 ms-3">
+                <i class="bi bi-mortarboard-fill"></i>
+            </div>
+            <div class="d-flex flex-column">
+                <h4 class="m-0 fw-bold text-dark">منصة <span class="text-turquoise">إبداع</span></h4>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("Index", "Student")" class="btn btn-light shadow-sm text-dark border">الرئيسية</a>
+            <a href="@Url.Action("MyWallet", "Student")" class="btn btn-white shadow-sm text-dark border">محفظتي</a>
+            <a href="@Url.Action("Courses", "Student")" class="btn btn-white shadow-sm text-dark border">متجر الدورات</a>
+            <a href="@Url.Action("MyEducationalLessons", "Student")" class="btn btn-white shadow-sm text-dark border">حصصي التعليمية</a>
+            <a href="@Url.Action("MyCounselSessions", "Student")" class="btn btn-white shadow-sm text-dark border">حصصي النفسية</a>
+        </div>
+
+        <div class="dropdown">
+            <button class="btn btn-light rounded-circle shadow-sm" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-person-fill text-turquoise"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2">
+                <li><a class="dropdown-item py-3 text-danger fw-bold" href="@Url.Action("Logout", "Account")"><i class="bi bi-box-arrow-right ms-2"></i>تسجيل الخروج</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="container py-4">
+        <div class="profile-master-card shadow-sm">
+            <div class="row g-0">
+                
+                @* الجزء الجانبي للمستشار *@
+                <div class="col-lg-4 counselor-sidebar text-center">
+                    <div class="img-frame">
+                        <img src="https://ui-avatars.com/api/?name=@(Model.User?.first_name)+@(Model.User?.last_name)&background=f0fdfc&color=1eb2a6&size=250"
+                             alt="Counselor Profile">
+                        <span class="cert-badge shadow-sm"><i class="bi bi-patch-check-fill ms-1"></i> مستشار معتمد</span>
+                    </div>
+
+                    <h2 class="fw-bold text-dark mb-2">أ. @Model.User?.first_name @Model.User?.last_name</h2>
+                    <p class="text-turquoise fw-bold mb-4">@(Model.specialization?.name ?? "خبير الدعم النفسي")</p>
+
+                    <div class="mb-4">
+                        <div class="price-pill shadow-sm">
+                            <span class="small opacity-75 fw-light">تكلفة الجلسة:</span> @Model.hourly_price دج
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-3 rounded-4 border border-light small text-muted mx-3">
+                        <i class="bi bi-shield-shaded text-turquoise ms-2"></i>
+                        تخضع هذه الجلسة لسياسة السرية التامة للمعلومات
+                    </div>
+                </div>
+
+                @* محتوى الملف الشخصي *@
+                <div class="col-lg-8 bg-white p-5">
+                    
+                    <div class="mb-5">
+                        <div class="section-label">
+                            <i class="bi bi-person-badge"></i> من هو المستشار؟
+                            <div style="height: 2px; flex-grow: 1; background: linear-gradient(to left, rgba(30, 178, 166, 0.2), transparent);"></div>
+                        </div>
+                        <p class="text-dark lh-lg fs-5" style="white-space: pre-line; opacity: 0.8;">
+                            @(string.IsNullOrEmpty(Model.bio) ? "مستشار نفسي متميز يسعى لمساعدة الطلاب على تجاوز التحديات النفسية والدراسية وبناء شخصية متوازنة وناجحة." : Model.bio)
+                        </p>
+                    </div>
+
+                    <div class="mb-5">
+                        <div class="section-label">
+                            <i class="bi bi-clock-history"></i> المواعيد المتاحة
+                            <div style="height: 2px; flex-grow: 1; background: linear-gradient(to left, rgba(30, 178, 166, 0.2), transparent);"></div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="info-card-mini d-flex align-items-center">
+                                    <div class="bg-turquoise bg-opacity-10 p-3 rounded-circle ms-3">
+                                        <i class="bi bi-calendar-check text-turquoise fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block">أيام العمل</small>
+                                        <strong class="text-dark">@(string.IsNullOrEmpty(Model.available_days) ? "يرجى التنسيق بعد الحجز" : Model.available_days)</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-card-mini d-flex align-items-center">
+                                    <div class="bg-turquoise bg-opacity-10 p-3 rounded-circle ms-3">
+                                        <i class="bi bi-alarm text-turquoise fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block">ساعات التوافر</small>
+                                        <strong class="text-dark">@(string.IsNullOrEmpty(Model.available_hours) ? "مرنة حسب الطلب" : Model.available_hours)</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-top">
+                        <div class="d-flex flex-column flex-md-row gap-3">
+                            
+                            <a href="@Url.Action("BookCounseling", "Student", new { counselorId = Model.id })"
+                                   class="btn btn-book-master flex-grow-1 text-center">
+                                <i class="bi bi-camera-video ms-2"></i> حجز جلسة فيديو مباشرة
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <div class="d-inline-flex align-items-center gap-2 bg-white px-4 py-2 rounded-pill shadow-sm border">
+                <span class="text-warning"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
+                <span class="fw-bold text-dark">4.9/5</span>
+                <span class="text-muted small ms-2">تقييم الطلاب لـ @fullName</span>
+            </div>
+        </div>
+    </div>
+</div>
