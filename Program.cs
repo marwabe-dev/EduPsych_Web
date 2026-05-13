@@ -1,11 +1,13 @@
-using Microsoft.EntityFrameworkCore;
 using EduPsych_Web.Data;
 using EduPsych_Web.Hubs; // تأكد من وجود هذا السطر ليتعرف على مجلد الـ Hubs
+using Microsoft.EntityFrameworkCore;
 
 // حل مشكلة توافق الوقت مع PostgreSQL
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
+var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // 1️⃣ إعداد قاعدة البيانات PostgreSQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
