@@ -1,8 +1,8 @@
 ﻿FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY . .
-# ندخل للمجلد الداخلي الحقيقي
-WORKDIR /src/EduPsych_Web
+# الانتقال للمجلد الذي يحتوي على ملف الـ .csproj
+WORKDIR /src/EduPsych_Web/EduPsych_Web
 RUN dotnet restore
 RUN dotnet publish -c Release -o /app/publish
 
