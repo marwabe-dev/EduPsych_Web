@@ -10,8 +10,8 @@ var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // 1️⃣ إعداد قاعدة البيانات PostgreSQL
-//builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    //options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // 2️⃣ إضافة خدمة الـ Session
 builder.Services.AddDistributedMemoryCache();
