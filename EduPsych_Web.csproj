@@ -6,10 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Content Remove="wwwroot\images\mentor1.jpeg" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <AdditionalFiles Include="wwwroot\images\mentor1.jpeg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
