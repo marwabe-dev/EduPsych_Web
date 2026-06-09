@@ -1,0 +1,83 @@
+﻿@model IEnumerable<EduPsych_Web.Models.User>
+@{
+    ViewData["Title"] = "طلبات التوظيف والشهادات";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid py-4 text-end" dir="rtl">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">طلبات التوظيف (الاْساتذة و الاْخصائيين النفسيين)</h2>
+        <span class="badge bg-teal p-2 px-3 shadow-sm" style="background-color: #1eb2a6;">
+            عدد الطلبات المعلقة: @Model.Count()
+        </span>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success border-0 shadow-sm rounded-3">@TempData["Success"]</div>
+    }
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-center">
+                <thead class="bg-light">
+                    <tr>
+                        <th>الاسم</th>
+                        <th>البريد الإلكتروني</th>
+                        <th>رقم الهاتف</th>
+                        <th>الرتبة</th>
+                        <th>تاريخ الطلب</th>
+                        <th>الوثائق</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <div class="ms-2 fw-bold">@user.first_name @user.last_name</div>
+                                </div>
+                            </td>
+                            <td>@user.email</td>
+                            <td class="fw-bold text-teal">@user.phone_number</td>
+                            <td>
+                                <span class="badge @(user.role_id == 3 ? "bg-primary" : "bg-info") rounded-pill">
+                                    @(user.role_id == 3 ? "أستاذ" : "مرشد نفسي")
+                                </span>
+                            </td>
+                            <td class="text-muted small">@user.created_at.ToString("yyyy/MM/dd")</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(user.document_url))
+                                {
+                                    <a href="@user.document_url" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill">
+                                        <i class="bi bi-file-earmark-pdf-fill me-1"></i> عرض الشهادة
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-danger small">لا توجد ملفات!</span>
+                                }
+                            </td>
+                            <td>
+                                <form asp-action="ApproveExpert" asp-route-id="@user.id" method="post"
+                                      onsubmit="return confirm('هل تأكدت من الوثائق وتريد تفعيل حساب هذا الخبير؟');">
+                                    <button type="submit" class="btn btn-success btn-sm px-4 rounded-pill shadow-sm">
+                                        قبول وتفعيل <i class="bi bi-check-circle ms-1"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="py-5 text-muted">لا توجد طلبات توظيف جديدة حالياً.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

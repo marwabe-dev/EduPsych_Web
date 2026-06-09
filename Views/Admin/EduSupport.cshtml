@@ -66,13 +66,9 @@
     <div class="row mb-4 align-items-center">
         <div class="col-md-8">
             <h3 class="fw-900 text-dark mb-1">مركز الدعم البيداغوجي</h3>
-            <p class="text-muted small">تحليل أداء الأساتذة، حجم المبيعات، ومعدل استهلاك الدروس الخصوصية.</p>
+            <p class="text-muted small">تحليل أداء الأساتذة، حجم الاْرباح، ومعدل استهلاك الدروس الخصوصية.</p>
         </div>
-        <div class="col-md-4 text-start">
-            <button class="btn btn-white shadow-sm rounded-pill px-4 fw-bold border btn-sm">
-                <i class="bi bi-funnel me-1"></i> فلترة النتائج
-            </button>
-        </div>
+        
     </div>
 
     <div class="row g-4 mb-4">
@@ -80,7 +76,7 @@
             <div class="card edu-stat-card card-teal-gradient shadow-lg p-4">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <p class="mb-1 fw-bold opacity-75 small">إجمالي مبيعات الدروس</p>
+                        <p class="mb-1 fw-bold opacity-75 small">إجمالي اْرباح الدروس الخصوصية</p>
                         <h2 class="fw-900 mb-0">@teachers.Sum(x => (decimal)x.Revenue).ToString("N0") <small class="fs-6">دج</small></h2>
                     </div>
                     <div class="icon-box-light">
@@ -94,7 +90,7 @@
             <div class="card edu-stat-card bg-white shadow-sm p-4 border-end border-teal border-5" style="border-right-color: var(--brand-teal) !important;">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <p class="text-muted mb-1 fw-bold small">إجمالي الجلسات التعليمية</p>
+                        <p class="text-muted mb-1 fw-bold small">إجمالي الحصص التعليمية</p>
                         <h2 class="fw-900 mb-0 text-dark">@teachers.Sum(x => (int)x.LessonCount) <small class="fs-6 text-muted">حصة</small></h2>
                     </div>
                     <div class="icon-box-light bg-light">

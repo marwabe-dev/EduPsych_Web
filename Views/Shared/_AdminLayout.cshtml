@@ -127,7 +127,7 @@
 
     <div class="sidebar shadow-lg">
         <div class="text-center py-5">
-            <h4 class="fw-900 mb-0">Edu<span style="color: var(--brand-teal)">Psych</span></h4>
+            <h4 class="fw-900 mb-0">رافق<span style="color: var(--brand-teal)">ني</span></h4>
             <p class="small opacity-50 mb-0" style="font-size: 0.7rem;">ADMIN DASHBOARD</p>
         </div>
         
@@ -136,14 +136,19 @@
                asp-controller="Admin" asp-action="Index">
                 <i class="bi bi-grid-1x2-fill"></i> الرئيسية
             </a>
-            
+            <div class="sidebar-heading">طلبات التوظيف</div>
+<a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "RecruitmentRequests" ? "active" : "")" 
+   asp-controller="Admin" asp-action="RecruitmentRequests">
+    <i class="bi bi-file-earmark-person-fill"></i> مراجعة الشهادات
+    @* يمكنك إضافة تنبيه صغير بعدد الطلبات المعلقة *@
+</a> 
             <div class="sidebar-heading">إدارة الأفراد</div>
             <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Students" ? "active" : "")" 
                asp-controller="Admin" asp-action="Students">
                 <i class="bi bi-people-fill"></i> التلاميذ
             </a>
             <a class="nav-link" asp-controller="Admin" asp-action="StaffList">
-                <i class="bi bi-person-workspace"></i> الأساتذة والمشرفون
+                <i class="bi bi-person-workspace"></i> الأساتذة والمختصون النفسيون
             </a>
 
             <div class="sidebar-heading">الإدارة المالية</div>
@@ -169,11 +174,13 @@
                 <i class="bi bi-journal-check"></i> الدعم البيداغوجي
             </a>
 
-            <div class="sidebar-heading">الإعدادات</div>
-            <a class="nav-link" href="#"><i class="bi bi-sliders"></i> ضبط النظام</a>
-            <a class="nav-link text-danger mt-4" asp-controller="Account" asp-action="Logout">
-                <i class="bi bi-power"></i> تسجيل الخروج
-            </a>
+           <div class="mt-auto pb-4">
+        <hr class="mx-3 opacity-25">
+        <a class="nav-link text-danger fw-bold" asp-controller="Account" asp-action="Logout" 
+           onclick="return confirm('هل أنت متأكد من تسجيل الخروج؟')">
+            <i class="bi bi-box-arrow-right"></i> تسجيل الخروج
+        </a>
+    </div>
         </nav>
     </div>
 

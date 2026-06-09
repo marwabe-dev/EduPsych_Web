@@ -1,6 +1,6 @@
 ﻿@model EduPsych_Web.Models.Course
 @{
-    Layout = "_Layout";
+   Layout = "~/Views/Shared/_StudentLayout.cshtml";
     var firstLesson = Model.Lessons.OrderBy(l => l.id).FirstOrDefault();
 }
 

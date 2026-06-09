@@ -1,6 +1,6 @@
 ﻿@model EduPsych_Web.Models.StudentWallet
 @{
-    Layout = "_Layout";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
     var depositRequests = ViewBag.DepositRequests as IEnumerable<EduPsych_Web.Models.DepositRequest>;
 }
 
@@ -28,20 +28,51 @@
     }
 
     .status-badge { border-radius: 50px; padding: 5px 15px; font-size: 0.8rem; }
+    .btn-turquoise { background-color: #1eb2a6 !important; color: white !important; }
+    .text-turquoise { color: #1eb2a6 !important; }
 </style>
 
 <div class="container-fluid p-0 text-end" dir="rtl">
-    <header class="edu-header">
-        <div class="d-flex align-items-center">
-            <div class="bg-turquoise text-white p-2 rounded-3 ms-3">
-                <i class="bi bi-wallet2"></i>
-            </div>
-            <h4 class="m-0 fw-bold text-dark">محفظتي <span style="color:#1eb2a6">الإلكترونية</span></h4>
-        </div>
-        <a href="@Url.Action("Index", "Student")" class="btn btn-light rounded-pill px-4 border shadow-sm fw-bold">العودة للرئيسية</a>
-    </header>
+    
 
     <div class="container mt-4">
+
+        @* 🆕 نظام التنبيهات لعرض رسائل النجاح أو الفشل القادمة من الـ Controller *@
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger rounded-4 text-center fw-bold shadow-sm mb-4 border-0 py-3">
+                <i class="bi bi-exclamation-triangle-fill ms-2"></i> @TempData["Error"]
+            </div>
+        }
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success rounded-4 text-center fw-bold shadow-sm mb-4 border-0 py-3">
+                <i class="bi bi-check-circle-fill ms-2"></i> @TempData["Success"]
+            </div>
+        }
+
+        @* 🆕 صندوق تأكيد دفع الحصة المباشرة الفوري (يظهر فقط عند الضغط على دفع الرسوم من صفحة الحصص) *@
+        @* 🆕 صندوق تأكيد دفع الحصة المباشرة الفوري الجديد *@
+@if (Context.Request.Query.ContainsKey("paySessionId"))
+{
+    var sessionId = Context.Request.Query["paySessionId"].ToString();
+    <div class="alert alert-info border-0 rounded-4 p-4 mb-4 shadow-sm" style="background-color: #e8f8f7; border-right: 5px solid #1eb2a6 !important;">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <h5 class="fw-bold text-dark mb-1"><i class="bi bi-shield-check text-turquoise ms-2"></i> تأكيد اقتطاع ثمن الجصة النفسية</h5>
+                <p class="text-muted small m-0">سيتم فحص رصيدك الحالي واقتطاع سعر الجلسة الخاص بالمرشد مباشرة فور تأكيد العملية.</p>
+            </div>
+            
+            <form asp-action="PaySession" asp-controller="Student" method="post" class="m-0">
+                <input type="hidden" name="sessionId" value="@sessionId" />
+                <button type="submit" class="btn btn-dark rounded-pill px-4 py-2 fw-bold shadow-sm">
+                    تأكيد الدفع والخصم الآن <i class="bi bi-credit-card ms-1"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+}
+
         <div class="row">
             <div class="col-lg-5 mb-4">
                 <div class="wallet-card text-center">
@@ -54,7 +85,7 @@
                     <div class="info-box">
                         <p class="small text-muted mb-2">قم بتحويل المبلغ إلى الحساب التالي:</p>
                         <h5 class="text-dark fw-bold mb-1">0012345678 / 90</h5>
-                        <p class="small fw-bold text-turquoise mb-0">الاسم: مؤسسة EducPsycho</p>
+                        <p class="small fw-bold text-turquoise mb-0">الاسم: مؤسسة رافقني</p>
                     </div>
 
                     <form asp-action="UploadReceipt" method="post" enctype="multipart/form-data">

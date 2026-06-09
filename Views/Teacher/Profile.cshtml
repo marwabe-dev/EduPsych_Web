@@ -3,22 +3,37 @@
 @{
     Layout = "_TeacherLayout";
     ViewData["Title"] = "الملف الشخصي للتخصص";
-    
-    // جلب الجلسات من ViewBag بدلاً من الموديل لتجنب أخطاء التعليق والعمود الوهمي
     var sessions = ViewBag.TeacherSessions as IEnumerable<EduPsych_Web.Models.EducationalSession>;
     var confirmedSessionsCount = sessions?.Count(s => s.status == "Confirmed" || s.status == "Paid") ?? 0;
 }
 
 <div class="container-fluid" dir="rtl">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show text-end" role="alert">
+            <i class="bi bi-check-circle-fill ms-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm" style="border-radius: 20px;">
-                <div class="card-header bg-white border-0 pt-4 text-center">
-                    <div class="avatar-placeholder mb-3">
-                        <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
-                            <i class="bi bi-person-badge fs-1 text-primary"></i>
-                        </div>
-                    </div>
+                <div class="card-header bg-white border-0 pt-4 text-center position-relative">
+                    <button class="btn btn-outline-primary btn-sm position-absolute top-0 start-0 m-3 rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                        <i class="bi bi-pencil-square ms-1"></i> تعديل البيانات والصورة
+                    </button>
+
+                    <div class="avatar-placeholder mb-3 mt-3">
+    @if (Model.User != null && !string.IsNullOrEmpty(Model.User.profile_picture_url))
+    {
+        <img src="@Url.Content("~/uploads/profiles/" + Model.User.profile_picture_url)" class="rounded-circle border shadow-sm object-fit-cover" style="width: 110px; height: 110px;" alt="Teacher">
+    }
+    else
+    {
+        <img src="https://ui-avatars.com/api/?name=@(Model.User?.first_name + "+" + Model.User?.last_name)&background=1eb2a6&color=fff&size=128" class="rounded-circle border shadow-sm" style="width: 110px; height: 110px;" alt="Teacher">
+    }
+</div>
                     <h4 class="fw-bold">@Model.User?.first_name @Model.User?.last_name</h4>
                     <span class="badge bg-soft-primary text-primary px-3 py-2 rounded-pill">
                         أستاذ @(Model.Specialization?.name ?? "تخصص غير محدد")
@@ -28,25 +43,33 @@
                 <div class="card-body p-4">
                     <div class="row g-4">
                         @* معلومات الحساب *@
-                        <div class="col-md-6 text-end">
+                        <div class="col-md-4 text-end">
                             <label class="text-muted small d-block mb-1">البريد الإلكتروني</label>
                             <p class="fw-bold border-bottom pb-2">
                                 <i class="bi bi-envelope me-2 text-primary"></i> @Model.User?.email
                             </p>
                         </div>
                         
-                        <div class="col-md-6 text-end">
+                        <div class="col-md-4 text-end">
                             <label class="text-muted small d-block mb-1">رقم الهاتف</label>
                             <p class="fw-bold border-bottom pb-2">
                                 <i class="bi bi-telephone me-2 text-primary"></i> @(Model.User?.phone_number ?? "غير مسجل")
                             </p>
                         </div>
 
-                        @* معلومات التخصص *@
+                        @* سعر الساعة (تم إصلاح القوس المفقود هنا) *@
+                        <div class="col-md-4 text-end">
+                            <label class="text-muted small d-block mb-1">سعر حصة الساعة</label>
+                            <p class="fw-bold border-bottom pb-2 text-success">
+    <i class="bi bi-cash-coin me-2"></i> @Model.hourly_price <small>دج / ساعة</small>
+</p>
+                        </div>
+
+                        @* نبذة عن التخصص والبيو *@
                         <div class="col-12 text-end">
-                            <div class="p-3 bg-light rounded-3">
-                                <h6 class="fw-bold"><i class="bi bi-info-circle me-2"></i> نبذة عن التخصص</h6>
-                                <p class="mb-0 text-secondary">
+                            <div class="p-3 bg-light rounded-3 border-start border-primary border-3">
+                                <h6 class="fw-bold text-primary"><i class="bi bi-info-circle-fill me-2"></i> نبذة عن الأستاذ (Bio)</h6>
+                                <p class="mb-0 text-secondary lh-lg" style="white-space: pre-line;">
                                     @if (!string.IsNullOrEmpty(Model.bio))
                                     {
                                         @Model.bio
@@ -93,13 +116,56 @@
     </div>
 </div>
 
+<div class="modal fade" id="editProfileModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true" dir="rtl">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header bg-light border-0 py-3" style="border-radius: 20px 20px 0 0;">
+                <h5 class="modal-title fw-bold text-dark" id="editProfileModalLabel"><i class="bi bi-gear-fill text-primary ms-2"></i>تعديل بيانات تخصصك</h5>
+                <button type="button" class="btn-close me-auto ms-0" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="UpdateProfileInfo" asp-controller="Teacher" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.id" />
+                
+                <div class="modal-body p-4 text-end">
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-secondary small"><i class="bi bi-image text-primary ms-1"></i> الصورة الشخصية (Profile Picture)</label>
+                        <input type="file" name="profileImage" class="form-control" accept=".jpg,.jpeg,.png" />
+                        <div class="form-text text-muted small">يفضل رفع صورة مربعة واضحة بحجم لا يتعدى 2 ميجابايت (سيرى التلاميذ هذه الصورة عند التصفح).</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-secondary small"><i class="bi bi-currency-dollar text-primary ms-1"></i> سعر الساعة التعليمية (بالدينار الجزائري)</label>
+                        <div class="input-group" dir="ltr">
+                            <span class="input-group-text bg-white">دج</span>
+                            <input type="number" name="hourlyPrice" class="form-control text-end fw-bold" value="@Model.hourly_price" min="0" required />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-secondary small"><i class="bi bi-file-earmark-person text-primary ms-1"></i> نبذة تعريفية عنك وعن خبرتك (Bio)</label>
+                        <textarea name="bio" class="form-control text-end lh-base" rows="5" required>@Model.bio</textarea>
+                    </div>
+                </div>
+                
+                <div class="modal-footer bg-white border-0 p-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-main px-4 py-2 fw-bold">حفظ التغييرات</button>
+                    <button type="button" class="btn btn-light px-4 py-2 fw-bold border" data-bs-dismiss="modal">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <style>
     .bg-soft-primary { background-color: #e0f2fe; }
-    .btn-main { background-color: #1eb2a6; color: white; border-radius: 10px; transition: 0.3s; }
+    .btn-main { background-color: #1eb2a6; color: white; border-radius: 10px; transition: 0.3s; border: none; }
     .btn-main:hover { background-color: #14837a; color: white; }
-    /* تنسيق للطباعة */
+    .object-fit-cover { object-fit: cover; }
+    
     @@media print {
-        .btn-main, .sidebar, .navbar { display: none !important; }
-        .card { border: 1px solid #eee !important; box-shadow: none !important; }
+        .btn-main, .sidebar, .navbar, [data-bs-toggle="modal"] { display: none !important; }
+        .card { border: 1px solid #eee !important; box-shadow: none !important; } 
     }
 </style>

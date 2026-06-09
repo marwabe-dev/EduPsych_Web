@@ -2,8 +2,7 @@
 
 @{
     ViewData["Title"] = "الملف الشخصي للمستشار - إبداع";
-    Layout = "_Layout";
-
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
     // جلب اسم المستخدم للهيدر لضمان التناسق
     var fullName = Context.Session.GetString("UserName") ?? "تلميذنا العزيز";
 }
@@ -156,33 +155,7 @@
 <div class="container-fluid p-0 text-end" dir="rtl">
 
     @* --- الهيدر العائم المستبدل --- *@
-    <header class="edu-header">
-        <div class="d-flex align-items-center">
-            <div class="bg-turquoise text-white p-2 rounded-3 ms-3">
-                <i class="bi bi-mortarboard-fill"></i>
-            </div>
-            <div class="d-flex flex-column">
-                <h4 class="m-0 fw-bold text-dark">منصة <span class="text-turquoise">إبداع</span></h4>
-            </div>
-        </div>
-
-        <div class="d-flex gap-2">
-            <a href="@Url.Action("Index", "Student")" class="btn btn-light shadow-sm text-dark border">الرئيسية</a>
-            <a href="@Url.Action("MyWallet", "Student")" class="btn btn-white shadow-sm text-dark border">محفظتي</a>
-            <a href="@Url.Action("Courses", "Student")" class="btn btn-white shadow-sm text-dark border">متجر الدورات</a>
-            <a href="@Url.Action("MyEducationalLessons", "Student")" class="btn btn-white shadow-sm text-dark border">حصصي التعليمية</a>
-            <a href="@Url.Action("MyCounselSessions", "Student")" class="btn btn-white shadow-sm text-dark border">حصصي النفسية</a>
-        </div>
-
-        <div class="dropdown">
-            <button class="btn btn-light rounded-circle shadow-sm" type="button" data-bs-toggle="dropdown">
-                <i class="bi bi-person-fill text-turquoise"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2">
-                <li><a class="dropdown-item py-3 text-danger fw-bold" href="@Url.Action("Logout", "Account")"><i class="bi bi-box-arrow-right ms-2"></i>تسجيل الخروج</a></li>
-            </ul>
-        </div>
-    </header>
+    
 
     <div class="container py-4">
         <div class="profile-master-card shadow-sm">
@@ -197,7 +170,7 @@
                     </div>
 
                     <h2 class="fw-bold text-dark mb-2">أ. @Model.User?.first_name @Model.User?.last_name</h2>
-                    <p class="text-turquoise fw-bold mb-4">@(Model.specialization?.name ?? "خبير الدعم النفسي")</p>
+                    <p class="text-turquoise fw-bold mb-4">@Model.PsychSpecialization?.name  "خبير الدعم النفسي"</p>
 
                     <div class="mb-4">
                         <div class="price-pill shadow-sm">
@@ -215,12 +188,9 @@
                 <div class="col-lg-8 bg-white p-5">
                     
                     <div class="mb-5">
-                        <div class="section-label">
-                            <i class="bi bi-person-badge"></i> من هو المستشار؟
-                            <div style="height: 2px; flex-grow: 1; background: linear-gradient(to left, rgba(30, 178, 166, 0.2), transparent);"></div>
-                        </div>
+                        
                         <p class="text-dark lh-lg fs-5" style="white-space: pre-line; opacity: 0.8;">
-                            @(string.IsNullOrEmpty(Model.bio) ? "مستشار نفسي متميز يسعى لمساعدة الطلاب على تجاوز التحديات النفسية والدراسية وبناء شخصية متوازنة وناجحة." : Model.bio)
+                            "مستشار نفسي متميز يسعى لمساعدة الطلاب على تجاوز التحديات النفسية والدراسية وبناء شخصية متوازنة وناجحة." 
                         </p>
                     </div>
 
@@ -273,7 +243,7 @@
             <div class="d-inline-flex align-items-center gap-2 bg-white px-4 py-2 rounded-pill shadow-sm border">
                 <span class="text-warning"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
                 <span class="fw-bold text-dark">4.9/5</span>
-                <span class="text-muted small ms-2">تقييم الطلاب لـ @fullName</span>
+                <span class="text-muted small ms-2">تقييم الطلاب </span>
             </div>
         </div>
     </div>

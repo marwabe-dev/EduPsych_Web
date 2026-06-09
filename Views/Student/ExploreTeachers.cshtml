@@ -2,9 +2,7 @@
 
 @{
     ViewData["Title"] = "نخبة الأساتذة - إبداع";
-    Layout = "_Layout";
-
-    // جلب اسم المستخدم للهيدر
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
     var fullName = Context.Session.GetString("UserName") ?? "تلميذنا العزيز";
 }
 
@@ -22,12 +20,10 @@
         font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    /* إخفاء الهيدر الافتراضي */
     nav, .sidebar, header:not(.edu-header) {
         display: none !important;
     }
 
-    /* --- الهيدر العائم (الكبسولة) الموحد --- */
     .edu-header {
         background: var(--glass-white);
         backdrop-filter: blur(10px);
@@ -51,7 +47,6 @@
             transition: 0.3s;
         }
 
-    /* بطاقة الأستاذ */
     .teacher-card-exclusive {
         background: white;
         border: none;
@@ -134,34 +129,7 @@
 
 <div class="container-fluid p-0 text-end" dir="rtl">
 
-    <header class="edu-header">
-        <div class="d-flex align-items-center">
-            <div class="bg-turquoise text-white p-2 rounded-3 ms-3" style="background-color: #1eb2a6;">
-                <i class="bi bi-mortarboard-fill"></i>
-            </div>
-            <div class="d-flex flex-column">
-                <h4 class="m-0 fw-bold text-dark">منصة <span class="text-turquoise">EducPsycho</span></h4>
-            </div>
-        </div>
-
-        <div class="d-flex gap-2">
-            <a href="@Url.Action("Index", "Student")" class="btn btn-light shadow-sm text-dark border">الرئيسية</a>
-            <a href="@Url.Action("MyWallet", "Student")" class="btn btn-white shadow-sm text-dark border">محفظتي</a>
-            <a href="@Url.Action("Courses", "Student")" class="btn btn-white shadow-sm text-dark border">متجر الدورات</a>
-            <a href="@Url.Action("MyEducationalLessons", "Student")" class="btn btn-white shadow-sm text-dark border">حصصي التعليمية</a>
-            <a href="@Url.Action("MyCounselSessions", "Student")" class="btn btn-white shadow-sm text-dark border">حصصي النفسية</a>
-        </div>
-
-        <div class="dropdown">
-            <button class="btn btn-light rounded-circle shadow-sm" type="button" data-bs-toggle="dropdown">
-                <i class="bi bi-person-fill text-turquoise"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2">
-                <li><a class="dropdown-item py-3 text-danger fw-bold" href="@Url.Action("Logout", "Account")"><i class="bi bi-box-arrow-right ms-2"></i>تسجيل الخروج</a></li>
-            </ul>
-        </div>
-    </header>
-
+    
     <div class="container">
         <div class="py-5">
             <span class="badge bg-turquoise bg-opacity-10 text-turquoise px-3 py-2 rounded-pill mb-2" style="background-color: rgba(30,178,166,0.1);">طاقم التدريس</span>
@@ -178,8 +146,14 @@
 
                         <div class="card-body p-4 pt-0 text-center">
                             <div class="avatar-container">
-                                <img src="https://ui-avatars.com/api/?name=@(teacher.User?.first_name + "+" + teacher.User?.last_name)&background=1eb2a6&color=fff&size=128"
-                                     class="avatar-img" alt="Teacher">
+                                @if (teacher.User != null && !string.IsNullOrEmpty(teacher.User.profile_picture_url))
+                                {
+                                    <img src="@Url.Content("~/uploads/profiles/" + teacher.User.profile_picture_url)" class="avatar-img" alt="Teacher">
+                                }
+                                else
+                                {
+                                    <img src="https://ui-avatars.com/api/?name=@(teacher.User?.first_name + "+" + teacher.User?.last_name)&background=1eb2a6&color=fff&size=128" class="avatar-img" alt="Teacher">
+                                }
                                 <div class="verify-icon">
                                     <i class="bi bi-patch-check-fill"></i>
                                 </div>
@@ -187,7 +161,6 @@
 
                             <h4 class="fw-bold text-dark mt-3 mb-1">أ. @teacher.User?.first_name @teacher.User?.last_name</h4>
                             
-                            @* تم الإبقاء على التخصص هنا فقط وتنسيقه بشكل أوضح *@
                             <div class="small text-turquoise fw-bold mb-3">متخصص في مادة @ViewBag.SubjectName</div>
                             
                             <p class="text-muted small mb-4" style="min-height: 45px;">
@@ -197,8 +170,8 @@
                             <div class="d-flex justify-content-between align-items-center price-tag mb-4">
                                 <div class="text-end">
                                     <span class="d-block text-muted" style="font-size: 0.7rem;">سعر الساعة</span>
-                                    <span class="fw-bold text-dark fs-5">@teacher.hourly_price <small>دج</small></span>
-                                </div>
+                                    <span class="fw-bold text-dark fs-5">@(teacher.hourly_price.ToString("G29")) <small>دج</small></span>
+                               </div>
                                 <div class="text-start">
                                     <span class="badge rounded-pill bg-success bg-opacity-10 text-success py-2 px-3">
                                         <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> متاح الآن
@@ -206,8 +179,7 @@
                                 </div>
                             </div>
 
-                            <a href="@Url.Action("TeacherProfile", "Student", new { id = teacher.id, subjectId = ViewBag.SubjectId })"
-                                   class="btn btn-reserve w-100 shadow-sm">
+                            <a href="@Url.Action("TeacherProfile", "Student", new { id = teacher.id, subjectId = ViewBag.SubjectId })" class="btn btn-reserve w-100 shadow-sm">
                                 عرض الملف والحجز <i class="bi bi-calendar-check ms-2"></i>
                             </a>
                         </div>

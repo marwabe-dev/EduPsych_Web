@@ -1,0 +1,167 @@
+﻿@model IEnumerable<EduPsych_Web.Models.WithdrawalRequest>
+@{
+    ViewData["Title"] = "سجل السحوبات المالية";
+    Layout = "_CounselorLayout";
+}
+
+<style>
+    :root {
+        --p-teal: #1eb2a6;
+        --p-teal-dark: #148d84;
+        --p-teal-light: #f0fdfa;
+    }
+
+    /* تأثير البطاقة الزجاجية */
+    .history-card {
+        background: white;
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+
+    .table thead {
+        background-color: var(--p-teal-light);
+        color: var(--p-teal-dark);
+    }
+
+    .table th {
+        font-weight: 700;
+        padding: 18px;
+        border: none;
+    }
+
+    .table td {
+        padding: 18px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    /* تنسيق حالات الطلب */
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .bg-pending {
+        background-color: #fffbeb;
+        color: #92400e;
+    }
+    /* أصفر */
+    .bg-approved {
+        background-color: #f0fdf4;
+        color: #166534;
+    }
+    /* أخضر */
+    .bg-rejected {
+        background-color: #fef2f2;
+        color: #991b1b;
+    }
+    /* أحمر */
+
+    .amount-text {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-weight: 900;
+        color: var(--p-teal-dark);
+    }
+
+    .receipt-link {
+        color: var(--p-teal);
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+        .receipt-link:hover {
+            color: var(--p-teal-dark);
+            text-decoration: underline;
+        }
+</style>
+
+<div class="container py-5" dir="rtl">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h2 class="fw-900 text-dark mb-1">سجل السحوبات</h2>
+            <p class="text-muted">متابعة دقيقة لجميع طلبات تحويل الأرباح الخاصة بك.</p>
+        </div>
+        <div class="icon-box p-3 rounded-4 shadow-sm" style="background: var(--p-teal); color: white;">
+            <i class="fas fa-wallet fa-2x"></i>
+        </div>
+    </div>
+
+    <div class="history-card shadow-sm">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th class="text-end"># رقم الطلب</th>
+                        <th class="text-end">التاريخ</th>
+                        <th class="text-end">المبلغ</th>
+                        <th class="text-center">الحالة</th>
+                        <th class="text-center">وصل التحويل</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold text-secondary">@item.Id</td>
+                                <td class="text-muted">
+                                    <i class="far fa-calendar-alt me-1"></i> @item.CreatedAt.ToString("yyyy/MM/dd")
+                                    <br />
+                                    <small><i class="far fa-clock me-1"></i> @item.CreatedAt.ToString("HH:mm")</small>
+                                </td>
+                                <td>
+                                    <span class="amount-text fs-5">@item.Amount.ToString("N2")</span>
+                                    <small class="fw-bold">د.ج</small>
+                                </td>
+                                <td class="text-center">
+                                    @if (item.Status == "Pending")
+                                    {
+                                        <span class="status-badge bg-pending"><i class="fas fa-hourglass-half me-1"></i> قيد المعالجة</span>
+                                    }
+                                    else if (item.Status == "Approved")
+                                    {
+                                        <span class="status-badge bg-approved"><i class="fas fa-check-circle me-1"></i> تم التحويل</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge bg-rejected"><i class="fas fa-times-circle me-1"></i> مرفوض</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (!string.IsNullOrEmpty(item.TransferReceiptUrl))
+                                    {
+                                        <a href="@item.TransferReceiptUrl" target="_blank" class="receipt-link">
+                                            <i class="fas fa-external-link-alt me-1"></i> عرض الوصل
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">---</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="opacity-50">
+                                    <i class="fas fa-folder-open fa-4x mb-3 text-teal"></i>
+                                    <h5 class="fw-bold">لا توجد سجلات سحب حالياً</h5>
+                                    <p>ستظهر هنا جميع العمليات المالية التي تقوم بها.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

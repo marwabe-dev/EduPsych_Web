@@ -1,164 +1,81 @@
 ﻿@model IEnumerable<EduPsych_Web.Models.Lesson>
-
 @{
     ViewData["Title"] = "المكتبة المجانية";
     Layout = "~/Views/Shared/_TeacherLayout.cshtml";
 }
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-
-<style>
-    :root {
-        --turq-main: #1eb2a6;
-        --turq-hover: #179b91;
-        --deep-navy: #0f172a;
-        --soft-bg: #f8fafc;
-    }
-
-    body { background-color: var(--soft-bg); }
-
-    /* هيدر مدمج */
-    .compact-header {
-        background: white;
-        border-radius: 15px;
-        padding: 20px 25px;
-        border-right: 6px solid var(--turq-main);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    }
-
-    /* الكرت المصغر والأنيق */
-    .lesson-card-compact {
-        background: white;
-        border: 1px solid #eef2f6;
-        border-radius: 18px;
-        overflow: hidden;
-        transition: 0.3s;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-    .lesson-card-compact:hover { transform: translateY(-5px); border-color: var(--turq-main); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-
-    .video-thumb {
-        height: 140px; /* تقليل الارتفاع */
-        background: var(--deep-navy);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-    }
-    .video-thumb i { font-size: 2.5rem; color: var(--turq-main); opacity: 0.9; }
-
-    .card-info { padding: 15px; flex-grow: 1; }
-    .lesson-tag { font-size: 0.65rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; background: #f1f5f9; color: #475569; }
-
-    /* أزرار مدمجة وواضحة */
-    .card-actions { padding: 12px 15px; background: #fafafa; border-top: 1px solid #f1f5f9; }
-    
-    .btn-main-sm { 
-        background: var(--turq-main); color: white; border: none; 
-        padding: 8px; border-radius: 10px; width: 100%; font-size: 0.85rem; font-weight: bold;
-        margin-bottom: 6px; display: block; text-decoration: none; text-align: center;
-    }
-    .btn-main-sm:hover { background: var(--turq-hover); color: white; }
-
-    .btn-outline-sm { 
-        background: white; color: var(--deep-navy); border: 1px solid #e2e8f0; 
-        padding: 7px; border-radius: 10px; width: 100%; font-size: 0.85rem; font-weight: bold;
-        margin-bottom: 6px; display: block; text-decoration: none; text-align: center;
-    }
-    .btn-outline-sm:hover { background: #f8fafc; border-color: var(--turq-main); }
-    
-    .delete-text { 
-        color: #94a3b8; font-size: 0.75rem; font-weight: bold; text-decoration: none; 
-        background: none; border: none; width: 100%; text-align: center; transition: 0.2s;
-    }
-    .delete-text:hover { color: #ef4444; }
-
-</style>
-
 <div class="container py-4 text-end" dir="rtl">
-    
-    @* الهيدر *@
-    <div class="compact-header d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
+    <div class="compact-header d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="fw-bold mb-0" style="color: var(--deep-navy)">المكتبة المجانية</h4>
-            <p class="text-muted mb-0 small">هنا يمكنك اضافة درس ليتمكم التلميد من مراجعته </p>
+            <h4 class="fw-bold mb-0" style="color: #0f172a">المكتبة المجانية</h4>
+            <p class="text-muted mb-0 small">أنشر الدروس والتمارين مع إضافة صور غلاف حقيقية لها.</p>
         </div>
-        <button class="btn btn-teal rounded-pill px-4 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#createLessonModal" style="background: var(--turq-main); color: white; border: none; font-size: 0.9rem;">
-            <i class="bi bi-plus-lg ms-1"></i> إضافة درس
+        <button class="btn btn-primary rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#createLessonModal" style="background: #1eb2a6; border: none;">
+            <i class="bi bi-plus-lg ms-1"></i> إضافة محتوى جديد
         </button>
     </div>
 
-    <div class="row g-3"> @* g-3 تجعل المسافات بين الكروت أصغر *@
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success border-0 shadow-sm mb-4">@TempData["Success"]</div>
+    }
+
+    <div class="row g-3">
         @foreach (var item in Model)
         {
-            <div class="col-xl-3 col-lg-4 col-md-6 animate__animated animate__fadeInUp"> @* col-xl-3 لجعلها 4 في السطر في الشاشات الكبيرة *@
-                <div class="lesson-card-compact">
-                    @* غلاف الفيديو المصغر *@
-                    <div class="video-thumb">
-                        <i class="bi bi-play-circle-fill"></i>
-                        <span class="position-absolute top-0 start-0 m-2 badge bg-success shadow-sm" style="font-size: 0.6rem;">FREE</span>
-                    </div>
+            @* 🟢 هنا تم إضافة الفلتر لتخطي الحصص المباشرة المجدولة من الـ Layout *@
+            if (item.description == "حصة بث مباشر مجدولة للحجز المباشر")
+            {
+                continue;
+            }
 
-                    @* المحتوى *@
-                    <div class="card-info">
-                        <div class="mb-2 d-flex gap-1">
-                            <span class="lesson-tag">@item.Subject?.name</span>
-                            <span class="lesson-tag">@item.Class?.name</span>
+            <div class="col-xl-3 col-lg-4 col-md-6">
+                <div class="card h-100 shadow-sm border-0" style="border-radius: 18px; overflow: hidden;">
+                    <img src="@(string.IsNullOrEmpty(item.video_url) ? "/uploads/pdf/default_cover.jpg" : item.video_url)" class="card-img-top" style="height: 140px; object-fit: cover;" alt="غلاف المحتوى" />
+                    
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <span class="badge bg-light text-secondary">@item.Subject?.name</span>
+                            <span class="badge bg-light text-secondary">@item.Class?.name</span>
                         </div>
-                        <h6 class="fw-bold text-dark mb-1">@item.title</h6>
-                        <p class="text-muted extra-small mb-0">@(item.description?.Length > 50 ? item.description.Substring(0, 50) + "..." : item.description)</p>
+                        <h6 class="fw-bold text-dark">@item.title</h6>
+                        <p class="text-muted small">@item.description</p>
                     </div>
 
-                    @* الأزرار *@
-                    <div class="card-actions">
-                        <button type="button" class="btn-main-sm" data-bs-toggle="modal" data-bs-target="#editLessonModal_@item.id">
-                            <i class="bi bi-pencil-square ms-1"></i> تعديل الدرس
+                    <div class="card-footer bg-white border-0 p-3">
+                        <button type="button" class="btn btn-sm btn-light w-100 fw-bold mb-2 border" data-bs-toggle="modal" data-bs-target="#editLessonModal_@item.id">
+                            <i class="bi bi-pencil-square ms-1"></i> تعديل البيانات
                         </button>
 
-                        @if (!string.IsNullOrEmpty(item.pdf_url))
-                        {
-                            <a href="@item.pdf_url" target="_blank" class="btn-outline-sm">
-                                <i class="bi bi-file-earmark-pdf ms-1 text-danger"></i> ملخص PDF
-                            </a>
-                        }
-
-                        <form asp-action="DeleteLesson" asp-route-id="@item.id" method="post" onsubmit="return confirm('حذف نهائي؟');">
+                        <form asp-action="DeleteLesson" asp-route-id="@item.id" method="post" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
                             @Html.AntiForgeryToken()
-                            <button type="submit" class="delete-text mt-1">
-                                <i class="bi bi-trash3 ms-1"></i> حذف الدرس
-                            </button>
+                            <button type="submit" class="btn btn-sm btn-outline-danger w-100 fw-bold">حذف المنشور</button>
                         </form>
                     </div>
                 </div>
             </div>
             
-            @* المودال بنفس التنسيق المدمج *@
-            <div class="modal fade" id="editLessonModal_@item.id" tabindex="-1">
-                <div class="modal-dialog modal-dialog-centered modal-sm"> @* modal-sm للمودالات الصغيرة *@
-                    <div class="modal-content border-0 rounded-4 shadow-lg text-end">
+            @* 🛠️ مودال تعديل البيانات المصحح ليعمل بنجاح ويحمل الـ ID التابع له *@
+            <div class="modal fade" id="editLessonModal_@item.id" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-sm">
+                    <div class="modal-content border-0 rounded-4 shadow text-end">
                         <div class="modal-header border-0 bg-light p-3">
-                            <h6 class="fw-bold m-0">تعديل البيانات</h6>
+                            <h6 class="fw-bold m-0 text-dark">تعديل المحتوى الدراسي</h6>
                             <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
                         </div>
-                        <form asp-action="EditLesson" method="post">
+                        <form asp-action="EditLesson" asp-controller="Teacher" method="post">
+                            @Html.AntiForgeryToken()
                             <div class="modal-body p-3">
-                                @Html.AntiForgeryToken()
                                 <input type="hidden" name="id" value="@item.id" />
                                 <div class="mb-2">
-                                    <label class="form-label small fw-bold">العنوان</label>
+                                    <label class="form-label small fw-bold">العنوان المعدل</label>
                                     <input type="text" name="title" value="@item.title" class="form-control form-control-sm" required />
                                 </div>
-                                <div class="mb-2">
-                                    <label class="form-label small fw-bold">رابط الفيديو</label>
-                                    <input type="text" name="video_url" value="@item.video_url" class="form-control form-control-sm" />
-                                </div>
                                 <div class="mb-3">
-                                    <label class="form-label small fw-bold">الوصف</label>
+                                    <label class="form-label small fw-bold">الوصف المعدل</label>
                                     <textarea name="description" class="form-control form-control-sm" rows="2">@item.description</textarea>
                                 </div>
-                                <button type="submit" class="btn-main-sm py-2">حفظ التغييرات</button>
+                                <button type="submit" class="btn btn-primary w-100 py-2" style="background-color: #1eb2a6; border: none;">حفظ التغييرات الآن</button>
                             </div>
                         </form>
                     </div>
@@ -168,44 +85,65 @@
     </div>
 </div>
 
-@* مودال الإضافة المدمج *@
-<div class="modal fade" id="createLessonModal" tabindex="-1">
+@* مودال إضافة محتوى جديد مع حقل الغلاف الحقيقي *@
+<div class="modal fade" id="createLessonModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-4 shadow-lg text-end">
+        <div class="modal-content border-0 rounded-4 shadow text-end">
             <div class="modal-header border-0 bg-dark text-white p-3">
-                <h6 class="fw-bold m-0">إضافة درس جديد</h6>
+                <h6 class="fw-bold m-0">إضافة محتوى جديد للمكتبة</h6>
                 <button type="button" class="btn-close btn-close-white ms-0 me-auto" data-bs-dismiss="modal"></button>
             </div>
-            <form asp-action="CreateLesson" method="post">
+            <form asp-action="AddContent" asp-controller="Teacher" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
                 <div class="modal-body p-3">
-                    @Html.AntiForgeryToken()
                     <div class="row g-2 mb-2">
                         <div class="col-6">
                             <label class="form-label small fw-bold">المادة</label>
-                            <select name="subject_id" class="form-select form-select-sm" asp-items="ViewBag.subject_id" required></select>
+                            <select name="subjectId" class="form-select form-select-sm" asp-items="ViewBag.subject_id" required>
+                                <option value="">-- اختر المادة --</option>
+                            </select>
                         </div>
                         <div class="col-6">
-                            <label class="form-label small fw-bold">الصف</label>
-                            <select name="class_id" class="form-select form-select-sm" asp-items="ViewBag.class_id" required></select>
+                            <label class="form-label small fw-bold">الصف الدراسي</label>
+                            <select name="classId" class="form-select form-select-sm" asp-items="ViewBag.class_id" required>
+                                <option value="">-- اختر الصف --</option>
+                            </select>
                         </div>
                     </div>
+
                     <div class="mb-2">
-                        <label class="form-label small fw-bold">عنوان الدرس</label>
+                        <label class="form-label small fw-bold" style="color: #1eb2a6">تصنيف المحتوى</label>
+                        <select name="contentType" class="form-select form-select-sm fw-bold" required>
+                            <option value="Lesson">📖 درس مسجل</option>
+                            <option value="Exercise">✏️ تمرين وسلسلة دعم</option>
+                            <option value="Exam">📝 نموذج فرض أو اختبار</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">العنوان</label>
                         <input type="text" name="title" class="form-control form-control-sm" required />
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">رابط الفيديو</label>
-                        <input type="text" name="video_url" class="form-control form-control-sm" placeholder="https://..." />
+                    
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">الوصف</label>
+                        <textarea name="description" class="form-control form-control-sm" rows="2"></textarea>
                     </div>
-                    <button type="submit" class="btn-main-sm py-2">نشر الآن</button>
+
+                    @* 💡 الحقل الجديد لرفع صورة الغلاف الحقيقية للدرس *@
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-success"><i class="bi bi-image"></i> صورة غلاف المنشور (PNG/JPG)</label>
+                        <input type="file" name="coverImage" class="form-control form-control-sm" accept="image/*" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-danger"><i class="bi bi-file-pdf-fill"></i> ملف المحتوى (PDF)</label>
+                        <input type="file" name="pdfFile" class="form-control form-control-sm" accept=".pdf" required />
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-2" style="background-color: #1eb2a6; border: none; font-weight: bold;">نشر المحتوى الآن</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
-<style>
-    .fw-900 { font-weight: 900; }
-    .extra-small { font-size: 0.7rem; }
-    .form-control-sm, .form-select-sm { border-radius: 8px; border: 1px solid #e2e8f0; }
-</style>

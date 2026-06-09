@@ -1,18 +1,333 @@
 ﻿@{
-    ViewData["Title"] = "EducPsycho - المنصة الأولى للتعليم والدعم النفسي";
+    ViewData["Title"] = "RAFIQNI - المنصة الأولى للتعليم والدعم النفسي";
 }
 
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<style>
+    .hero-luxury {
+        margin-top: -30px !important; /* رفع القسم بالكامل للأعلى */
+        padding-top: 20px !important; /* تقليل الحشوة العلوية */
+    }
+
+    .hero-image-side img {
+        transform: translateY(-15px); /* رفع الصورة بشكل خاص إضافي لتبدو متناسقة */
+        transition: transform 0.3s ease;
+    }
+    
+    .platform-brand {
+        font-family: 'Cairo', sans-serif;
+        font-size: 2.8rem !important;
+        font-weight: 900 !important;
+        /* تدرج لوني يدمج بين الفيروزي العميق والذهبي الميتاليكي الدافئ */
+        background: linear-gradient(135deg, #0f766e 0%, #0d9488 40%, #d97706 70%, #b45309 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+        margin-bottom: 0 !important; /* جعلناه 0 ليتناسق بجانب النجوم */
+        filter: drop-shadow(0px 3px 6px rgba(0,0,0,0.08));
+    }
+
+    .hero-title {
+        font-size: 2.5rem !important;
+        line-height: 1.5 !important;
+        font-weight: 700;
+    }
+
+    .highlight {
+        color: #0d9488;
+        font-weight: 900;
+    }
+
+    .audience-badges {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+    }
+
+    .badge-item {
+        background: rgba(13, 148, 136, 0.1);
+        color: #0f766e;
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-size: 1rem;
+        font-weight: 700;
+        border: 1px solid rgba(13, 148, 136, 0.2);
+    }
+
+    .btn-register-now {
+        display: inline-block;
+        background: linear-gradient(45deg, #0d9488, #0f766e);
+        color: white !important;
+        padding: 15px 35px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        border-radius: 50px;
+        text-decoration: none;
+        box-shadow: 0 4px 15px rgba(13, 148, 136, 0.3);
+        transition: transform 0.3s ease;
+    }
+
+        .btn-register-now:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(13, 148, 136, 0.5);
+        }
+
+    /* ==========================================
+              تنسيق قسم الفيديو التعريفي المستقل
+           ========================================== */
+    .promo-video-section {
+        background: linear-gradient(180deg, #ffffff 0%, #f0fdfa 100%);
+        padding: 60px 0;
+    }
+
+    .video-section-header {
+        max-width: 700px;
+        margin: 0 auto 35px auto;
+    }
+
+    .video-section-title {
+        font-family: 'Cairo', sans-serif;
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #0f766e;
+    }
+
+    .video-section-subtitle {
+        color: #64748b;
+        font-size: 1.05rem;
+    }
+
+    .video-lux-container {
+        max-width: 850px;
+        margin: 0 auto;
+        position: relative;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(15, 118, 110, 0.12);
+        border: 6px solid rgba(13, 148, 136, 0.08);
+        transition: transform 0.3s ease;
+    }
+
+        .video-lux-container:hover {
+            transform: scale(1.01);
+        }
+
+        .video-lux-container video {
+            width: 100%;
+            display: block;
+            height: auto;
+            object-fit: cover;
+        }
+
+    /* ==========================================
+               تأثيرات وألوان الفوتر المحسنة (الملونة)
+            ========================================== */
+    .luxury-footer {
+        background-color: #0b1312;
+        color: #e2e8f0;
+        padding: 60px 0 30px 0;
+        font-family: 'Cairo', sans-serif;
+    }
+
+    .footer-brand-title {
+        font-size: 1.8rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #0d9488, #d97706);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 20px;
+    }
+
+    .footer-desc {
+        color: #94a3b8;
+        font-size: 0.95rem;
+        line-height: 1.7;
+    }
+
+    .footer-heading {
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 1.15rem;
+        margin-bottom: 25px;
+        position: relative;
+        padding-bottom: 10px;
+    }
+
+        .footer-heading::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 40px;
+            height: 2px;
+            background-color: #0d9488;
+        }
+
+    .footer-links {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+            .footer-links li a {
+                color: #94a3b8;
+                text-decoration: none;
+                font-size: 0.95rem;
+                transition: all 0.3s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+            }
+
+                .footer-links li a i {
+                    font-size: 0.75rem;
+                    transition: transform 0.3s ease;
+                }
+
+                .footer-links li a:hover {
+                    color: #0d9488;
+                    padding-right: 5px;
+                }
+
+                    .footer-links li a:hover i {
+                        transform: translateX(-3px);
+                    }
+
+    .footer-social-links {
+        display: flex;
+        gap: 10px;
+    }
+
+    .social-btn {
+        width: 38px;
+        height: 38px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #94a3b8;
+        border-radius: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+        .social-btn:hover {
+            background: #0d9488;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(13, 148, 136, 0.3);
+        }
+
+    .footer-app-badges {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .app-badge-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 20px;
+        border-radius: 12px;
+        text-decoration: none !important;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+    }
+
+    /* زر جوجل بلاي الملون */
+    .google-play-badge {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border: 1px solid #334155;
+    }
+
+        .google-play-badge i {
+            background: linear-gradient(135deg, #00F2FE 0%, #4FACFE 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.8rem;
+        }
+
+        .google-play-badge strong {
+            color: #38bdf8;
+        }
+
+        .google-play-badge span {
+            color: #94a3b8;
+        }
+
+        .google-play-badge:hover {
+            transform: translateY(-3px);
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-color: #0284c7;
+            box-shadow: 0 8px 20px rgba(2, 132, 199, 0.2);
+        }
+
+    /* زر آبل ستور الملون */
+    .app-store-badge {
+        background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+        border: 1px solid #374151;
+    }
+
+        .app-store-badge i {
+            color: #ffffff;
+            font-size: 1.8rem;
+            filter: drop-shadow(0 0 4px rgba(255,255,255,0.4));
+        }
+
+        .app-store-badge strong {
+            color: #ffffff;
+        }
+
+        .app-store-badge span {
+            color: #94a3b8;
+        }
+
+        .app-store-badge:hover {
+            transform: translateY(-3px);
+            background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+            border-color: #9ca3af;
+            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.1);
+        }
+
+    .app-badge-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+        .app-badge-text span {
+            font-size: 0.75rem;
+        }
+
+        .app-badge-text strong {
+            font-size: 1.05rem;
+        }
+
+    .footer-bottom {
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        margin-top: 40px;
+        padding-top: 25px;
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    .footer-bottom-logo {
+        color: #0d9488;
+        font-weight: 700;
+    }
+</style>
 
 <div class="container-fluid p-0" dir="rtl">
+
     <section class="hero-luxury">
         <div class="container hero-container">
-        
             <div class="hero-text-side">
-                <span class="platform-brand">EducPsycho</span>
+                <span class="platform-brand">رافقني</span>
                 <div class="audience-badges">
                     <span class="badge-item"><i class="bi bi-mortarboard"></i> للتلاميذ</span>
                     <span class="badge-item"><i class="bi bi-person-workspace"></i> للأساتذة</span>
@@ -20,7 +335,7 @@
                 </div>
                 <h1 class="hero-title">
                     المنصة الأولى في الجزائر <br>
-                    التي تجمع بين <span class="highlight">التعليم ذو جودة عالية </span> و <span class="highlight">الدعم النفسي</span>
+                    التي تجمع بين <span class="highlight">التعليم ذو جودة    عالية </span> و <span class="highlight">الدعم النفسي</span>
                 </h1>
                 <p>
                     تحت إشراف أساتذة ذوي خبرة وخريجي المدرسة العليا للأساتذة، ومجموعة من الأخصائيين النفسيين المختارين بعناية. ابدأ رحلتك الآن بالتسجيل في المنصة.
@@ -30,17 +345,101 @@
                         ابدأ الآن - سجل مجاناً
                     </a>
                 </div>
+
+                <div class="trust-row">
+                    <div class="trust-item">
+                        <i class="bi bi-shield-check"></i>
+                        أساتذة معتمدون
+                    </div>
+                    <div class="trust-item">
+                        <i class="bi bi-heart-pulse"></i>
+                        دعم نفسي متخصص
+                    </div>
+                    <div class="trust-item">
+                        <i class="bi bi-mortarboard"></i>
+                        متابعة مستمرة
+                    </div>
+                </div>
             </div>
 
             <div class="hero-image-side">
                 <img src="/images/hero-educ.jpg" class="main-hero-img" alt="EducPsycho Illustration" />
             </div>
-
         </div>
     </section>
-    
 
-    <section class="unified-dz-section">
+    <section class="promo-video-section text-center">
+        <div class="container">
+            <div class="video-section-header">
+                <h2 class="video-section-title">اكتشف منصة رافقني في دقيقة</h2>
+                <p class="video-section-subtitle">تعرف على رؤيتنا وطريقتنا المبتكرة في دمج التعليم المتميز بالرعاية النفسية للتلاميذ.</p>
+            </div>
+            <div class="video-lux-container">
+                <video controls controlsList="nodownload" playsinline preload="metadata">
+                    <source src="/videos/promo-video.mp4" type="video/mp4">
+                    عذراً، متصفحك لا يدعم تشغيل هذا الفيديو التعريفي.
+                </video>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats-luxury-section py-5" dir="rtl">
+        <div class="container">
+            <div class="stats-glass-container">
+                <div class="row g-4 justify-content-center">
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="stat-glass-card">
+                            <div class="stat-icon-gold">
+                                <i class="bi bi-mortarboard-fill"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 class="stat-number-metallic" data-target="5000">+0</h3>
+                                <p class="stat-label-dark">تلميذ مشترك</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="stat-glass-card">
+                            <div class="stat-icon-gold">
+                                <i class="bi bi-person-workspace"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 class="stat-number-metallic" data-target="50">+0</h3>
+                                <p class="stat-label-dark">أستاذ متميز ENS</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="stat-glass-card">
+                            <div class="stat-icon-gold">
+                                <i class="bi bi-heart-pulse-fill"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 class="stat-number-metallic" data-target="25">+0</h3>
+                                <p class="stat-label-dark">أخصائي نفسي وموجه</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="stat-glass-card">
+                            <div class="stat-icon-gold">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 class="stat-number-metallic" data-target="1200">+0</h3>
+                                <p class="stat-label-dark">ساعة دعم وإرشاد</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="unified-dz-section">
         <div class="container">
             <div class="unified-header">
                 <span class="level-badge">من أولى ثانوي إلى البكالوريا</span>
@@ -52,7 +451,7 @@
                     <div class="item-icon-white"><i class="bi bi-compass"></i></div>
                     <div class="item-text">
                         <h3>بناء القاعدة (1 و 2 ثانوي)</h3>
-                        <p>نتجاوز معاً عقبة التشتت الدراسي ونبني أساساً علمياً متيناً يمهد لك طريق التخصص بنجاح.</p>
+                        <p>نتجاوز معاً عقبة Tشتت الدراسي ونبني أساساً علمياً متيناً يمهد لك طريق التخصص بنجاح.</p>
                     </div>
                 </div>
 
@@ -83,28 +482,24 @@
         </div>
     </section>
 
-    <section class="pro-community-section">
+    <section id="about" class="pro-community-section">
         <div class="container">
             <div class="pro-grid-layout">
-            
                 <div class="pro-text-box">
                     <div class="mini-label">شراكة النجاح</div>
-                    <h2 class="pro-main-heading">كن جزءاً من <span class="cyan-gradient-text">عائلة EducPsycho</span></h2>
+                    <h2 class="pro-main-heading">كن جزءاً من <span class="cyan-gradient-text">عائلة RAFIQNI</span></h2>
                     <p class="pro-description">
                         ترحب أول منصة تعليمية-نفسية في الجزائر بالأساتذة المتميزين والمستشارين النفسيين للانضمام إليها كموظفين. معنا، تساهم في بناء منظومة تعليمية متكاملة تضع جودة التعلم والصحة النفسية في المقام الأول.
                     </p>
-                
                     <ul class="pro-features-list">
                         <li><i class="bi bi-rocket-takeoff-fill"></i> منصة تقنية هي الأحدث والأسهل استخداماً</li>
                         <li><i class="bi bi-people-fill"></i> مجتمع تعليمي متكامل يجمع آلاف التلاميذ</li>
                         <li><i class="bi bi-patch-check-fill"></i> بيئة عمل احترافية تقدّر خبرتك وتدعم إبداعك</li>
                     </ul>
-
                     <div class="pro-btn-wrapper">
                         <a href="#" class="apply-glow-btn">التحق بالطاقم الآن <i class="bi bi-chevron-left"></i></a>
                     </div>
                 </div>
-
                 <div class="pro-visual-box">
                     <div class="floating-circle main-circle">
                         <div class="circle-icon"><i class="bi bi-briefcase-fill"></i></div>
@@ -116,7 +511,6 @@
                     </div>
                     <div class="decoration-dots"></div>
                 </div>
-
             </div>
         </div>
     </section>
@@ -126,22 +520,19 @@
             <h3 class="elite-main-title">نخبة <span class="text-turquoise">الأساتذة والمختصين النفسيين </span></h3>
             <p class="elite-sub-title">نخبة الكفاءات الجزائرية بين يديك</p>
         </div>
-
         <div class="swiper elite-swiper">
-            <div class="swiper-wrapper" id="expertsWrapper">
-            </div>
+            <div class="swiper-wrapper" id="expertsWrapper"></div>
             <div class="swiper-pagination"></div>
         </div>
     </section>
+
     <section class="review-section-wrapper">
         <div class="container">
             <div class="review-header-action mb-4">
                 <button class="btn-review-outline" onclick="openReviewModal()">
                     <i class="bi bi-plus-lg me-2"></i> أضف تقييمك
                 </button>
-               
             </div>
-
             <div class="glass-review-card shadow-sm">
                 <div class="card-top-row mb-4">
                     <div class="user-info-area">
@@ -152,8 +543,7 @@
                         <div class="user-text-stars ms-3 text-end">
                             <h6 class="blurred-text mb-1" id="revName">اسم المستخدم</h6>
                             <p class="small text-muted mb-2" id="revDate">17 أبريل 2026</p>
-                            <div class="stars-rating text-turquoise" id="revStars">
-                            </div>
+                            <div class="stars-rating text-turquoise" id="revStars"></div>
                         </div>
                     </div>
                     <div class="rating-badge-xl">
@@ -166,8 +556,7 @@
                     <h5 class="fw-bold text-dark" id="revText">"تجربة رائعة"</h5>
                 </div>
                 <div class="card-footer-navigation">
-                    <div class="pagination-dots" id="revDots">
-                    </div>
+                    <div class="pagination-dots" id="revDots"></div>
                     <div class="navigation-arrows d-flex gap-2">
                         <button class="nav-arrow-btn" onclick="prevReview()"><i class="bi bi-chevron-right"></i></button>
                         <button class="nav-arrow-btn" onclick="nextReview()"><i class="bi bi-chevron-left"></i></button>
@@ -194,149 +583,246 @@
         </div>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
-<script>
-    // مصفوفة البيانات كما هي
-    const experts = [
-    ["علي", "بن عيسى", "الرياضيات", "male", 5],
-    ["سارة", "حداد", "الفيزياء", "female", 4],
-    ["يوسف", "قاسم", "علوم الحياة", "male", 5],
-    ["سارة", "محمد", "صعوبات التعلم", "female", 5],
-    ["يوسف", "كريم", "تطوير الذات", "male", 5]
-    ];
-
-    function generateStars(rating) {
-    let stars = '';
-    for (let i = 1; i <= 5; i++) {
-    stars += i <= rating ? '<i class="bi bi-star-fill"></i>' : '<i class="bi bi-star"></i>';
-    }
-    return stars;
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-    const wrapper = document.getElementById("expertsWrapper");
-        
-    experts.forEach((e, i) => {
-    const slide = document.createElement("div");
-    slide.className = "swiper-slide";
+<footer class="luxury-footer" dir="rtl">
+    <div class="container">
+        <div class="row g-5">
             
-    // تغيير رابط الصور لمصدر أكثر وقاراً وهدوءاً (UI Avatars أو الصور الرسمية)
-    // الرابط الجديد يعطي صوراً بملامح جادة ومناسبة للتعليم
-    const imageUrl = `https://xsgames.co/randomusers/assets/avatars/${e[3]}/${i + 10}.jpg`;
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="footer-brand-title">RAFIQNI | رافقني</div>
+                <p class="footer-desc mb-4">
+                    أول منصة تعليمية ونفسية متكاملة في الجزائر، تجمع بين التعليم عالي الجودة وبناء الشخصية المتزنة والمستقرة تحت إشراف نخبة من كبار الأساتذة والمستشارين النفسيين.
+                </p>
+                <div class="footer-social-links">
+                    <a href="#" class="social-btn" title="فيسبوك"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="social-btn" title="إنستغرام"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="social-btn" title="تيك توك"><i class="bi bi-tiktok"></i></a>
+                    <a href="#" class="social-btn" title="يوتيوب"><i class="bi bi-youtube"></i></a>
+                    <a href="#" class="social-btn" title="لينكد إن"><i class="bi bi-linkedin"></i></a>
+                </div>
+            </div>
 
-    slide.innerHTML = `
-    <div class="expert-circle-item">
-    <div class="expert-avatar-wrapper">
-    <img src="${imageUrl}" class="expert-img-circle" alt="Expert">
+            <div class="col-6 col-sm-6 col-md-3 col-lg-2">
+                <h5 class="footer-heading">روابط سريعة</h5>
+                <ul class="footer-links">
+                    <li><a href="#"><i class="bi bi-chevron-left"></i> الرئيسية</a></li>
+                    <li><a href="#features"><i class="bi bi-chevron-left"></i> خدماتنا</a></li>
+                    <li><a href="#about"><i class="bi bi-chevron-left"></i> انضم للطاقم</a></li>
+                    <li><a href="#"><i class="bi bi-chevron-left"></i> المدونة التعليمية</a></li>
+                    <li><a href="#"><i class="bi bi-chevron-left"></i> من نحن</a></li>
+                </ul>
+            </div>
+
+            <div class="col-6 col-sm-6 col-md-3 col-lg-3">
+                <h5 class="footer-heading">الدعم والمساعدة</h5>
+                <ul class="footer-links">
+                    <li><a href="#"><i class="bi bi-chevron-left"></i> الأسئلة الشائعة</a></li>
+                    <li><a href="#"><i class="bi bi-chevron-left"></i> مركز الدعم الفني</a></li>
+                    <li><a href="#"><i class="bi bi-chevron-left"></i> سياسة الخصوصية</a></li>
+                    <li><a href="#"><i class="bi bi-chevron-left"></i> شروط الاستخدام</a></li>
+                    <li><a href="#"><i class="bi bi-chevron-left"></i> تواصل معنا مباشرة</a></li>
+                </ul>
+            </div>
+
+            <div class="col-12 col-sm-12 col-md-6 col-lg-3">
+                <h5 class="footer-heading">تحميل التطبيق الرسمي</h5>
+                <p class="footer-desc mb-3">تابع دروسك واستشاراتك النفسية من أي مكان عبر تطبيق الهاتف المحمول.</p>
+                <div class="footer-app-badges">
+                    
+                    <a href="#" class="app-badge-item google-play-badge">
+                        <i class="bi bi-google-play"></i>
+                        <div class="app-badge-text text-end">
+                            <span>متاح على متجر</span>
+                            <strong>Google Play</strong>
+                        </div>
+                    </a>
+                    
+                    <a href="#" class="app-badge-item app-store-badge">
+                        <i class="bi bi-apple"></i>
+                        <div class="app-badge-text text-end">
+                            <span>حمل من متجر</span>
+                            <strong>App Store</strong>
+                        </div>
+                    </a>
+                    
+                </div>
+            </div>
+
+        </div>
+
+        <div class="footer-bottom text-center text-md-between d-md-flex align-items-center justify-content-between">
+            <p class="mb-2 mb-md-0">جميع الحقوق محفوظة © 2026 لموقع <span class="footer-bottom-logo">RAFIQNI</span></p>
+            <p class="mb-0 small text-muted">صنع بكل حب لدعم جيل الغد في الجزائر 🇩🇿</p>
+        </div>
     </div>
-    <div class="expert-details">
-    <div class="expert-rating">${generateStars(e[4])}</div>
-    <h5 class="expert-name">${e[0]} ${e[1]}</h5>
-    <span class="expert-specialty">${e[2]}</span>
-    </div>
-    </div>`;
-    wrapper.appendChild(slide);
-    });
+</footer>
 
-    // تحديث إعدادات Swiper لتقليص المسافات وزيادة العناصر المعروضة
-    new Swiper(".elite-swiper", {
-    slidesPerView: 2,      // إظهار عنصرين في الجوال بدلاً من واحد لتقليل الفراغ
-    spaceBetween: 10,     // تقليل المسافة بين الكروت
-    loop: true,
-    autoplay: { delay: 3000 },
-    pagination: { el: ".swiper-pagination", clickable: true },
-    breakpoints: {
-    640: { slidesPerView: 3, spaceBetween: 15 },
-    1024: { slidesPerView: 4, spaceBetween: 20 },
-    1400: { slidesPerView: 6, spaceBetween: 20 } // عرض عناصر أكثر في الشاشات الكبيرة
-    }
-    });
-    });
+@section Scripts {
+    <script>
+        const experts = [
+            ["علي", "بن عيسى", "الرياضيات", "ali_ben_aissa.jpg", 5],
+            ["سارة", "حداد", "الفيزياء", "sara_hadad.jpg", 4],
+            ["يوسف", "قاسم", "علوم الحياة", "youssef_kassem.jpg", 5],
+            ["سارة", "محمد", "صعوبات التعلم", "sara_mohamed.jpg", 5],
+            ["يوسف", "كريم", "تطوير الذات", "youssef_karim.jpg", 5]
+        ];
 
+        function generateStars(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                stars += i <= rating ? '<i class="bi bi-star-fill"></i>' : '<i class="bi bi-star"></i>';
+            }
+            return stars;
+        }
 
+        document.addEventListener("DOMContentLoaded", () => {
+            const wrapper = document.getElementById("expertsWrapper");
+            if(wrapper) {
+                experts.forEach((e) => {
+                    const slide = document.createElement("div");
+                    slide.className = "swiper-slide";
+                    const imageUrl = `/images/experts/${e[3]}`;
 
+                    slide.innerHTML = `
+                    <div class="expert-circle-item">
+                        <div class="expert-avatar-wrapper">
+                            <img src="${imageUrl}" class="expert-img-circle" alt="Expert" onerror="this.src='/images/avatar-placeholder.png'">
+                        </div>
+                        <div class="expert-details">
+                            <div class="expert-rating">${generateStars(e[4])}</div>
+                            <h5 class="expert-name">${e[0]} ${e[1]}</h5>
+                            <span class="expert-specialty">${e[2]}</span>
+                        </div>
+                    </div>`;
+                    wrapper.appendChild(slide);
+                });
+            }
 
-    // 1. مصفوفة التقييمات الأولية
-    let allReviews = [
-    { name: "أحمد بن علي", text: "المنصة غيرت طريقتي في الدراسة تماماً، الأساتذة قمة في الاحترافية.", rating: 5, date: "15 أبريل 2026", initials: "أب" },
-    { name: "سارة محمود", text: "شكراً EducPsycho على الدعم النفسي قبل الامتحانات، شعرت براحة كبيرة.", rating: 5, date: "10 أبريل 2026", initials: "سم" },
-    { name: "ياسين جبار", text: "تنظيم الوقت كان أكبر عائق لي، وبفضل المرشدين وجدت طريقي الصحيح.", rating: 4, date: "05 أبريل 2026", initials: "يج" }
-    ];
+            new Swiper(".elite-swiper", {
+                slidesPerView: 2,
+                spaceBetween: 10,
+                loop: true,
+                autoplay: { delay: 3000 },
+                pagination: { el: ".swiper-pagination", clickable: true },
+                breakpoints: {
+                    640: { slidesPerView: 3, spaceBetween: 15 },
+                    1024: { slidesPerView: 4, spaceBetween: 20 },
+                    1400: { slidesPerView: 6, spaceBetween: 20 }
+                }
+            });
+        });
 
-    let currentReviewIndex = 0;
+        let allReviews = [
+            { name: "أحمد بن علي", text: "المنصة غيرت طريقتي في الدراسة تماماً، الأساتذة قمة في الاحترافية.", rating: 5, date: "15 أبريل 2026", initials: "أب" },
+            { name: "سارة محمود", text: "شكراً RAFIQNI على الدعم النفسي قبل الامتحانات، شعرت براحة كبيرة.", rating: 5, date: "10 أبريل 2026", initials: "سم" },
+            { name: "ياسين جبار", text: "تنظيم الوقت كان أكبر عائق لي، وبفضل المرشدين وجدت طريقي الصحيح.", rating: 4, date: "05 أبريل 2026", initials: "يج" }
+        ];
 
-    // 2. دالة عرض التقييم الحالي
-    function displayReview() {
-    const rev = allReviews[currentReviewIndex];
-    document.getElementById('revName').innerText = rev.name;
-    document.getElementById('revText').innerText = `"${rev.text}"`;
-    document.getElementById('revNumber').innerText = rev.rating;
-    document.getElementById('revDate').innerText = rev.date;
-    document.getElementById('revInitials').innerText = rev.initials;
-    
-    // توليد النجوم
-    let starsHtml = "";
-    for(let i=0; i<5; i++) {
-    starsHtml += i < rev.rating ? '<i class="bi bi-star-fill"></i>' : '<i class="bi bi-star"></i>';
-    }
-    document.getElementById('revStars').innerHTML = starsHtml;
+        let currentReviewIndex = 0;
 
-    // تحديث النقاط (Dots)
-    updateDots();
-    }
+        function displayReview() {
+            if(!document.getElementById('revName')) return;
+            const rev = allReviews[currentReviewIndex];
+            document.getElementById('revName').innerText = rev.name;
+            document.getElementById('revText').innerText = `"${rev.text}"`;
+            document.getElementById('revNumber').innerText = rev.rating;
+            document.getElementById('revDate').innerText = rev.date;
+            document.getElementById('revInitials').innerText = rev.initials;
+            
+            let starsHtml = "";
+            for(let i=0; i<5; i++) {
+                starsHtml += i < rev.rating ? '<i class="bi bi-star-fill"></i>' : '<i class="bi bi-star"></i>';
+            }
+            document.getElementById('revStars').innerHTML = starsHtml;
+            updateDots();
+        }
 
-    function updateDots() {
-    let dotsHtml = "";
-    allReviews.forEach((_, index) => {
-    dotsHtml += `<span class="dot ${index === currentReviewIndex ? 'active' : ''}"></span>`;
-    });
-    document.getElementById('revDots').innerHTML = dotsHtml;
-    }
+        function updateDots() {
+            let dotsHtml = "";
+            allReviews.forEach((_, index) => {
+                dotsHtml += `<span class="dot ${index === currentReviewIndex ? 'active' : ''}"></span>`;
+            });
+            document.getElementById('revDots').innerHTML = dotsHtml;
+        }
 
-    // 3. وظائف التنقل
-    function nextReview() {
-    currentReviewIndex = (currentReviewIndex + 1) % allReviews.length;
-    displayReview();
-    }
+        function nextReview() {
+            currentReviewIndex = (currentReviewIndex + 1) % allReviews.length;
+            displayReview();
+        }
 
-    function prevReview() {
-    currentReviewIndex = (currentReviewIndex - 1 + allReviews.length) % allReviews.length;
-    displayReview();
-    }
+        function prevReview() {
+            currentReviewIndex = (currentReviewIndex - 1 + allReviews.length) % allReviews.length;
+            displayReview();
+        }
 
-    // 4. وظائف إضافة تقييم جديد
-    function openReviewModal() { document.getElementById('addReviewModal').style.display = 'flex'; }
-    function closeReviewModal() { document.getElementById('addReviewModal').style.display = 'none'; }
+        function openReviewModal() { document.getElementById('addReviewModal').style.display = 'flex'; }
+        function closeReviewModal() { document.getElementById('addReviewModal').style.display = 'none'; }
 
-    function submitReview() {
-    const name = document.getElementById('newUserName').value;
-    const text = document.getElementById('newUserReview').value;
-    const rating = document.getElementById('newUserRating').value;
-    
-    if(name && text) {
-    const initials = name.split(" ").map(n => n[0]).join("").toUpperCase();
-    const newEntry = {
-    name: name,
-    text: text,
-    rating: parseInt(rating),
-    date: "اليوم",
-    initials: initials
-    };
-        
-    allReviews.unshift(newEntry); // إضافة التقييم في بداية القائمة
-    currentReviewIndex = 0;
-    displayReview();
-    closeReviewModal();
-        
-    // تصفير الحقول
-    document.getElementById('newUserName').value = "";
-    document.getElementById('newUserReview').value = "";
-    } else {
-    alert("يرجى ملء جميع الحقول");
-    }
-    }
+        function submitReview() {
+            const name = document.getElementById('newUserName').value;
+            const text = document.getElementById('newUserReview').value;
+            const rating = document.getElementById('newUserRating').value;
+            
+            if(name && text) {
+                const initials = name.split(" ").map(n => n[0]).join("").toUpperCase();
+                const newEntry = {
+                    name: name,
+                    text: text,
+                    rating: parseInt(rating),
+                    date: "اليوم",
+                    initials: initials
+                };
+                    
+                allReviews.unshift(newEntry);
+                currentReviewIndex = 0;
+                displayReview();
+                closeReviewModal();
+                    
+                document.getElementById('newUserName').value = "";
+                document.getElementById('newUserReview').value = "";
+            } else {
+                alert("يرجى ملء جميع الحقول");
+            }
+        }
 
-    // تشغيل العرض الأول عند تحميل الصفحة
-    document.addEventListener("DOMContentLoaded", displayReview);
-</script>
+        document.addEventListener("DOMContentLoaded", displayReview);
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const counters = document.querySelectorAll('.stat-number-metallic');
+            
+            const startCounting = (counter) => {
+                const target = parseInt(counter.getAttribute('data-target'), 10);
+                const speed = 40;
+                const increment = target / speed;
+                let current = 0;
+                
+                const updateNumber = () => {
+                    current += increment;
+                    if (current < target) {
+                        counter.innerText = `+${Math.ceil(current)}`;
+                        setTimeout(updateNumber, 20);
+                    } else {
+                        counter.innerText = `+${target}`;
+                    }
+                };
+                updateNumber();
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        counters.forEach(counter => startCounting(counter));
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.2 });
+
+            const statsContainer = document.querySelector('.stats-glass-container');
+            if (statsContainer) {
+                observer.observe(statsContainer);
+            } else {
+                counters.forEach(counter => startCounting(counter));
+            }
+        });
+    </script>
+}

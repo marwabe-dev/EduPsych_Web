@@ -1,0 +1,173 @@
+﻿@model EduPsych_Web.Models.Counselor
+@{
+    ViewData["Title"] = "الملف الشخصي";
+    Layout = "_CounselorLayout";
+}
+
+<style>
+    :root {
+        --brand-teal: #1eb2a6;
+        --brand-teal-dark: #148d84;
+        --brand-teal-light: #f0fdfa;
+        --glass-bg: rgba(255, 255, 255, 0.85);
+    }
+
+    /* خلفية متدرجة هادئة للفيروزي */
+    body {
+        background: linear-gradient(135deg, #f8fafc 0%, #e0f2f1 100%);
+        min-height: 100vh;
+    }
+
+    .profile-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid white;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(30, 178, 166, 0.1);
+    }
+
+    .form-section-card {
+        background: white;
+        border-radius: 24px;
+        border: none;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.03);
+    }
+
+    .btn-teal {
+        background: linear-gradient(135deg, var(--brand-teal) 0%, var(--brand-teal-dark) 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 25px;
+        font-weight: 700;
+        transition: 0.3s;
+    }
+
+        .btn-teal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(30, 178, 166, 0.3);
+            color: white;
+        }
+
+    .form-control {
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        padding: 12px;
+    }
+
+        .form-control:focus {
+            border-color: var(--brand-teal);
+            box-shadow: 0 0 0 4px rgba(30, 178, 166, 0.1);
+        }
+
+    .input-group-text {
+        background-color: var(--brand-teal-light);
+        border-color: #e2e8f0;
+        color: var(--brand-teal-dark);
+        font-weight: bold;
+    }
+
+    .section-title {
+        color: var(--brand-teal-dark);
+        border-right: 4px solid var(--brand-teal);
+        padding-right: 15px;
+        margin-bottom: 25px;
+    }
+</style>
+
+<div class="container py-5" dir="rtl">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="profile-card p-4 text-center">
+                <div class="position-relative d-inline-block mb-3">
+                    <img src="@(Model.User?.profile_picture_url ?? "/images/default-avatar.png")"
+                         class="rounded-circle border border-4 border-white shadow-sm"
+                         style="width: 150px; height: 150px; object-fit: cover;">
+                    <div class="position-absolute bottom-0 end-0 bg-white rounded-circle p-2 shadow-sm" style="transform: translate(-10%, -10%);">
+                        <i class="fas fa-camera text-teal" style="color: var(--brand-teal);"></i>
+                    </div>
+                </div>
+                
+                <h4 class="fw-900 text-dark mb-1">@Model.User?.first_name @Model.User?.last_name</h4>
+                <span class="badge mb-3" style="background-color: var(--brand-teal-light); color: var(--brand-teal-dark); font-size: 0.9rem;">
+                    <i class="fas fa-user-md me-1"></i> مرشد نفسي معتمد
+                </span>
+                
+                <div class="p-3 rounded-4 mb-3" style="background: rgba(255,255,255,0.5);">
+                    <h6 class="text-primary fw-bold mb-2">
+                        <i class="fas fa-graduation-cap me-1"></i>
+                        @(Model.PsychSpecialization?.name ?? "تخصص غير محدد")
+                    </h6>
+                </div>
+                
+                <div class="text-end small px-2 text-secondary">
+                    <p class="mb-2"><i class="fas fa-phone-alt me-2" style="color: var(--brand-teal);"></i> @Model.User?.phone</p>
+                    <p class="mb-2"><i class="fas fa-envelope me-2" style="color: var(--brand-teal);"></i> @Model.User?.email</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="form-section-card p-4 p-lg-5">
+                <h3 class="section-title fw-900">تحديث الملف المهني</h3>
+                
+                <form asp-action="UpdateProfile" asp-controller="Counselor" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+
+                    <div class="row g-4 mb-5">
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-muted">الصورة الشخصية الجديدة</label>
+                            <input type="file" name="profilePicture" class="form-control bg-light border-0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-muted">رقم الهاتف 1</label>
+                            <input type="text" name="phone" value="@Model.User?.phone" class="form-control" placeholder="05XXXXXXXX">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-muted">رقم الهاتف 2</label>
+                            <input type="text" name="phone_number" value="@Model.User?.phone_number" class="form-control" placeholder="06XXXXXXXX">
+                        </div>
+                    </div>
+
+                    <h5 class="section-title fw-bold fs-5">البيانات المهنية</h5>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-muted">النبذة الشخصية (Bio)</label>
+                        <textarea asp-for="bio" class="form-control" rows="4" placeholder="تحدث عن خبراتك المهنية والأكاديمية..."></textarea>
+                    </div>
+                    
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-muted">سعر الجلسة</label>
+                            <div class="input-group">
+                                <input asp-for="hourly_price" class="form-control" type="number" step="0.01">
+                                    <span class="input-group-text">د.ج / ساعة</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted">أيام التوفر</label>
+                                <input asp-for="available_days" class="form-control" placeholder="مثل: الأحد - الخميس">
+                                </div>
+                            </div>
+
+                            <h5 class="section-title fw-bold fs-5">معلومات الدفع (السرية)</h5>
+                            <div class="row g-4 mb-5">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted">حساب الـ CCP</label>
+                                    <input type="text" name="ccp" value="@Model.ccp_number" class="form-control" placeholder="رقم الحساب الجاري">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted">رقم الـ RIB</label>
+                                    <input type="text" name="rib" value="@Model.rib_number" class="form-control" placeholder="رقم التعريف البنكي">
+                                </div>
+                            </div>
+
+                            <div class="text-start">
+                                <button type="submit" class="btn btn-teal px-5 py-3 shadow-sm fs-5">
+                                    <i class="fas fa-check-circle me-2"></i> اعتماد التغييرات
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>

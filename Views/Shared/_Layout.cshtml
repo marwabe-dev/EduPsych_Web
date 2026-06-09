@@ -4,48 +4,200 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - EducPsycho</title>
+    <title>@ViewData["Title"] - RAFIQNI</title>
     
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
     <style>
-            /* تنسيقات الهيدر الاحترافي */
-            .navbar-main {
-                background: white;
-                border-bottom: 2px solid #1eb2a61a;
-                padding: 0.8rem 0;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-                border-radius: 0 0 25px 25px; /* اللمسة الجمالية التي طلبتها */
+            :root {
+                --brand-primary: #0d9488;
+                --brand-dark: #0f766e;
+                --text-main: #334155;
+                --text-muted: #64748b;
+                --bg-glass: rgba(255, 255, 255, 0.85);
             }
 
-            .nav-link-custom {
-                color: #4a5568 !important;
-                font-weight: 700;
-                padding: 0.5rem 1rem !important;
-                transition: 0.3s;
+            body {
+                font-family: 'Cairo', sans-serif;
+                padding-top: 80px;
+                background-color: #f8fafc;
             }
 
-                .nav-link-custom:hover {
-                    color: #1eb2a6 !important;
-                    background: #1eb2a60d;
-                    border-radius: 8px;
+            /* هيدر زجاجي عصري مستوحى من المواقع العالمية */
+            .navbar-global {
+                background: var(--bg-glass);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+                padding: 0.6rem 0;
+                position: fixed !important;
+                top: 0;
+                left: 0;
+                width: 100%;
+                z-index: 1030;
+                transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            /* تصميم الشعار وهويته البصرية */
+            .brand-wrapper {
+                display: flex;
+                align-items: center;
+                text-decoration: none;
+                gap: 10px;
+            }
+
+                .brand-wrapper img {
+                    height: 44px;
+                    width: auto;
+                    object-fit: contain;
+                    transition: transform 0.3s ease;
                 }
 
-            .user-badge {
-                font-size: 0.75rem;
-                background: #1eb2a6;
-                color: white;
-                padding: 2px 10px;
-                border-radius: 20px;
-                font-weight: bold;
+                .brand-wrapper:hover img {
+                    transform: rotate(-5deg) scale(1.05);
+                }
+
+            .brand-text {
+                font-weight: 800 !important;
+                font-size: 1.6rem !important;
+                letter-spacing: -0.5px;
+                background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-dark) 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
             }
 
-            /* تنسيقات الذكاء الاصطناعي (Sidebar) */
+            /* روابط التنقل الرشيقة الـ Premium */
+            .nav-link-premium {
+                color: var(--text-main) !important;
+                font-weight: 500;
+                font-size: 0.95rem;
+                padding: 0.5rem 1.2rem !important;
+                transition: all 0.2s ease;
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+                .nav-link-premium:hover {
+                    color: var(--brand-primary) !important;
+                }
+
+                /* نقطة برمجية ذكية تظهر أسفل الرابط النشط بدلاً من الخط الجاف */
+                .nav-link-premium.active {
+                    color: var(--brand-primary) !important;
+                    font-weight: 700;
+                }
+
+                    .nav-link-premium.active::after {
+                        content: '';
+                        position: absolute;
+                        bottom: -2px;
+                        width: 5px;
+                        height: 5px;
+                        background-color: var(--brand-primary);
+                        border-radius: 50%;
+                    }
+
+            /* أزرار الهوية الفاخرة للولوج والتسجيل */
+            .btn-premium-solid {
+                background: var(--brand-primary) !important;
+                color: #ffffff !important;
+                font-weight: 600;
+                font-size: 0.9rem;
+                padding: 0.55rem 1.4rem;
+                border-radius: 10px;
+                border: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                transition: all 0.25s ease;
+                box-shadow: 0 4px 12px rgba(13, 148, 136, 0.12);
+            }
+
+                .btn-premium-solid:hover {
+                    background: var(--brand-dark) !important;
+                    transform: translateY(-1px);
+                    box-shadow: 0 6px 16px rgba(13, 148, 136, 0.22);
+                }
+
+            .btn-premium-ghost {
+                background-color: transparent !important;
+                color: var(--text-main) !important;
+                font-weight: 600;
+                font-size: 0.9rem;
+                padding: 0.55rem 1.2rem;
+                border-radius: 10px;
+                border: 1px solid transparent;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                transition: all 0.2s ease;
+            }
+
+                .btn-premium-ghost:hover {
+                    color: var(--brand-primary) !important;
+                    background-color: rgba(13, 148, 136, 0.06) !important;
+                }
+
+            /* كبسولة حساب المستخدم (User Dropdown Capsule) */
+            .user-capsule {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 5px 6px 5px 14px;
+                background: #f1f5f9;
+                border: 1px solid #e2e8f0;
+                border-radius: 100px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+
+                .user-capsule:hover {
+                    background: #e2e8f0;
+                    border-color: #cbd5e1;
+                }
+
+            .user-capsule-badge {
+                font-size: 0.65rem;
+                background: var(--brand-primary);
+                color: white;
+                padding: 1px 8px;
+                border-radius: 100px;
+                font-weight: 700;
+            }
+
+            /* قائمة الدروب داون الاحترافية كلياً */
+            .dropdown-menu-premium {
+                border: 1px solid rgba(0,0,0,0.05) !important;
+                border-radius: 14px !important;
+                padding: 8px !important;
+                min-width: 200px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;
+                background: #ffffff;
+            }
+
+            .dropdown-item-premium {
+                border-radius: 8px;
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+                font-weight: 500;
+                color: var(--text-main);
+                transition: all 0.2s ease;
+            }
+
+                .dropdown-item-premium:hover {
+                    background-color: #f1f5f9;
+                    color: var(--brand-primary);
+                }
+
+            /* الهيكل الإنشائي والسايدبار الذكي */
             #main-wrapper-area {
-                transition: all 0.5s cubic-bezier(0.05, 0.74, 0.2, 0.99);
+                transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
                 width: 100%;
             }
 
@@ -54,83 +206,108 @@
                 width: calc(100% - 400px) !important;
             }
 
+                #main-wrapper-area.content-pushed-global ~ header .navbar-global,
+                .content-pushed-global ~ header .navbar-global {
+                    width: calc(100% - 400px) !important;
+                    margin-right: 400px !important;
+                }
+
+            html {
+                scroll-behavior: smooth;
+            }
+
+            /* تحسين مظهر فقاعات الدردشة الافتراضية للذكاء الاصطناعي */
             .ai-bubble {
-                background: white;
-                padding: 15px;
-                border-radius: 15px;
-                border: 1px solid #eee;
-                margin-bottom: 10px;
+                padding: 12px 16px;
+                border-radius: 16px;
                 max-width: 85%;
+                font-size: 0.95rem;
+                line-height: 1.6;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+                word-wrap: break-word;
             }
     </style>
 </head>
 <body>
 
     <header>
-        <nav class="navbar navbar-expand-lg navbar-main sticky-top">
-            <div class="container">
-                <a class="navbar-brand d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index" style="font-weight: 900; font-size: 1.6rem; color: #1a202c;">
-                    <i class="bi bi-mortarboard-fill text-turquoise"></i>
-                    <span>Educ<span class="text-turquoise">Psycho</span></span>
+        <nav class="navbar navbar-expand-lg navbar-global">
+            <div class="container d-flex align-items-center justify-content-between">
+                
+                <a class="brand-wrapper order-1" asp-controller="Home" asp-action="Index">
+                    <img src="/images/logo-rafqni.png" alt="RAFIQNI Logo" onerror="this.style.display='none';">
+                    <span class="brand-text">RAFIQNI</span>
                 </a>
 
-                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
-                    <span class="bi bi-list fs-1 text-turquoise"></span>
+                <button class="navbar-toggler border-0 order-3 order-lg-2 p-1" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+                    <span class="bi bi-list fs-2 text-dark"></span>
                 </button>
 
-                <div class="collapse navbar-collapse" id="mainNavbar">
-                    <ul class="navbar-nav mx-auto">
+                <div class="collapse navbar-collapse order-4 order-lg-3 justify-content-center" id="mainNavbar">
+                    <ul class="navbar-nav text-center my-3 my-lg-0 gap-1">
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-premium active" href="#hero">الرئيسية</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-premium" href="#features">المميزات</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-premium" href="#about">من نحن</a>
+                        </li>
+
                         @{
                             var role = Context.Session.GetString("UserRole");
                             var userName = Context.Session.GetString("UserName");
                         }
 
-                        <li class="nav-item">
-                            <a class="nav-link nav-link-custom" asp-controller="Home" asp-action="Index">الرئيسية</a>
-                        </li>
-
                         @if (role == "Admin")
                         {
-                            <li class="nav-item"><a class="nav-link nav-link-custom" asp-controller="Admin" asp-action="Dashboard">لوحة التحكم</a></li>
+                            <li class="nav-item"><a class="nav-link nav-link-premium" asp-controller="Admin" asp-action="Dashboard">لوحة التحكم</a></li>
                         }
                         else if (role == "Student")
                         {
-                            <li class="nav-item"><a class="nav-link nav-link-custom" asp-controller="Student" asp-action="MyEducationalLessons">دروسي</a></li>
+                            <li class="nav-item"><a class="nav-link nav-link-premium" asp-controller="Student" asp-action="MyEducationalLessons">دروسي</a></li>
                         }
                         else if (role == "Teacher")
                         {
-                            <li class="nav-item"><a class="nav-link nav-link-custom" asp-controller="Teacher" asp-action="Index">إدارة الحصص</a></li>
+                            <li class="nav-item"><a class="nav-link nav-link-premium" asp-controller="Teacher" asp-action="Index">إدارة الحصص</a></li>
                         }
-                    
-                        <li class="nav-item"><a class="nav-link nav-link-custom" href="#about">عن المنصة</a></li>
-                        <li class="nav-item"><a class="nav-link nav-link-custom" href="#features">المميزات</a></li>
                     </ul>
-
-                    <div class="d-flex align-items-center gap-3">
-                        @if (role != null)
-                        {
-                            <div class="dropdown">
-                                <div class="d-flex align-items-center gap-2 px-3 py-1 bg-light rounded-pill border" data-bs-toggle="dropdown" style="cursor:pointer">
-                                    <div class="text-end d-none d-sm-block">
-                                        <div class="fw-bold small" style="line-height: 1;">@userName</div>
-                                        <span class="user-badge">@role</span>
-                                    </div>
-                                    <i class="bi bi-person-circle fs-3 text-turquoise"></i>
-                                </div>
-                                <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius:15px;">
-                                   
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item py-2 text-danger" asp-controller="Account" asp-action="Logout"><i class="bi bi-box-arrow-right me-2"></i> خروج</a></li>
-                                </ul>
-                            </div>
-                        }
-                        else
-                        {
-                            <a asp-controller="Account" asp-action="Login" class="btn fw-bold text-dark">دخول</a>
-                            <a asp-controller="Account" asp-action="Register" class="btn btn-main">حساب جديد</a>
-                        }
-                    </div>
                 </div>
+
+                <div class="d-flex align-items-center gap-2 flex-nowrap order-2 order-lg-4">
+                    @if (role != null)
+                    {
+                        <div class="dropdown">
+                            <div class="user-capsule" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle fs-4" style="color: var(--brand-primary);"></i>
+                                <div class="text-start d-none d-sm-block">
+                                    <div class="fw-semibold small text-dark" style="line-height: 1.1;">@userName</div>
+                                    <span class="user-capsule-badge">@role</span>
+                                </div>
+                                <i class="bi bi-chevron-down text-muted" style="font-size: 0.75rem;"></i>
+                            </div>
+                            <ul class="dropdown-menu dropdown-menu-start dropdown-menu-premium shadow border-0 mt-2">
+                                <li>
+                                    <a class="dropdown-item dropdown-item-premium text-danger d-flex align-items-center gap-2" asp-controller="Account" asp-action="Logout">
+                                        <i class="bi bi-box-arrow-right fs-5"></i>
+                                        <span>تسجيل الخروج</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-premium-ghost">
+                            تسجيل الدخول
+                        </a>
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-premium-solid">
+                            إنشاء حساب مجاني
+                        </a>
+                    }
+                </div>
+
             </div>
         </nav>
     </header>
@@ -141,23 +318,23 @@
 
     @if (role == "Student")
     {
-        <div id="ai-chat-launcher" onclick="toggleAiSidebar()" style="position: fixed; bottom: 30px; right: 30px; background: #1eb2a6; color: white; padding: 12px 25px; border-radius: 50px; cursor: pointer; z-index: 9999; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 25px rgba(30, 178, 166, 0.3); transition: 0.3s ease;">
+        <div id="ai-chat-launcher" onclick="toggleAiSidebar()" style="position: fixed; bottom: 30px; right: 30px; background: #0d9488; color: white; padding: 12px 25px; border-radius: 50px; cursor: pointer; z-index: 9999; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 25px rgba(13, 148, 136, 0.3); transition: 0.3s ease;">
             <i class="bi bi-robot fs-4"></i>
-            <span class="fw-bold">اسأل EducPshycho</span>
+            <span class="fw-bold">اسأل RAFIQNI</span>
         </div>
 
         <div id="ai-sidebar" style="position: fixed; top: 0; right: -400px; width: 400px; height: 100vh; background: white; z-index: 10000; transition: 0.5s cubic-bezier(0.05, 0.74, 0.2, 0.99); display: flex; flex-direction: column; box-shadow: -10px 0 40px rgba(0,0,0,0.1); border-left: 1px solid #eee;">
-            <div style="background: linear-gradient(135deg, #1eb2a6 0%, #2bd2c5 100%); padding: 25px; color: white; display: flex; justify-content: space-between; align-items: center;">
-                <span class="fw-bold"><i class="bi bi-stars"></i> مساعد EducPshycho</span>
+            <div style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); padding: 25px; color: white; display: flex; justify-content: space-between; align-items: center;">
+                <span class="fw-bold"><i class="bi bi-stars"></i> مساعد RAFIQNI</span>
                 <button onclick="toggleAiSidebar()" class="btn-close btn-close-white" style="background:none; border:none; color:white; font-size:24px;">&times;</button>
             </div>
             <div id="ai-chat-messages" style="flex: 1; padding: 20px; overflow-y: auto; background: #f8fbfb; display: flex; flex-direction: column; gap: 15px;">
-                <div class="ai-bubble">أهلاً بك يا @userName! كيف أساعدك في رحلتك التعليمية اليوم؟</div>
+                <div class="ai-bubble" style="background: white; align-self: flex-start;">أهلاً بك يا @userName! كيف أساعدك في رحلتك التعليمية اليوم؟</div>
             </div>
             <div style="padding: 20px; border-top: 1px solid #eee;">
                 <div style="background: #f1f5f5; border-radius: 50px; padding: 5px 15px; display: flex; align-items: center;">
                     <input type="text" id="ai-sidebar-input" placeholder="اكتب سؤالك..." style="flex:1; border:none; background:none; outline:none;" onkeypress="if(event.key==='Enter') sendSidebarMessage()">
-                    <button onclick="sendSidebarMessage()" style="background:#1eb2a6; color:white; border:none; width:35px; height:35px; border-radius:50%;"><i class="bi bi-send-fill"></i></button>
+                    <button onclick="sendSidebarMessage()" style="background:#0d9488; color:white; border:none; width:35px; height:35px; border-radius:50%; display: flex; align-items: center; justify-content: center;"><i class="bi bi-send-fill"></i></button>
                 </div>
             </div>
         </div>
@@ -165,70 +342,105 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     <script>
-            // وظائف المساعد الذكي
-            function toggleAiSidebar() {
-                const sidebar = document.getElementById('ai-sidebar');
-                const launcher = document.getElementById('ai-chat-launcher');
-                const mainContent = document.getElementById('main-wrapper-area');
+        function toggleAiSidebar() {
+        const sidebar = document.getElementById('ai-sidebar');
+        const launcher = document.getElementById('ai-chat-launcher');
+        const mainContent = document.getElementById('main-wrapper-area');
 
-                if (sidebar.style.right === '0px') {
-                    sidebar.style.right = '-400px';
-                    launcher.style.opacity = '1';
-                    if (mainContent) mainContent.classList.remove('content-pushed-global');
-                } else {
-                    sidebar.style.right = '0px';
-                    launcher.style.opacity = '0';
-                    if (mainContent) mainContent.classList.add('content-pushed-global');
-                }
-            }
+        if (!sidebar) return;
 
-            async function sendSidebarMessage() {
-                const input = document.getElementById('ai-sidebar-input');
-                const msg = input.value.trim();
-                if (!msg) return;
+        if (sidebar.style.right === '0px') {
+        sidebar.style.right = '-400px';
+        if(launcher) launcher.style.opacity = '1';
+        if (mainContent) mainContent.classList.remove('content-pushed-global');
+        } else {
+        sidebar.style.right = '0px';
+        if(launcher) launcher.style.opacity = '0';
+        if (mainContent) mainContent.classList.add('content-pushed-global');
+        }
+        }
 
-                appendLayoutMsg(msg, 'user');
-                input.value = '';
+        async function sendSidebarMessage() {
+        const input = document.getElementById('ai-sidebar-input');
+        const msg = input.value.trim();
+        if (!msg) return;
 
-                const loaderId = "loader-" + Date.now();
-                appendLayoutMsg("جاري التفكير...", 'ai', loaderId);
+        appendLayoutMsg(msg, 'user');
+        input.value = '';
 
-                try {
-                    const response = await fetch('/api/ChatAi/ask', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ prompt: msg })
-                    });
-                    const data = await response.json();
-                    document.getElementById(loaderId).remove();
-                    appendLayoutMsg(data.response, 'ai');
-                } catch (err) {
-                    document.getElementById(loaderId).innerText = "حدث خطأ في الاتصال.";
-                }
-            }
+        const loaderId = "loader-" + Date.now();
+        appendLayoutMsg("جاري التفكير...", 'ai', loaderId);
 
-            function appendLayoutMsg(text, sender, id = null) {
-                const area = document.getElementById('ai-chat-messages');
-                const div = document.createElement('div');
-                div.className = "ai-bubble";
-        
-                if (sender === 'user') {
-                    div.style.background = "#1eb2a6";
-                    div.style.color = "white";
-                    div.style.alignSelf = "flex-end";
-                } else {
-                    div.style.background = "white";
-                    div.style.alignSelf = "flex-start";
-                }
+        try {
+        const response = await fetch('/api/ChatAi/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: msg })
+        });
 
-                if (id) div.id = id;
-                div.innerText = text;
-                area.appendChild(div);
-                area.scrollTop = area.scrollHeight;
-            }
+        if (!response.ok) {
+        throw new Error("فشل في استجابة الخادم البديل");
+        }
+
+        const data = await response.json();
+        const loaderElement = document.getElementById(loaderId);
+        if (loaderElement) loaderElement.remove();
+
+        // التحقق من جلب البيانات بشكل صحيح من حقل الـ response العائد من الـ Controller
+        if (data && data.response) {
+        appendLayoutMsg(data.response, 'ai');
+        } else {
+        appendLayoutMsg("عذراً، لم أتمكن من معالجة الرد بالشكل الصحيح.", 'ai');
+        }
+        } catch (err) {
+        const loaderElement = document.getElementById(loaderId);
+        if (loaderElement) {
+        loaderElement.innerText = "حدث خطأ في الاتصال، يرجى المحاولة لاحقاً.";
+        loaderElement.style.color = "#ef4444";
+        }
+        }
+        }
+
+        function appendLayoutMsg(text, sender, id = null) {
+        const area = document.getElementById('ai-chat-messages');
+        if(!area) return;
+        const div = document.createElement('div');
+        div.className = "ai-bubble";
+            
+        if (sender === 'user') {
+        div.style.background = "#0d9488";
+        div.style.color = "white";
+        div.style.alignSelf = "flex-end";
+        } else {
+        div.style.background = "white";
+        div.style.color = "#334155";
+        div.style.alignSelf = "flex-start";
+        }
+
+        if (id) div.id = id;
+        div.innerText = text;
+        area.appendChild(div);
+        area.scrollTop = area.scrollHeight;
+        }
+
+        window.addEventListener('scroll', () => {
+        let scrollDistance = window.scrollY + 180;
+        document.querySelectorAll('section').forEach((sec) => {
+        if (sec.offsetTop && scrollDistance >= sec.offsetTop && scrollDistance < sec.offsetTop + sec.offsetHeight) {
+        let id = sec.getAttribute('id');
+        document.querySelectorAll('.nav-link-premium').forEach((link) => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + id) {
+        link.classList.add('active');
+        }
+        });
+        }
+        });
+        });
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

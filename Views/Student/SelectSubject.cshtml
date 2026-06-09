@@ -2,8 +2,7 @@
 
 @{
     ViewData["Title"] = "المواد الدراسية - إبداع";
-    Layout = "_Layout";
-
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
     // جلب الاسم من السيشن للهيدر لضمان التناسق
     var fullName = Context.Session.GetString("UserName") ?? "تلميذنا العزيز";
 }
@@ -13,12 +12,12 @@
 <style>
     :root {
         --primary-teal: #1eb2a6;
-        --dark-teal: #114b4d;
-        --glass-white: rgba(255, 255, 255, 0.85);
+        --dark-teal: #0c3336; 
+        --glass-bg: rgba(255, 255, 255, 0.45); 
+        --glass-border: rgba(255, 255, 255, 0.6);
     }
 
     body {
-        background-color: #f4fdfc;
         font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
@@ -27,172 +26,186 @@
         display: none !important;
     }
 
-    /* --- الهيدر العائم (الكبسولة) الموحد --- */
-    .edu-header {
-        background: var(--glass-white);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(30, 178, 166, 0.15);
-        padding: 12px 30px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        position: sticky;
-        top: 15px;
-        margin: 10px 20px 30px;
-        z-index: 1050;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-        border-radius: 50px;
+    /* حاوية الصفحة وتأثير الحركة */
+    .subject-page-wrapper {
+        padding: 30px 0;
+        animation: fadeInPage 0.5s ease-in-out;
     }
 
-    .edu-header .btn {
-        border-radius: 50px !important;
-        font-weight: 600;
-        font-size: 0.85rem;
-        transition: 0.3s;
-    }
-
-    /* تصميم كروت المواد */
-    .subject-card {
-        background: white;
-        border: none;
-        border-radius: 40px;
-        padding: 30px;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* تصميم كروت المواد المصغرة والمكثفة (Glassmorphism) */
+    .compact-subject-card {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 22px !important;
+        padding: 20px !important;
+        box-shadow: 0 8px 24px rgba(12, 51, 54, 0.04) !important;
+        transition: all 0.35s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
         position: relative;
         overflow: hidden;
-        border: 1px solid rgba(0,0,0,0.02);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
     }
 
-    .subject-card:hover {
-        transform: translateY(-12px);
-        box-shadow: 0 25px 50px rgba(30, 178, 166, 0.12) !important;
+    /* تأثيرات الحركة الرشيقة عند تمرير الماوس */
+    .compact-subject-card:hover {
+        transform: translateY(-6px);
+        background: rgba(255, 255, 255, 0.8) !important;
+        border-color: rgba(30, 178, 166, 0.3) !important;
+        box-shadow: 0 15px 35px rgba(12, 51, 54, 0.08) !important;
     }
 
-    .icon-box-subject {
-        width: 75px;
-        height: 75px;
-        background: #f0fdfc;
-        border-radius: 25px;
+    /* 🛠️ تعديل: صندوق الأيقونة يظهر باللون التركوازي الرئيسي من البداية */
+    .icon-box-subject-mini {
+        width: 52px;
+        height: 52px;
+        background: linear-gradient(135deg, var(--primary-teal) 0%, #148f85 100%);
+        border: 1px solid rgba(30, 178, 166, 0.2);
+        border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 20px;
-        font-size: 2.2rem;
-        color: var(--primary-teal);
-        transition: 0.3s;
+        font-size: 1.5rem;
+        color: white; /* أيقونة بيضاء واضحة */
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(30, 178, 166, 0.2);
     }
 
-    .subject-card:hover .icon-box-subject {
-        background: var(--primary-teal);
+    /* عند تمرير الماوس يتحول صندوق الأيقونة إلى تباين داكن وجذاب */
+    .compact-subject-card:hover .icon-box-subject-mini {
+        background: linear-gradient(135deg, var(--dark-teal) 0%, #114246 100%);
         color: white;
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(12, 51, 54, 0.15);
     }
 
-    .btn-main {
-        background: var(--primary-teal);
-        color: white !important;
-        border-radius: 18px;
-        padding: 12px;
+    /* نصوص الكرت المصغرة */
+    .subject-mini-title {
+        font-size: 1.15rem !important;
+        font-weight: 800 !important;
+        color: var(--dark-teal) !important;
+        margin: 0;
+        text-shadow: none !important;
+    }
+
+    .feature-tag {
+        font-size: 0.78rem !important;
         font-weight: 700;
-        transition: 0.3s;
+        color: rgba(12, 51, 54, 0.65) !important;
+        background: rgba(30, 178, 166, 0.06);
+        padding: 3px 10px;
+        border-radius: 30px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* صف أزرار التحكم مصفوفة أفقياً */
+    .subject-actions-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    /* 🛠️ تعديل: زر "اكتشف الأساتذة" يظهر باللون التركوازي الرئيسي من البداية */
+    .btn-action-discover {
+        flex: 2;
+        background: linear-gradient(135deg, var(--primary-teal) 0%, #148f85 100%);
+        color: white !important;
         border: none;
+        padding: 9px 12px;
+        border-radius: 14px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        transition: all 0.25s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(30, 178, 166, 0.15);
+    }
+
+    /* عند تمرير الماوس على الكرت، يتحول الزر إلى اللون الداكن ليعطي حركة تفاعلية رشيقة */
+    .compact-subject-card:hover .btn-action-discover {
+        background: linear-gradient(135deg, var(--dark-teal) 0%, rgba(12, 51, 54, 0.88) 100%);
+        box-shadow: 0 4px 12px rgba(12, 51, 54, 0.2);
+    }
+
+    /* زر تفاصيل المحتوى */
+    .btn-action-details {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.6);
+        color: var(--primary-teal) !important;
+        border: 1px solid rgba(30, 178, 166, 0.25);
+        padding: 9px 10px;
+        border-radius: 14px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        transition: all 0.25s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
         text-decoration: none;
     }
 
-    .btn-main:hover {
-        background: var(--dark-teal);
-        transform: scale(1.02);
-    }
-
-    .btn-details {
-        background: #f8fbfb;
-        color: var(--primary-teal);
-        border: 1px solid #eef7f6;
-        border-radius: 18px;
-        padding: 10px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: 0.3s;
-    }
-
-    .btn-details:hover {
-        background: #eef7f6;
+    .btn-action-details:hover {
+        background: rgba(30, 178, 166, 0.08);
+        border-color: var(--primary-teal);
     }
 
     .text-turquoise { color: #1eb2a6 !important; }
     .bg-turquoise { background-color: #1eb2a6 !important; }
+
+    @@keyframes fadeInPage {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 </style>
 
-<div class="container-fluid p-0 text-end" dir="rtl">
-
-    @* --- الهيدر العائم المستبدل --- *@
-    <header class="edu-header">
-        <div class="d-flex align-items-center">
-            <div class="bg-turquoise text-white p-2 rounded-3 ms-3">
-                <i class="bi bi-mortarboard-fill"></i>
-            </div>
-            <div class="d-flex flex-column">
-                <h4 class="m-0 fw-bold text-dark">منصة <span class="text-turquoise">إبداع</span></h4>
-            </div>
-        </div>
-
-        <div class="d-flex gap-2">
-            <a href="@Url.Action("Index", "Student")" class="btn btn-light shadow-sm text-dark border">الرئيسية</a>
-            <a href="@Url.Action("MyWallet", "Student")" class="btn btn-white shadow-sm text-dark border">محفظتي</a>
-            <a href="@Url.Action("Courses", "Student")" class="btn btn-white shadow-sm text-dark border">متجر الدورات</a>
-            <a href="@Url.Action("MyEducationalLessons", "Student")" class="btn btn-white shadow-sm text-dark border">حصصي التعليمية</a>
-            <a href="@Url.Action("MyCounselSessions", "Student")" class="btn btn-white shadow-sm text-dark border">حصصي النفسية</a>
-        </div>
-
-        <div class="dropdown">
-            <button class="btn btn-light rounded-circle shadow-sm" type="button" data-bs-toggle="dropdown">
-                <i class="bi bi-person-fill text-turquoise"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2">
-                <li><a class="dropdown-item py-3 text-danger fw-bold" href="@Url.Action("Logout", "Account")"><i class="bi bi-box-arrow-right ms-2"></i>تسجيل الخروج</a></li>
-            </ul>
-        </div>
-    </header>
-
+<div class="container-fluid p-0 text-end subject-page-wrapper" dir="rtl">
     <div class="container">
-        <div class="text-center py-5">
-            <span class="badge bg-turquoise text-white mb-2 px-3 py-2 rounded-pill">القسم التعليمي</span>
-            <h1 class="fw-bold text-dark mb-2">المواد الدراسية</h1>
-            <p class="text-muted fs-5">مرحباً بك يا @fullName، اختر المادة التي ترغب في مراجعتها الآن</p>
+        <div class="text-center py-4">
+            <span class="badge bg-turquoise text-white mb-2 px-3 py-2 rounded-pill" style="font-weight:700; font-size:0.78rem;">القسم التعليمي</span>
+            <h1 class="fw-bold text-dark mb-2" style="font-size: 1.8rem;">المواد الدراسية</h1>
+            <p class="text-muted fs-6">مرحباً بك يا @fullName، اختر المادة التي ترغب في مراجعتها الآن</p>
+            <div style="width: 40px; height: 3.5px; background: var(--primary-teal); margin: 12px auto; border-radius: 10px;"></div>
         </div>
 
-        <div class="row g-4 pb-5">
+        <div class="row g-3 pb-5">
             @foreach (var item in Model)
             {
-                <div class="col-md-6 col-lg-4">
-                    <div class="subject-card shadow-sm h-100 d-flex flex-column">
+                <div class="col-xl-4 col-md-6 col-sm-12">
+                    <div class="compact-subject-card">
                         
-                        <div class="icon-box-subject">
-                            <i class="bi bi-journal-bookmark-fill"></i>
-                        </div>
-
-                        <div class="mb-4 text-center text-md-end">
-                            <h3 class="fw-bold text-dark mb-2">@item.name</h3>
-                            <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-2">
-                                <span class="small text-muted"><i class="bi bi-check2-circle text-turquoise"></i> دروس دعم</span>
-                                <span class="small text-muted"><i class="bi bi-check2-circle text-turquoise"></i> تمارين</span>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="icon-box-subject-mini">
+                                <i class="bi bi-journal-bookmark-fill"></i>
+                            </div>
+                            <div>
+                                <h3 class="subject-mini-title">@item.name</h3>
+                                <div class="d-flex gap-1.5 mt-1">
+                                    <span class="feature-tag"><i class="bi bi-check2 text-turquoise"></i> دروس دعم</span>
+                                    <span class="feature-tag"><i class="bi bi-check2 text-turquoise"></i> تمارين</span>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="mt-auto">
-                            <div class="d-grid gap-2">
-                                <a href="@Url.Action("ExploreTeachers", "Student", new { subjectId = item.id })" 
-                                   class="btn btn-main d-flex align-items-center justify-content-center gap-2">
-                                    <span>اكتشف الأساتذة</span>
-                                    <i class="bi bi-person-badge"></i>
-                                </a>
-                                
-                                <a href="@Url.Action("SubjectDetails", "Student", new { subjectId = item.id })" 
-                                   class="btn btn-details d-flex align-items-center justify-content-center gap-2">
-                                    <span>محتوى المادة</span>
-                                    <i class="bi bi-folder2-open"></i>
-                                </a>
-                            </div>
+                        <div class="mt-auto subject-actions-row">
+                            <a href="@Url.Action("ExploreTeachers", "Student", new { subjectId = item.id })" class="btn-action-discover">
+                                <span>اكتشف الأساتذة</span>
+                                <i class="bi bi-person-badge"></i>
+                            </a>
+                            
+                            <a href="@Url.Action("SubjectDetails", "Student", new { subjectId = item.id })" class="btn-action-details" title="عرض تفاصيل ومحتوى المادة">
+                                <span>المحتوى</span>
+                                <i class="bi bi-folder2-open"></i>
+                            </a>
                         </div>
+
                     </div>
                 </div>
             }

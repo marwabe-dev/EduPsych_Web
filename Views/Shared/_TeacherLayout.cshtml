@@ -1,256 +1,485 @@
 ﻿<!DOCTYPE html>
+
 <html lang="ar" dir="rtl">
+
 <head>
+
     <meta charset="utf-8" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - EducPsycho Elite</title>
+
+    <title>@ViewData["Title"] - رافقني Elite</title>
+
     
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+
+
     <style>
-        :root {
-            --primary-teal: #1eb2a6;
-            --dark-sidebar: #0f172a; /* Midnight Navy متناسق مع الداشبورد */
-            --accent-color: #179b91;
-            --text-muted: #94a3b8;
-        }
 
-        body { 
-            font-family: 'Cairo', sans-serif; 
-            background-color: #f8fafc; 
-            overflow-x: hidden; 
-        }
+            :root {
+                --primary-teal: #1eb2a6;
+                --dark-sidebar: #0f172a;
+                --accent-color: #179b91;
+                --text-muted: #94a3b8;
+            }
 
-        /* --- Sidebar المحسن --- */
-        #sidebar {
-            min-width: 280px;
-            max-width: 280px;
-            background: var(--dark-sidebar);
-            color: #fff;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            min-height: 100vh;
-            position: fixed;
-            right: 0;
-            z-index: 1050;
-            box-shadow: -10px 0 30px rgba(0,0,0,0.1);
-        }
 
-        .sidebar-header { 
-            padding: 30px 20px; 
-            text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
 
-        .sidebar-header h4 {
-            font-weight: 900;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
+            body {
+                font-family: 'Cairo', sans-serif;
+                background-color: #f8fafc;
+                overflow-x: hidden;
+            }
 
-        .nav-link {
-            color: var(--text-muted) !important;
-            padding: 14px 20px !important;
-            border-radius: 12px;
-            margin: 4px 18px;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            font-weight: 600;
-        }
 
-        .nav-link i { 
-            margin-left: 12px; 
-            font-size: 1.1rem;
-            width: 25px;
-            text-align: center;
-        }
 
-        .nav-link:hover {
-            background: rgba(30, 178, 166, 0.1);
-            color: var(--primary-teal) !important;
-            transform: translateX(-5px);
-        }
+            #sidebar {
+                min-width: 280px;
+                max-width: 280px;
+                background: var(--dark-sidebar);
+                color: #fff;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                min-height: 100vh;
+                position: fixed;
+                right: 0;
+                z-index: 1050;
+                box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+                display: flex;
+                flex-direction: column;
+            }
 
-        .nav-link.active {
-            background: linear-gradient(135deg, var(--primary-teal) 0%, var(--accent-color) 100%) !important;
-            color: white !important;
-            box-shadow: 0 8px 15px rgba(30, 178, 166, 0.25);
-        }
 
-        /* --- محتوى الصفحة المحسن --- */
-        #content {
-            width: calc(100% - 280px);
-            margin-right: 280px;
-            transition: all 0.4s;
-            min-height: 100vh;
-        }
 
-        /* --- الهيدر (Top Navbar) الجديد --- */
-        .top-navbar { 
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 15px 40px;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid #f1f5f9;
-        }
+            .sidebar-header {
+                padding: 30px 20px;
+                text-align: center;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
 
-        .btn-toggle {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            color: var(--dark-sidebar);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.3s;
-        }
+                .sidebar-header h4 {
+                    font-weight: 900;
+                    letter-spacing: 1px;
+                    text-transform: uppercase;
+                }
 
-        .btn-toggle:hover {
-            background: var(--primary-teal);
-            color: white;
-            border-color: var(--primary-teal);
-        }
 
-        .profile-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 5px 15px;
-            border-radius: 50px;
-            background: #f8fafc;
-            border: 1px solid #f1f5f9;
-        }
 
-        .avatar-circle {
-            width: 35px;
-            height: 35px;
-            background: var(--primary-teal);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 0.8rem;
-        }
+            /* تنسيق زر الإضافة الجديد في السايدبار */
 
-        /* تحسينات الهواتف */
-        @@media (max-width: 992px) {
-            #sidebar { margin-right: -280px; }
-            #content { width: 100%; margin-right: 0; }
-            #sidebar.active { margin-right: 0; }
-            .top-navbar { padding: 15px 20px; }
-        }
+            .sidebar-btn-wrapper {
+                padding: 20px 18px;
+            }
 
-        .footer-sidebar {
-            position: absolute;
-            bottom: 20px;
-            width: 100%;
-            padding: 0 20px;
-        }
+            .btn-add-sidebar {
+                background: var(--primary-teal);
+                color: white !important;
+                border: none;
+                border-radius: 12px;
+                padding: 12px;
+                width: 100%;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                transition: 0.3s;
+                box-shadow: 0 4px 15px rgba(30, 178, 166, 0.3);
+            }
+
+                .btn-add-sidebar:hover {
+                    background: var(--accent-color);
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(30, 178, 166, 0.4);
+                }
+
+
+
+            .nav-link {
+                color: var(--text-muted) !important;
+                padding: 14px 20px !important;
+                border-radius: 12px;
+                margin: 4px 18px;
+                transition: all 0.3s;
+                display: flex;
+                align-items: center;
+                font-weight: 600;
+            }
+
+                .nav-link i {
+                    margin-left: 12px;
+                    font-size: 1.1rem;
+                    width: 25px;
+                    text-align: center;
+                }
+
+                .nav-link:hover {
+                    background: rgba(30, 178, 166, 0.1);
+                    color: var(--primary-teal) !important;
+                    transform: translateX(-5px);
+                }
+
+                .nav-link.active {
+                    background: linear-gradient(135deg, var(--primary-teal) 0%, var(--accent-color) 100%) !important;
+                    color: white !important;
+                    box-shadow: 0 8px 15px rgba(30, 178, 166, 0.25);
+                }
+
+
+
+            #content {
+                width: calc(100% - 280px);
+                margin-right: 280px;
+                transition: all 0.4s;
+                min-height: 100vh;
+            }
+
+
+
+            .top-navbar {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                padding: 15px 40px;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+                border-bottom: 1px solid #f1f5f9;
+            }
+
+
+
+            .footer-sidebar {
+                margin-top: auto;
+                padding: 20px;
+            }
+
+
+
+            @@media (max-width: 992px) {
+
+                #sidebar {
+                    margin-right: -280px;
+                }
+
+                #content {
+                    width: 100%;
+                    margin-right: 0;
+                }
+
+                #sidebar.active {
+                    margin-right: 0;
+                }
+            }
+
     </style>
+
 </head>
+
 <body>
 
+
+
     <div class="d-flex">
+
         <nav id="sidebar">
+
             <div class="sidebar-header">
-                <h4 class="m-0" style="color: var(--primary-teal);">EDUC<span style="color: #fff;">PSYCHO</span></h4>
-                <p class="small text-muted mb-0 mt-1" style="font-size: 0.65rem; letter-spacing: 2px;">استاد </p>
+
+                <h4 class="m-0" style="color: var(--primary-teal);">رافق<span style="color: #fff;">ني</span></h4>
+
+                <p class="small text-muted mb-0 mt-1" style="font-size: 0.65rem; letter-spacing: 2px;">لوحة تحكم الأستاذ</p>
+
             </div>
 
-            <ul class="nav flex-column mt-4">
+
+
+            @* --- زر إضافة حصة تعليمية الجديد --- *@
+
+            <div class="sidebar-btn-wrapper">
+
+                <button class="btn btn-add-sidebar" data-bs-toggle="modal" data-bs-target="#layoutAddContentModal">
+
+                    <i class="fas fa-plus-circle"></i> إضافة حصة تعليمية
+
+                </button>
+
+            </div>
+
+
+
+            <ul class="nav flex-column mt-2">
+
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" 
-                       asp-controller="Teacher" asp-action="Index">
-                        <i class="fas fa-chart-line"></i> لوحة التحكم
+
+                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")"
+                           asp-controller="Teacher" asp-action="Index">
+
+                        <i class="fas fa-chart-line"></i> الرئيسية
+
                     </a>
+
                 </li>
+
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Profile" ? "active" : "")" 
-                       href="/Teacher/Profile">
+
+                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Profile" ? "active" : "")" href="/Teacher/Profile">
+
                         <i class="fas fa-id-card"></i> الملف المهني
+
                     </a>
+
                 </li>
+
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Courses" ? "active" : "")" 
-                       href="/Teacher/Courses">
-                        <i class="fas fa-graduation-cap"></i> دوراتي التعليمية المسجلة
+
+                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Courses" ? "active" : "")" href="/Teacher/Courses">
+
+                        <i class="fas fa-graduation-cap"></i> دوراتي التعليمية
+
                     </a>
+
                 </li>
+
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Lessons" ? "active" : "")" 
-                       href="/Teacher/Lessons">
-                        <i class="fas fa-book-open"></i> مكتبة الدروس و التمارين 
+
+                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Lessons" ? "active" : "")" href="/Teacher/Lessons">
+
+                        <i class="fas fa-book-open"></i> مكتبة الدروس
+
                     </a>
+
                 </li>
+
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Wallet" ? "active" : "")" 
-                       href="/Teacher/Wallet">
+
+                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Wallet" ? "active" : "")" href="/Teacher/Wallet">
+
                         <i class="fas fa-wallet text-warning"></i> الإدارة المالية
+
                     </a>
+
                 </li>
+
             </ul>
 
+
+
             <div class="footer-sidebar">
+
                 <a class="nav-link text-danger border border-danger border-opacity-10" href="/Account/Logout">
-                    <i class="fas fa-power-off"></i> خروج 
+
+                    <i class="fas fa-power-off"></i> تسجيل الخروج
+
                 </a>
+
             </div>
+
         </nav>
 
+
+
         <div id="content">
+
             <header class="top-navbar d-flex justify-content-between align-items-center shadow-sm">
-                <div class="d-flex align-items-center gap-3">
-                    <button type="button" id="sidebarCollapse" class="btn-toggle">
-                        <i class="fas fa-bars-staggered"></i>
-                    </button>
-                    <h5 class="fw-bold m-0 d-none d-md-block" style="color: var(--dark-sidebar);">@ViewData["Title"]</h5>
-                </div>
 
                 <div class="d-flex align-items-center gap-3">
-                    <div class="profile-section d-none d-sm-flex">
-                        <div class="text-end">
-                            <p class="small fw-bold mb-0 text-dark">أستاذ</p>
-                            <p class="extra-small text-muted mb-0" style="font-size: 0.7rem;">متصل الآن</p>
-                        </div>
-                        <div class="avatar-circle shadow-sm">
-                            <i class="fas fa-user-tie"></i>
-                        </div>
-                    </div>
+
+                    <button type="button" id="sidebarCollapse" class="btn-toggle">
+
+                        <i class="fas fa-bars-staggered"></i>
+
+                    </button>
+
+                    <h5 class="fw-bold m-0 d-none d-md-block" style="color: var(--dark-sidebar);">@ViewData["Title"]</h5>
+
                 </div>
+
             </header>
 
+
+
             <div class="container-fluid p-4">
+
                 @RenderBody()
+
             </div>
+
         </div>
+
     </div>
 
+
+
+    @* --- المودال الخاص بإضافة الحصة (موجود داخل Layout ليعمل من أي صفحة) --- *@
+
+    <div class="modal fade" id="layoutAddContentModal" tabindex="-1" aria-hidden="true">
+
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content border-0 rounded-4 shadow-lg text-end">
+
+                <div class="modal-header border-0 bg-dark text-white p-3">
+
+                    <h6 class="fw-bold m-0">إضافة حصة تعليمية جديدة</h6>
+
+                    <button type="button" class="btn-close btn-close-white ms-0 me-auto" data-bs-dismiss="modal"></button>
+
+                </div>
+
+                <form asp-action="CreateLiveSession" asp-controller="Teacher" method="post">
+
+                    <div class="modal-body p-4">
+
+                        @Html.AntiForgeryToken()
+
+        
+
+                        <div class="row g-3 mb-3">
+
+                            <div class="col-6">
+
+                                <label class="form-label small fw-bold">المادة</label>
+
+                                <select name="subjectId" class="form-select border-light bg-light" required>
+
+                                    <option value="">اختر المادة</option>
+
+                                    @if (ViewBag.Subjects != null)
+                                    {
+
+                                        @foreach (var sub in ViewBag.Subjects)
+                                        {
+                                            <option value="@sub.id">@sub.name</option>
+                                        }
+
+                                    }
+
+                                </select>
+
+                            </div>
+
+                            <div class="col-6">
+
+                                <label class="form-label small fw-bold">الصف الدراسي</label>
+
+                                <select name="classId" class="form-select border-light bg-light" required>
+
+                                    <option value="">اختر الصف</option>
+
+                                    @if (ViewBag.Classes != null)
+                                    {
+
+                                        @foreach (var cls in ViewBag.Classes)
+                                        {
+                                            <option value="@cls.id">@cls.name</option>
+                                        }
+
+                                    }
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <div class="mb-3">
+
+                            <label class="form-label small fw-bold">عنوان الحصة المباشرة المعروضة للحجز</label>
+
+                            <input type="text" name="sessionTitle" class="form-control border-light bg-light" placeholder="مثال: مراجعة شاملة لدرس المقاربة الكيفية" required />
+
+                        </div>
+
+
+
+                        <div class="mb-3">
+
+                            <label class="form-label small fw-bold">وصف الحصة أو محاورها</label>
+
+                            <textarea name="description" class="form-control border-light bg-light" rows="3" placeholder="اكتب تفاصيل أو محاور الحصة التي سيراجعها الطالب معك..."></textarea>
+
+                        </div>
+
+
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 rounded-3 fw-bold">عرض الحصة لاستقبال طلبات الطلاب</button>
+
+                    </div>
+
+                </form>
+
+
+
+                <script>
+
+                                    function toggleLocationField() {
+
+                                        var typeSelect = document.getElementById("sessionTypeSelect").value;
+
+                                        var locationGroup = document.getElementById("locationInputGroup");
+
+                                        var locationInput = document.getElementById("locationInput");
+
+
+
+                                        if (typeSelect === "In-Person") {
+
+                                            locationGroup.classList.remove("d-none");
+
+                                            locationInput.setAttribute("required", "required");
+
+                                        } else {
+
+                                            locationGroup.classList.add("d-none");
+
+                                            locationInput.removeAttribute("required");
+
+                                            locationInput.value = "";
+
+                                        }
+
+                                    }
+
+                </script>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
+
         $(document).ready(function () {
-            $('#sidebarCollapse').on('click', function () {
-                $('#sidebar').toggleClass('active');
-                if ($(window).width() > 992) {
-                    if ($('#sidebar').hasClass('active')) {
-                        $('#content').css('margin-right', '0');
-                        $('#content').css('width', '100%');
-                    } else {
-                        $('#content').css('margin-right', '280px');
-                        $('#content').css('width', 'calc(100% - 280px)');
-                    }
-                }
-            });
+
+        $('#sidebarCollapse').on('click', function () {
+
+        $('#sidebar').toggleClass('active');
+
         });
+
+        });
+
     </script>
+
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
+
 </html>
+

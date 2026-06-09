@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "المسار التعليمي - اختيار الصف";
-    Layout = "_Layout";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
     
     // جلب الاسم من السيشن للهيدر
     var fullName = Context.Session.GetString("UserName") ?? "تلميذنا العزيز";
@@ -124,33 +124,7 @@
 <div class="container-fluid p-0 text-end" dir="rtl">
 
     @* --- الهيدر العائم المستبدل --- *@
-    <header class="edu-header">
-        <div class="d-flex align-items-center">
-            <div class="bg-turquoise text-white p-2 rounded-3 ms-3">
-                <i class="bi bi-mortarboard-fill"></i>
-            </div>
-            <div class="d-flex flex-column">
-                <h4 class="m-0 fw-bold text-dark">منصة <span class="text-turquoise">إبداع</span></h4>
-            </div>
-        </div>
-
-        <div class="d-flex gap-2">
-            <a href="@Url.Action("Index", "Student")" class="btn btn-light shadow-sm text-dark border">الرئيسية</a>
-            <a href="@Url.Action("MyWallet", "Student")" class="btn btn-white shadow-sm text-dark border">محفظتي</a>
-            <a href="@Url.Action("Courses", "Student")" class="btn btn-white shadow-sm text-dark border">متجر الدورات</a>
-            <a href="@Url.Action("MyEducationalLessons", "Student")" class="btn btn-white shadow-sm text-dark border">حصصي التعليمية</a>
-            <a href="@Url.Action("MyCounselSessions", "Student")" class="btn btn-white shadow-sm text-dark border">حصصي النفسية</a>
-        </div>
-
-        <div class="dropdown">
-            <button class="btn btn-light rounded-circle shadow-sm" type="button" data-bs-toggle="dropdown">
-                <i class="bi bi-person-fill text-turquoise"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2">
-                <li><a class="dropdown-item py-3 text-danger fw-bold" href="@Url.Action("Logout", "Account")"><i class="bi bi-box-arrow-right ms-2"></i>تسجيل الخروج</a></li>
-            </ul>
-        </div>
-    </header>
+    
 
     <div class="container py-4">
         <div class="text-center mb-5">
@@ -178,7 +152,7 @@
                                 
                                 <a href="@Url.Action("SelectStream", "Student", new { classId = item.id })"
                                    class="btn-action w-100">
-                                    <i class="bi bi-rocket-takeoff-fill ms-2"></i> انطلق الآن
+                                    <i class="bi bi-rocket-takeoff-fill ms-2"></i> ابدأ الآن
                                 </a>
                             </div>
                         </div>

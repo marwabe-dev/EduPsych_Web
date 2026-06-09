@@ -16,6 +16,7 @@
         --brand-teal-light: #f0fdfa;
         --brand-dark: #0f172a;
         --brand-bg: #f8fafc;
+        --brand-orange: #f97316;
     }
 
     /* خلفية بتدرجات الفيروزي الهادئة */
@@ -146,76 +147,101 @@
 
     <div class="glass-panel text-end">
         <h5 class="fw-900 mb-4 text-dark"><i class="bi bi-calendar-check me-2 text-teal"></i> قائمة المواعيد والطلبات</h5>
-        
         <div id="sessionsList">
-            @if (Model == null || !Model.Any())
-            {
-                <div class="text-center py-5 opacity-50">
-                    <i class="bi bi-calendar2-x display-1"></i>
-                    <p class="mt-3 fw-bold">لا توجد جلسات حالياً</p>
-                </div>
-            }
-            else
-            {
-                @foreach (var item in Model)
-                {
-                    <div class="session-row session-card d-flex align-items-center justify-content-between flex-wrap gap-3">
-                        <div class="d-flex align-items-center">
-                            <div class="student-avatar ms-3">
-                                @(item.Student?.User?.first_name?[0].ToString().ToUpper() ?? "?")
-                            </div>
-                            <div>
-                                <h6 class="fw-bold text-dark mb-1 student-name">
-                                    @(item.Student?.User != null ? $"{item.Student.User.first_name} {item.Student.User.last_name}" : $"طالب رقم {item.student_id}")
-                                </h6>
-                                <span class="badge bg-light text-teal border session-type-text">@item.session_type</span>
-                            </div>
-                        </div>
-
-                        <div class="text-center">
-                            <div class="fw-900 text-dark">@item.scheduled_at.ToString("HH:mm")</div>
-                            <small class="text-muted">@item.scheduled_at.ToString("dd MMM, yyyy")</small>
-                        </div>
-
-                        <div class="status-indicator">
-                            @switch (item.status)
-                            {
-                                case "Pending": <span class="badge bg-warning text-dark status-badge-text">قيد الانتظار</span> break;
-                                case "Approved": <span class="badge bg-primary status-badge-text">مقبولة</span> break;
-                                case "Paid": <span class="badge bg-info status-badge-text">مدفوعة</span> break;
-                                case "Completed": <span class="badge bg-success status-badge-text">تمت بنجاح</span> break;
-                                case "Cancelled": <span class="badge bg-danger status-badge-text">ملغاة</span> break;
-                                default: <span class="badge bg-secondary status-badge-text">@item.status</span> break;
-                            }
-                        </div>
-
-                        <div class="d-flex align-items-center gap-2">
-                            @if (item.status == "Paid" || item.status == "Approved")
-                            {
-                                <form asp-action="UpdateCounselingLink" method="post" class="d-flex gap-1">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="sessionId" value="@item.id" />
-                                    <input type="text" name="meetingLink" value="@item.meeting_link" class="form-control form-control-sm filter-input border-0 bg-light" placeholder="رابط الجلسة" style="width:130px" required />
-                                    <button type="submit" class="btn btn-teal btn-sm rounded-circle"><i class="bi bi-save"></i></button>
-                                </form>
-                            }
-
-                            <div class="dropdown">
-                                <button class="btn btn-light btn-sm rounded-pill shadow-sm" type="button" data-bs-toggle="dropdown">
-                                     الإجراءات <i class="bi bi-chevron-down ms-1"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
-                                    <li><button class="dropdown-item py-2" onclick="updateStatus(@item.id, 'Approved')"><i class="bi bi-check2 text-success me-2"></i> قبول الطلب</button></li>
-                                    <li><button class="dropdown-item py-2" onclick="updateStatus(@item.id, 'Completed')"><i class="bi bi-check-all text-primary me-2"></i> إتمام الجلسة</button></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><button class="dropdown-item py-2 text-danger" onclick="updateStatus(@item.id, 'Cancelled')"><i class="bi bi-x-circle me-2"></i> إلغاء الطلب</button></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                }
-            }
+    @if (Model == null || !Model.Any())
+    {
+        <div class="text-center py-5 opacity-50">
+            <i class="bi bi-calendar2-x display-1"></i>
+            <p class="mt-3 fw-bold">لا توجد جلسات حالياً</p>
         </div>
+    }
+    else
+    {
+        @foreach (var item in Model)
+        {
+            <div class="session-row session-card d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div class="d-flex align-items-center">
+                    <div class="student-avatar ms-3">
+                        @(item.Student?.User?.first_name?[0].ToString().ToUpper() ?? "?")
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-1 student-name">
+                            @(item.Student?.User != null ? $"{item.Student.User.first_name} {item.Student.User.last_name}" : $"طالب رقم {item.student_id}")
+                        </h6>
+                        <span class="badge bg-light text-teal border session-type-text">@item.session_type</span>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <div class="fw-900 text-dark">@item.scheduled_at.ToString("HH:mm")</div>
+                    <small class="text-muted">@item.scheduled_at.ToString("dd MMM, yyyy")</small>
+                </div>
+
+                <div class="status-indicator">
+                    @switch (item.status)
+                    {
+                        case "Pending": <span class="badge bg-warning text-dark status-badge-text">بانتظار قبولك</span> break;
+                        case "Approved": <span class="badge bg-secondary text-white status-badge-text">مقبولة (بانتظار دفع الطالب)</span> break;
+                        case "Paid": <span class="badge bg-info text-dark status-badge-text">مدفوعة</span> break;
+                        case "Completed": <span class="badge bg-success status-badge-text">تمت بنجاح</span> break;
+                        case "Cancelled": <span class="badge bg-danger status-badge-text">ملغاة</span> break;
+                        default: <span class="badge bg-dark status-badge-text">@item.status</span> break;
+                    }
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    @* 🔒 قفل أمني: الرابط يظهر فقط وفقط إذا قام الطالب بالدفع الفعلي وتحولت الحالة إلى Paid *@
+                    @if (item.status == "Paid")
+                    {
+                        <form asp-action="UpdateCounselingLink" method="post" class="d-flex gap-1">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="sessionId" value="@item.id" />
+                            <input type="text" name="meetingLink" value="@item.meeting_link" class="form-control form-control-sm filter-input border-0 bg-light" placeholder="ضع رابط الزوم هنا" style="width:140px" required />
+                            <button type="submit" class="btn btn-teal btn-sm rounded-circle" title="حفظ الرابط"><i class="bi bi-save"></i></button>
+                        </form>
+                    }
+                    else if (item.status == "Approved")
+                    {
+                        <small class="text-muted d-block" style="font-size:0.75rem"><i class="bi bi-lock-fill me-1"></i>سيظهر الرابط فور دفع الطالب</small>
+                    }
+
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm rounded-pill shadow-sm" type="button" data-bs-toggle="dropdown">
+                             الإجراءات <i class="bi bi-chevron-down ms-1"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
+                            @if (item.status == "Pending")
+                            {
+                                @* زر القبول يرسل الطلب فوراً لـ AcceptSession لإنشاء الفاتورة وتغيير الحالة لـ Approved *@
+                                <li>
+                                    <form asp-action="AcceptSession" method="post" style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="sessionId" value="@item.id" />
+                                        <button type="submit" class="dropdown-item py-2 text-success"><i class="bi bi-check2 me-2"></i> قبول وتأكيد الطلب</button>
+                                    </form>
+                                </li>
+                            }
+                            
+                            @if (item.status == "Paid")
+                            {
+                                @* لا يمكن إتمام الجلسة إلا إذا كانت مدفوعة وموجودة بالفعل *@
+                                <li><button class="dropdown-item py-2 text-primary" onclick="updateStatus(@item.id, 'Completed')"><i class="bi bi-check-all me-2"></i> إتمام الجلسة ونقل الأرصيد</button></li>
+                            }
+
+                            @if (item.status == "Pending" || item.status == "Approved")
+                            {
+                                <li><hr class="dropdown-divider"></li>
+                                <li><button class="dropdown-item py-2 text-danger" onclick="updateStatus(@item.id, 'Cancelled')"><i class="bi bi-x-circle me-2"></i> إلغاء الطلب</button></li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+        
+        
     </div>
 </div>
 

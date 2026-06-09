@@ -4,55 +4,180 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - لوحة المرشد</title>
+    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --p-teal: #1eb2a6; --d-navy: #0f172a; }
-        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
-        #sidebar { min-width: 280px; background: var(--d-navy); min-height: 100vh; position: fixed; right: 0; }
-        .nav-link { color: #94a3b8 !important; padding: 15px 25px !important; transition: 0.3s; }
-        .nav-link:hover, .nav-link.active { color: white !important; background: rgba(30, 178, 166, 0.1); border-right: 4px solid var(--p-teal); }
-        #content { width: calc(100% - 280px); margin-right: 280px; }
-        .top-nav { background: white; padding: 15px 40px; border-bottom: 1px solid #f1f5f9; }
-        @@media (max-width: 992px) { #sidebar { display: none; } #content { width: 100%; margin-right: 0; } }
+        :root { 
+            --p-teal: #1eb2a6; 
+            --p-teal-dark: #148d84;
+            /* ألوان جديدة للسيدبار والهيدر */
+            --sidebar-bg: #0f172a; /* كحلي غامق جداً */
+            --header-gradient: linear-gradient(135deg, #1eb2a6 0%, #148d84 100%);
+        }
+        
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background-color: #f8fafc; 
+        }
+
+        /* القائمة الجانبية المحدثة */
+        #sidebar { 
+            min-width: 280px; 
+            background: var(--sidebar-bg); 
+            min-height: 100vh; 
+            position: fixed; 
+            right: 0; 
+            z-index: 1000;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+        }
+
+        .nav-link { 
+            color: #cbd5e1 !important; /* لون نص فاتح */
+            padding: 15px 25px !important; 
+            transition: 0.3s; 
+            display: flex;
+            align-items: center;
+            border-radius: 0;
+        }
+
+        .nav-link i { width: 25px; }
+
+        .nav-link:hover, .nav-link.active { 
+            color: white !important; 
+            background: rgba(255, 255, 255, 0.05); 
+            border-right: 4px solid var(--p-teal); 
+        }
+
+        /* المحتوى الرئيسي */
+        #content { 
+            width: calc(100% - 280px); 
+            margin-right: 280px; 
+            transition: 0.3s;
+        }
+
+        /* الهيدر العلوي الملون */
+        .top-nav { 
+            background: var(--header-gradient); 
+            padding: 12px 40px; 
+            border-bottom: none; 
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            color: white; /* نص الهيدر أبيض */
+            box-shadow: 0 4px 12px rgba(30, 178, 166, 0.2);
+        }
+
+        /* تعديل نصوص الهيدر لتناسب الخلفية الملونة */
+        .top-nav .text-dark {
+            color: white !important;
+        }
+        
+        .top-nav .text-muted {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        .header-profile-img {
+            width: 45px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.5); /* إطار شفاف خفيف */
+            background: white;
+        }
+
+        .default-avatar-icon {
+            width: 45px;
+            height: 45px;
+            background: white; /* أيقونة افتراضية بخلفية بيضاء لتبرز */
+            color: var(--p-teal);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        @@media (max-width: 992px) { 
+            #sidebar { display: none; } 
+            #content { width: 100%; margin-right: 0; } 
+        }
     </style>
 </head>
 <body>
     <div class="d-flex">
         <nav id="sidebar">
             <div class="p-4 text-center border-bottom border-secondary border-opacity-25">
-                <h4 class="text-white fw-900 m-0">EDU<span style="color: var(--p-teal)">PSYCH</span></h4>
-                <small class="text-muted">قسم الإرشاد النفسي</small>
+                <h4 class="text-white fw-900 m-0">رافق<span style="color: var(--p-teal)">ني</span></h4>
+                <small class="text-white-50">قسم الإرشاد النفسي</small>
             </div>
+            
             <ul class="nav flex-column mt-3">
-                <li><a href="/Counselor/Index" class="nav-link active"><i class="fas fa-home me-2"></i> الرئيسية</a></li>
-                <li><a href="#" class="nav-link"><i class="fas fa-user me-2"></i> ملفي الشخصي</a></li>
-                <li><a href="#" class="nav-link"><i class="fas fa-history me-2"></i> سجل السحوبات</a></li>
-
-       
-                 <li><a href="/Counselor/FinancialManagement" class="nav-link active"><i class="fas fa-wallet me-2"></i> الإدارة المالية</a></li>
-    
-    ...
-            </ul>
-                <li class="mt-5"><a href="/Account/Logout" class="nav-link text-danger"><i class="fas fa-sign-out-alt me-2"></i> تسجيل الخروج</a></li>
+                <li>
+                    <a href="/Counselor/Index" class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")">
+                        <i class="fas fa-home me-2"></i> الرئيسية
+                    </a>
+                </li>
+                <li>
+                    <a href="/Counselor/MyProfile" class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "MyProfile" ? "active" : "")">
+                        <i class="fas fa-user me-2"></i> ملفي الشخصي
+                    </a>
+                </li>
+                <li>
+                    <a href="/Counselor/WithdrawalHistory" class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "WithdrawalHistory" ? "active" : "")">
+                        <i class="fas fa-history me-2"></i> سجل السحوبات
+                    </a>
+                </li>
+                <li>
+                    <a href="/Counselor/FinancialManagement" class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "FinancialManagement" ? "active" : "")">
+                        <i class="fas fa-wallet me-2"></i> الإدارة المالية
+                    </a>
+                </li>
+                
+                <li class="mt-5">
+                    <a href="/Account/Logout" class="nav-link text-warning fw-bold">
+                        <i class="fas fa-sign-out-alt me-2"></i> تسجيل الخروج
+                    </a>
+                </li>
             </ul>
         </nav>
+
         <div id="content">
             <header class="top-nav d-flex justify-content-between align-items-center shadow-sm">
-                <h5 class="fw-bold m-0">@ViewData["Title"]</h5>
+                <h5 class="fw-bold m-0 text-white">@ViewData["Title"]</h5>
+                
                 <div class="d-flex align-items-center gap-3">
-                    <span class="small fw-bold">د. @Context.Session.GetString("UserName")</span>
-                    <div style="width:40px; height:40px; background:var(--p-teal); color:white" class="rounded-circle d-flex align-items-center justify-content-center">
-                        <i class="fas fa-user-md"></i>
+                    <div class="text-end d-none d-sm-block">
+                        <p class="small fw-bold m-0 text-white">د. @Context.Session.GetString("UserName")</p>
+                        <small class="text-white-50" style="font-size: 0.7rem;">مرشد نفسي</small>
                     </div>
+
+                    @* الجزء البرمجي الخاص بالصورة الشخصية - لم يتم تغييره *@
+                    @{
+                        var profilePic = Context.Session.GetString("UserProfilePicture");
+                    }
+
+                    @if (!string.IsNullOrEmpty(profilePic))
+                    {
+                        <img src="@profilePic" class="header-profile-img shadow-sm" alt="Profile">
+                    }
+                    else
+                    {
+                        <div class="default-avatar-icon shadow-sm">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                    }
                 </div>
             </header>
+
             <div class="container-fluid p-4">
                 @RenderBody()
             </div>
         </div>
     </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)

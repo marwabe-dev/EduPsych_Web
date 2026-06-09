@@ -1,0 +1,38 @@
+﻿@model IEnumerable<EduPsych_Web.Models.User>
+@{
+    Layout = "_AdminLayout";
+}
+
+<div class="container py-4" dir="rtl">
+    <h2 class="mb-4">طلبات الانضمام الجديدة</h2>
+    
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th>الاسم</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>الرتبة</th>
+                    <th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    <tr>
+                        <td>@user.first_name @user.last_name</td>
+                        <td>@user.email</td>
+                        <td><span class="badge bg-info">@user.Role?.name</span></td>
+                        <td>
+                            <form asp-action="ApproveUser" asp-route-id="@user.id" method="post">
+                                <button type="submit" class="btn btn-success btn-sm px-4 rounded-pill">
+                                    تفعيل الحساب <i class="fas fa-check-circle ms-1"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

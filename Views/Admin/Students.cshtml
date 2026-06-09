@@ -84,9 +84,7 @@
             <p class="text-muted small mb-0">يمكنك هنا تتبع بيانات التلاميذ المسجلين ومستوياتهم الدراسية.</p>
         </div>
         <div class="d-flex gap-2">
-            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                <i class="bi bi-file-earmark-excel me-1"></i> تصدير Excel
-            </button>
+            
             <span class="badge bg-dark rounded-pill p-2 px-3 d-flex align-items-center">
                 إجمالي المسجلين: @Model.Count()
             </span>
@@ -112,7 +110,7 @@
                         <th>البريد الإلكتروني</th>
                         <th>المستوى الدراسي</th>
                         <th>تاريخ الانضمام</th>
-                        <th class="text-center">الإجراءات</th>
+                        <th class="text-center">التقاصيل</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -155,11 +153,9 @@
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-2">
                                     <a href="/Admin/StudentDetails/@student.id" class="btn btn-view">
-                                        <i class="bi bi-eye-fill me-1"></i> التفاصيل
+                                        <i class="bi bi-eye-fill me-1"></i> عرض التقاصيل
                                     </a>
-                                    <button class="btn btn-sm btn-light rounded-circle" title="تعديل">
-                                        <i class="bi bi-pencil-square text-muted"></i>
-                                    </button>
+                                 
                                 </div>
                             </td>
                         </tr>
@@ -178,4 +174,4 @@
             </div>
         </div>
     </div>
-</div>v>
+</div>

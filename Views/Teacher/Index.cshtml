@@ -90,10 +90,9 @@
         <div class="row align-items-center">
             <div class="col-md-8">
                 <h2 class="fw-900 mb-2">طاب يومك، أستاذ @Model.User.first_name</h2>
-                <p class="opacity-75 mb-0">نحن فخورون بوجودك معنا. إليك ملخص سريع لما تحتاج لمتابعته اليوم في منصة النخبة.</p>
+                <p class="opacity-75 mb-0">نحن فخورون بوجودك معنا. إليك ملخص سريع لما تحتاج لمتابعته اليوم في منصة EducPsycho.</p>
             </div>
             <div class="col-md-4 text-md-start text-center mt-3 mt-md-0">
-                @* تم وضع التاريخ هنا مكان حساب معلم معتمد *@
                 <span class="badge date-badge animate__animated animate__flipInX animate__delay-1s">
                     <i class="bi bi-calendar3 me-2"></i> @DateTime.Now.ToString("dd MMMM, yyyy")
                 </span>
@@ -134,7 +133,7 @@
     </div>
 
     <div class="row">
-        @* جدول الحصص القادمة *@
+        @* جدول الحصص القادمة المعزز بحماية الدفع المالي *@
         <div class="col-lg-8">
             <div class="main-glass-card text-end">
                 <h5 class="fw-bold mb-4 pb-2 border-bottom"><i class="bi bi-calendar-check me-2 text-teal" style="color: var(--turq-color)"></i> جدول الحصص المباشرة المعتمدة</h5>
@@ -146,6 +145,7 @@
                                 <th>اسم التلميذ</th>
                                 <th>عنوان الدرس</th>
                                 <th>التوقيت الرسمي</th>
+                                <th>حالة الدفع والطلب</th>
                                 <th>رابط البث (Zoom/Meet)</th>
                             </tr>
                         </thead>
@@ -159,17 +159,38 @@
                                             <div class="small fw-bold">@s.Date.ToString("yyyy/MM/dd")</div>
                                             <div class="badge rounded-pill bg-light text-dark border">@s.Date.ToString("HH:mm")</div>
                                         </td>
+                                        @* عمود جديد يعرض حالة الحصة لمتابعة الدفع *@
                                         <td>
-                                            <form asp-action="UpdateMeetingLink" method="post" class="d-flex gap-1">
-                                                <input type="hidden" name="sessionId" value="@s.Id" />
-                                                <input type="text" name="meetingLink" value="@s.Link" class="form-control form-control-sm border-light" placeholder="لصق الرابط هنا">
-                                                <button type="submit" class="btn btn-sm btn-turq" style="width: auto;"><i class="bi bi-save"></i></button>
-                                            </form>
+                                            @if (s.Status == "Confirmed" || s.Status == "Paid")
+                                            {
+                                                <span class="badge bg-success p-2 rounded-3"><i class="bi bi-cash-coin ms-1"></i> مدفوعة ومؤكدة</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning text-dark p-2 rounded-3"><i class="bi bi-hourglass-split ms-1"></i> مقبولة / في انتظار الدفع</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @* 🔐 حماية ذكية: الخانة تظهر فقط عندما تصبح الحالة Confirmed أو Paid *@
+                                            @if (s.Status == "Confirmed" || s.Status == "Paid")
+                                            {
+                                                <form asp-action="UpdateMeetingLink" method="post" class="d-flex gap-1">
+                                                    <input type="hidden" name="sessionId" value="@s.Id" />
+                                                    <input type="text" name="meetingLink" value="@s.Link" class="form-control form-control-sm border-light" placeholder="لصق الرابط هنا">
+                                                    <button type="submit" class="btn btn-sm btn-turq" style="width: auto;"><i class="bi bi-save"></i></button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <div class="text-danger small fw-bold">
+                                                    <i class="bi bi-lock-fill ms-1"></i> مغلق (يفتح بعد دفع التلميذ)
+                                                </div>
+                                            }
                                         </td>
                                     </tr>
                                 }
                             } else {
-                                <tr><td colspan="4" class="text-center py-5 text-muted small">لا توجد حصص مجدولة حالياً.</td></tr>
+                                <tr><td colspan="5" class="text-center py-5 text-muted small">لا توجد حصص مجدولة حالياً.</td></tr>
                             }
                         </tbody>
                     </table>
@@ -218,14 +239,14 @@
                     </div>
                 }
 
-                @* العبارة التسويقية والتعليمية *@
+                @* العبارة التسويقية والتعليمية المحدثة *@
                 <div class="mt-4 p-4 rounded-4 shadow-sm animate__animated animate__pulse animate__infinite animate__slow" style="background: #f0fdfa; border: 1px solid #ccfbf1;">
                     <div class="d-flex align-items-start">
                         <div class="text-teal me-3 fs-3" style="color: var(--turq-color)"><i class="bi bi-lightbulb-fill"></i></div>
                         <div>
-                            <h6 class="fw-bold mb-1 text-dark" style="color: var(--turq-dark)">كيف تبدأ حصصك المباشرة؟</h6>
+                            <h6 class="fw-bold mb-1 text-dark" style="color: var(--turq-dark)">نظام حماية المستحقات</h6>
                             <p class="extra-small mb-0 text-secondary" style="line-height: 1.6">
-                                الأمر بسيط! أنشئ رابط اجتماع عبر <b>Google Meet</b> أو <b>Zoom</b>، ثم قم بلصقه في الجدول بجانب اسم الطالب. سيصل الرابط للتلميذ فوراً ليبدأ التعلم معك.
+                                عند قبول الطلب، ينتقل مباشرة لجدول المعتمد بانتظار دفع التلميذ. بمجرد قيام الطالب بالاقتطاع من محفظته، ستفتح لك خانة إدخال الرابط تلقائياً لتبدأ الحصة بأمان مالي كامل.
                             </p>
                         </div>
                     </div>

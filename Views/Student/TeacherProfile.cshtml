@@ -1,33 +1,54 @@
 ﻿@model EduPsych_Web.Models.Teacher
-@{
-    Layout = "_Layout";
-    ViewData["Title"] = "الملف الشخصي للأستاذ";
-    var lessons = ViewBag.Lessons as IEnumerable<EduPsych_Web.Models.Lesson>;
 
-    // جلب اسم المستخدم للهيدر لضمان التناسق
+@{
+
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+
+    ViewData["Title"] = "الملف الشخصي للأستاذ";
+
+
+
+    // ✅ جلب مكتبة العناوين والحصص المقترحة من قبل الأستاذ عبر الـ ViewBag
+
+    var liveLessons = ViewBag.LiveSessions as IEnumerable<EduPsych_Web.Models.Lesson> ?? new List<EduPsych_Web.Models.Lesson>();
+
+    var freeLessons = ViewBag.Lessons as IEnumerable<EduPsych_Web.Models.Lesson> ?? new List<EduPsych_Web.Models.Lesson>();
+
     var fullName = Context.Session.GetString("UserName") ?? "تلميذنا العزيز";
+
 }
+
+
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+
+
 <style>
+
     :root {
         --primary-teal: #1eb2a6;
         --dark-teal: #114b4d;
         --glass-white: rgba(255, 255, 255, 0.85);
     }
 
+
+
     body {
         background-color: #f4fdfc;
         font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    /* إخفاء الهيدر الافتراضي لفرض التصميم الجديد */
+
+
     nav, .sidebar, header:not(.edu-header) {
         display: none !important;
     }
 
-    /* --- الهيدر العائم (الكبسولة) الموحد --- */
+
+
     .edu-header {
         background: var(--glass-white);
         backdrop-filter: blur(10px);
@@ -44,16 +65,23 @@
         border-radius: 50px;
     }
 
-    .edu-header .btn {
-        border-radius: 50px !important;
-        font-weight: 600;
-        font-size: 0.85rem;
-        transition: 0.3s;
+
+
+        .edu-header .btn {
+            border-radius: 50px !important;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: 0.3s;
+        }
+
+
+
+    .text-turquoise {
+        color: #1eb2a6 !important;
     }
 
-    .text-turquoise { color: #1eb2a6 !important; }
 
-    /* بطاقة الأستاذ الجانبية */
+
     .profile-sidebar {
         background: white;
         border-radius: 40px;
@@ -61,15 +89,21 @@
         overflow: hidden;
     }
 
+
+
     .profile-cover {
         height: 120px;
         background: linear-gradient(135deg, #1eb2a6 0%, #114b4d 100%);
     }
 
+
+
     .profile-avatar-wrapper {
         margin-top: -60px;
         position: relative;
     }
+
+
 
     .profile-avatar {
         width: 130px;
@@ -80,7 +114,8 @@
         box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     }
 
-    /* قائمة الدروس */
+
+
     .lesson-item {
         background: white;
         border-radius: 25px;
@@ -89,32 +124,56 @@
         margin-bottom: 15px;
     }
 
-    .lesson-item:hover {
-        transform: scale(1.01);
-        box-shadow: 0 10px 30px rgba(30, 178, 166, 0.1);
-        border-color: #1eb2a6;
+
+
+        .lesson-item:hover {
+            transform: scale(1.01);
+            box-shadow: 0 10px 30px rgba(30, 178, 166, 0.1);
+            border-color: #1eb2a6;
+        }
+
+
+
+    .live-session-item {
+        background: #fbfdfe;
+        border: 1px solid rgba(30, 178, 166, 0.15) !important;
+        border-right: 5px solid #1eb2a6 !important;
     }
 
-    /* أزرار الحجز */
+    
+
+        .live-session-item:hover {
+            box-shadow: 0 10px 30px rgba(30, 178, 166, 0.08);
+            border-color: #1eb2a6 !important;
+        }
+
+
+
     .btn-book-online {
-        background: #1eb2a6;
+        background-color: #1eb2a6 !important;
         color: white !important;
-        border-radius: 15px;
-        padding: 10px 20px;
-        font-weight: 600;
+        border-radius: 15px !important;
+        padding: 10px 20px !important;
+        font-weight: 600 !important;
+        display: inline-block !important;
+        text-decoration: none !important;
         transition: 0.3s;
-        text-decoration: none;
     }
+
+
 
     .btn-book-person {
-        background: linear-gradient(135deg, #247a7d 0%, #114b4d 100%);
+        background: linear-gradient(135deg, #247a7d 0%, #114b4d 100%) !important;
         color: white !important;
-        border-radius: 15px;
-        padding: 10px 20px;
-        font-weight: 600;
+        border-radius: 15px !important;
+        padding: 10px 20px !important;
+        font-weight: 600 !important;
+        display: inline-block !important;
+        text-decoration: none !important;
         transition: 0.3s;
-        text-decoration: none;
     }
+
+
 
     .info-badge {
         background: #f0fdfc;
@@ -123,114 +182,289 @@
         border-radius: 20px;
         font-size: 0.9rem;
     }
+
 </style>
+
+
 
 <div class="container-fluid p-0 text-end" dir="rtl">
 
-    @* --- الهيدر العائم المستبدل --- *@
-    <header class="edu-header">
-        <div class="d-flex align-items-center">
-            <div class="bg-turquoise text-white p-2 rounded-3 ms-3" style="background-color: #1eb2a6;">
-                <i class="bi bi-mortarboard-fill"></i>
-            </div>
-            <div class="d-flex flex-column">
-                <h4 class="m-0 fw-bold text-dark">منصة <span class="text-turquoise">EducPsycho</span></h4>
-            </div>
-        </div>
 
-        <div class="d-flex gap-2">
-            <a href="@Url.Action("Index", "Student")" class="btn btn-light shadow-sm text-dark border">الرئيسية</a>
-            <a href="@Url.Action("MyWallet", "Student")" class="btn btn-white shadow-sm text-dark border">محفظتي</a>
-            <a href="@Url.Action("Courses", "Student")" class="btn btn-white shadow-sm text-dark border">متجر الدورات</a>
-            <a href="@Url.Action("MyEducationalLessons", "Student")" class="btn btn-white shadow-sm text-dark border">حصصي التعليمية</a>
-            <a href="@Url.Action("MyCounselSessions", "Student")" class="btn btn-white shadow-sm text-dark border">حصصي النفسية</a>
-        </div>
 
-        <div class="dropdown">
-            <button class="btn btn-light rounded-circle shadow-sm" type="button" data-bs-toggle="dropdown">
-                <i class="bi bi-person-fill text-turquoise"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2">
-                <li><a class="dropdown-item py-3 text-danger fw-bold" href="@Url.Action("Logout", "Account")"><i class="bi bi-box-arrow-right ms-2"></i>تسجيل الخروج</a></li>
-            </ul>
-        </div>
-    </header>
+   
+
+
 
     <div class="container py-4">
+
         <div class="row g-4">
+
             
-            @* الجانب الأيمن: معلومات الأستاذ *@
+
+            @* 🟢 الجانب الأيمن: بطاقة التعريف بالأستاذ *@
+
             <div class="col-lg-4">
+
                 <div class="card profile-sidebar shadow-sm border-0">
+
                     <div class="profile-cover"></div>
+
                     <div class="card-body text-center p-4">
+
                         <div class="profile-avatar-wrapper mb-3">
-                            <img src="https://ui-avatars.com/api/?name=@(Model.User?.first_name)+@(Model.User?.last_name)&background=1eb2a6&color=fff&size=150"
-                                 class="profile-avatar shadow-sm" alt="Teacher">
-                        </div>
-                        <h4 class="fw-bold text-dark">أ. @Model.User?.first_name @Model.User?.last_name</h4>
-                        <span class="badge rounded-pill bg-turquoise bg-opacity-10 text-turquoise px-3 py-2 mb-3">خبير تربوي</span>
-                        
-                        <div class="info-badge text-end mt-3">
-                            <h6 class="fw-bold mb-2"><i class="bi bi-person-lines-fill ms-2"></i>حول الأستاذ</h6>
-                            <p class="text-muted small m-0 mb-3">
-                                @(string.IsNullOrEmpty(Model.bio) ? "أستاذ متخصص بخبرة طويلة في تبسيط المواد العلمية والأدبية، ملتزم بمساعدة الطلاب على تحقيق التميز الدراسي." : Model.bio)
-                            </p>
-                            <div class="d-flex justify-content-between pt-2 border-top">
-                                <span class="small fw-bold text-dark">سعر الحصة:</span>
-                                <span class="text-turquoise fw-bold">@Model.hourly_price دج / ساعة</span>
+
+                            <img src="https://ui-avatars.com/api/?name=@(Model?.User?.first_name ?? "Teacher")+(Model?.User?.last_name ?? " ")&background=1eb2a6&color=fff&size=150"
+                            class="profile-avatar shadow-sm" alt="Teacher">
+
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            @* الجانب الأيسر: قائمة الدروس *@
-            <div class="col-lg-8">
-                <div class="bg-white p-4 p-md-5 rounded-5 shadow-sm min-vh-50">
-                    <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h4 class="fw-bold text-dark m-0"><i class="bi bi-mortarboard-fill text-turquoise ms-2"></i>الدروس المتاحة للحجز</h4>
-                        <span class="badge bg-light text-dark rounded-pill border">@(lessons?.Count() ?? 0) درس</span>
-                    </div>
+                            <h4 class="fw-bold text-dark">أ. @(Model?.User?.first_name ?? "") @(Model?.User?.last_name ?? "")</h4>
 
-                    @if (lessons != null && lessons.Any())
-                    {
-                        <div class="lessons-list">
-                            @foreach (var lesson in lessons)
+                        
+
+                            <span class="badge rounded-pill bg-turquoise bg-opacity-10 text-turquoise px-3 py-2 mb-3">
+
+                            <i class="bi bi-patch-check-fill ms-1"></i> عضو هيئة التدريس المعتمد
+
+                            </span>
+
+                        
+
+                            <div class="info-badge text-end mt-3">
+
+                            <h6 class="fw-bold mb-2"><i class="bi bi-person-lines-fill ms-2"></i>حول الأستاذ</h6>
+
+                            <p class="text-muted small m-0 mb-3">
+
+                            @(Model == null || string.IsNullOrEmpty(Model.bio) ? "أستاذ متخصص بخبرة طويلة في تبسيط المواد العلمية والأدبية، ملتزم بمساعدة الطلاب على تحقيق التميز الدراسي." : Model.bio)
+
+                            </p>
+
+                            <div class="d-flex justify-content-between pt-2 border-top">
+
+                            <span class="small fw-bold text-dark">تكلفة الحصة الخاصة:</span>
+
+                            <span class="text-turquoise fw-bold">@(Model?.hourly_price ?? 0) دج / ساعة</span>
+
+                            </div>
+
+                            </div>
+
+                            </div>
+
+                            </div>
+
+                            </div>
+
+
+
+                            @* 🔵 الجانب الأيسر: عرض الحصص والمكتبة *@
+
+                            <div class="col-lg-8">
+
+                
+
+                            @* 1️⃣ قِسم العناوين والحصص المباشرة المعروضة للحجز (توقيت يختاره التلميذ) *@
+
+                            <div class="bg-white p-4 p-md-5 rounded-5 shadow-sm mb-4 animate__animated animate__fadeIn">
+
+                            <div class="d-flex align-items-center justify-content-between mb-4">
+
+                            <h4 class="fw-bold text-turquoise m-0">
+
+                            <i class="bi bi-calendar-plus text-turquoise ms-2"></i> اطلب حصتك المباشرة الآن (@ViewBag.SubjectName)
+
+                            </h4>
+
+                            <span class="badge bg-turquoise text-white rounded-pill px-3 py-2">@liveLessons.Count() موضوع متاح</span>
+
+                            </div>
+
+
+
+                            <p class="text-muted small mb-4">💡 اختر عنوان الحصة المناسب لك، ثم حدد طريقة الحضور (أونلاين أو حضوري) لتنتقل إلى صفحة تحديد موعدك الخاص.</p>
+
+
+
+                            @if (liveLessons.Any())
+
                             {
-                                <div class="lesson-item p-4">
-                                    <div class="row align-items-center">
-                                        <div class="col-md-7 mb-3 mb-md-0">
-                                            <h5 class="fw-bold text-dark">@lesson.title</h5>
-                                            <p class="text-muted small m-0">@lesson.description</p>
-                                        </div>
-                                        <div class="col-md-5">
-                                            <div class="d-flex flex-column flex-sm-row gap-2 justify-content-md-end">
-                                                <a href="@Url.Action("BookSession", "Student", new { teacherId = Model.id, lessonId = lesson.id, type = "Online" })" 
-                                                   class="btn-book-online text-center shadow-sm">
-                                                    <i class="bi bi-laptop ms-1"></i> أونلاين
-                                                </a>
-                                                <a href="@Url.Action("BookSession", "Student", new { teacherId = Model.id, lessonId = lesson.id, type = "In-Person" })" 
-                                                   class="btn-book-person text-center shadow-sm">
-                                                    <i class="bi bi-geo-alt ms-1"></i> حضوري
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="text-center py-5">
-                            <i class="bi bi-calendar2-x text-muted display-1 opacity-25"></i>
-                            <h5 class="mt-3 text-muted">لا توجد دروس منشورة حالياً لهذا الأستاذ</h5>
-                        </div>
-                    }
-                </div>
-            </div>
 
-        </div>
-    </div>
-</div>
+                                <div class="sessions-list">
+
+                                    @foreach (var lesson in liveLessons)
+
+                                    {
+
+                                        if (lesson != null)
+
+                                        {
+
+                                            <div class="lesson-item live-session-item p-4">
+
+                                                <div class="row align-items-center">
+
+                                                    <div class="col-md-7 mb-3 mb-md-0">
+
+                                                        <h5 class="fw-bold text-dark mb-2">@lesson.title</h5>
+
+                                                        <p class="text-muted small m-0">@lesson.description</p>
+
+                                                    </div>
+
+                                                    <div class="col-md-5">
+
+                                                        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-md-end">
+
+                                                            @* التوجيه إلى صفحة تأكيد الحجز (إبداع) مع إرسال المعرفات ونوع الحصة كـ Query Parameters *@
+
+                                                            <a href="@Url.Action("BookSession", "Student", new { lessonId = lesson.id, type = "Online" })" class="btn-book-online text-center shadow-sm">
+
+                                                                <i class="bi bi-laptop ms-1"></i> حجز أونلاين
+
+                                                            </a>
+
+                                                            <a href="@Url.Action("BookSession", "Student", new { lessonId = lesson.id, type = "In-Person" })" class="btn-book-person text-center shadow-sm">
+
+                                                                <i class="bi bi-geo-alt ms-1"></i> حجز حضوري
+
+                                                            </a>
+
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                        }
+
+                                    }
+
+                                </div>
+
+                            }
+
+                            else
+
+                            {
+
+                                <div class="text-center py-4 bg-light rounded-4 border border-dashed">
+
+                                    <i class="bi bi-calendar-minus text-muted mb-2 fs-3"></i>
+
+                                    <p class="text-muted small m-0">لا توجد عناوين حصص منشورة حالياً من قبل هذا الأستاذ لمادة (@ViewBag.SubjectName).</p>
+
+                                </div>
+
+                            }
+
+                            </div>
+
+
+
+                            @* 2️⃣ قِسم مكتبة الملخصات والمذكرات المجانية *@
+
+                            <div class="bg-white p-4 p-md-5 rounded-5 shadow-sm min-vh-50">
+
+                            <div class="d-flex align-items-center justify-content-between mb-4">
+
+                            <h4 class="fw-bold text-dark m-0"><i class="bi bi-folder-symlink text-secondary ms-2"></i>مكتبة المستندات والمذكرات المجانية</h4>
+
+                            <span class="badge bg-light text-dark rounded-pill border">@freeLessons.Count() ملف للتحميل</span>
+
+                            </div>
+
+
+
+                            @if (freeLessons.Any())
+
+                            {
+
+                                <div class="lessons-list">
+
+                                    @foreach (var freeLesson in freeLessons)
+
+                                    {
+
+                                        if (freeLesson != null)
+
+                                        {
+
+                                            <div class="lesson-item p-4">
+
+                                                <div class="row align-items-center">
+
+                                                    <div class="col-md-8 mb-3 mb-md-0">
+
+                                                        <h5 class="fw-bold text-dark mb-2">@freeLesson.title</h5>
+
+                                                        <p class="text-muted small m-0">@freeLesson.description</p>
+
+                                                    </div>
+
+                                                    <div class="col-md-4 text-md-end">
+
+                                                        @if (!string.IsNullOrEmpty(freeLesson.pdf_url))
+
+                                                        {
+
+                                                            <a href="@freeLesson.pdf_url" target="_blank" class="btn btn-outline-success rounded-pill px-4 btn-sm fw-bold">
+
+                                                                <i class="bi bi-download ms-1"></i> تحميل الملخص
+
+                                                            </a>
+
+                                                        }
+
+                                                        else
+
+                                                        {
+
+                                                            <span class="badge bg-light text-muted p-2 rounded-pill">عرض مجاني فقط</span>
+
+                                                        }
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                        }
+
+                                    }
+
+                                </div>
+
+                            }
+
+                            else
+
+                            {
+
+                                <div class="text-center py-5 bg-light rounded-4 border border-dashed">
+
+                                    <i class="bi bi-file-earmark-x text-muted display-4 opacity-50 mb-2"></i>
+
+                                    <h5 class="text-muted small m-0">لا توجد مذكرات أو ملفات مراجعة مرفوعة حالياً.</h5>
+
+                                </div>
+
+                            }
+
+                            </div>
+
+                
+
+                            </div>
+
+
+
+                            </div>
+
+                            </div>
+
+                            </div>
+
