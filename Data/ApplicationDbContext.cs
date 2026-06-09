@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using EduPsych_Web.Models;
+﻿using EduPsych_Web.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace EduPsych_Web.Data
 {
@@ -146,7 +146,8 @@ namespace EduPsych_Web.Data
             modelBuilder.Entity<Payment>().Property(p => p.amount).HasPrecision(10, 2);
             modelBuilder.Entity<StudentWallet>().Property(w => w.balance).HasPrecision(12, 2);
 
-            modelBuilder.Entity<TeacherWallet>(entity => {
+            modelBuilder.Entity<TeacherWallet>(entity =>
+            {
                 entity.Property(w => w.total_earned).HasPrecision(12, 2);
                 entity.Property(w => w.pending_clearance).HasPrecision(12, 2);
                 entity.Property(w => w.withdrawn_amount).HasPrecision(12, 2);
@@ -164,7 +165,8 @@ namespace EduPsych_Web.Data
                 entity.Property(e => e.Status).HasColumnName("status");
             });
             // --- 6️⃣ إعدادات المستخدمين والدردشة ---
-            modelBuilder.Entity<User>(entity => {
+            modelBuilder.Entity<User>(entity =>
+            {
                 entity.Property(u => u.phone_number).HasColumnName("phone_number");
             });
 
@@ -181,7 +183,8 @@ namespace EduPsych_Web.Data
                       .OnDelete(DeleteBehavior.SetNull);
             });
 
-            modelBuilder.Entity<Notification>(entity => {
+            modelBuilder.Entity<Notification>(entity =>
+            {
                 entity.Property(n => n.teacher_id).HasColumnName("teacher_id");
             });
         }
