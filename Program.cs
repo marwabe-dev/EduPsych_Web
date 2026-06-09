@@ -6,8 +6,6 @@ using Microsoft.EntityFrameworkCore;
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
-var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // 1️⃣ إعداد قاعدة البيانات PostgreSQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
