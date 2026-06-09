@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EduPsych_Web.Models
@@ -62,13 +60,17 @@ namespace EduPsych_Web.Models
         public virtual Course? Course { get; set; }
         // ------------------------------------------
         // أضفه إذا لم يكن موجوداً
+        // ابحثي عن هذا الجزء في ملف Lesson.cs وقومي بتحديثه هكذا:
+        [Column("pdf_summary_url")] // 🛑 إضافة الماركر ليرتبط بالعمود الفعلي في PostgreSQL
         public string? pdf_summary_url { get; set; }
-        [Column("created_at")]
+
+        [Column("is_free")] // 🛑 تأمين حقل الفرز المجاني ليرتبط بالعمود الفعلي
+        public bool is_free { get; set; } = true;
         public DateTime created_at { get; set; }
 
         [Column("updated_at")]
         public DateTime updated_at { get; set; }
-        public bool is_free { get; set; } = true;
+      
         public virtual ICollection<Exercise> Exercises { get; set; }
     }
 }

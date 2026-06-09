@@ -36,7 +36,7 @@ namespace EduPsych_Web.Models
 
         [Column("file_url")]
         public string? file_url { get; set; }
-        
+
         // --- هذا الجزء لحل مشكلة e.Teacherid ---
         [NotMapped]
         public long? Teacherid { get; set; }

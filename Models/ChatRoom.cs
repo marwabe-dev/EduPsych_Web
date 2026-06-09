@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace EduPsych_Web.Models
+﻿namespace EduPsych_Web.Models
 {
     public class ChatRoom
     {

@@ -14,5 +14,9 @@ public class User
     public long role_id { get; set; }
     [ForeignKey("role_id")] public virtual Role? Role { get; set; }
     public DateTime created_at { get; set; } = DateTime.Now;
+    public string? phone { get; set; }
     public string? profile_picture_url { get; set; }
+    [Column("is_verified")] // هذا السطر يربط الكود باسم العمود في قاعدة البيانات
+    public bool is_verified { get; set; } = false;
+    public string? document_url { get; set; } // سيبقى فارغاً للتلاميذ والأولياء
 }
