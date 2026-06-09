@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Net.Http.Headers;
+using System.Text.Json.Serialization;
 
 namespace EduPsych_Web.Controllers
 {
@@ -10,7 +11,7 @@ namespace EduPsych_Web.Controllers
     public class ChatAiController : ControllerBase
     {
         private readonly HttpClient _httpClient;
-        // ضع مفتاحك الجديد هنا
+        // ⚠️ تنبيه أمني: يفضل نقل هذا المفتاح لملف appsettings.json لاحقاً
         private readonly string _groqApiKey = "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";
 
         public ChatAiController(HttpClient httpClient)
@@ -21,11 +22,16 @@ namespace EduPsych_Web.Controllers
         [HttpPost("ask")]
         public async Task<IActionResult> AskAi([FromBody] ChatRequest request)
         {
+            if (request == null || string.IsNullOrWhiteSpace(request.Prompt))
+            {
+                return BadRequest(new { response = "الرجاء كتابة سؤالك أولاً." });
+            }
+
             try
             {
                 var requestBody = new
                 {
-                    model = "llama-3.1-8b-instant", // الموديل الذي اخترناه
+                    model = "llama-3.1-8b-instant",
                     messages = new[]
                     {
                         new { role = "system", content = "أنت 'مساعد إبداع الذكي'، خبير تربوي في منصة EduPsych. أجب على أسئلة التلاميذ بأسلوب تعليمي، واضح، ومبسط باللغة العربية." },
@@ -42,23 +48,29 @@ namespace EduPsych_Web.Controllers
 
                 var response = await _httpClient.PostAsync("https://api.groq.com/openai/v1/chat/completions", content);
 
+                var responseString = await response.Content.ReadAsStringAsync();
+
                 if (response.IsSuccessStatusCode)
                 {
-                    var responseString = await response.Content.ReadAsStringAsync();
                     using var doc = JsonDocument.Parse(responseString);
                     var aiMessage = doc.RootElement.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString();
 
                     return Ok(new { response = aiMessage });
                 }
 
-                return BadRequest("عذراً، محرك الذكاء الاصطناعي مستغرق في التفكير حالياً، حاول ثانية.");
+                // 🔍 [تعديل جوهري] إذا فشل الاتصال بـ Groq، سنعرض السبب القادم منهم مباشرة في الشات لنعرف المشكلة
+                return BadRequest(new { response = $"فشل محرك الذكاء الاصطناعي. الرد من السيرفر: {response.StatusCode} - {responseString}" });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"خطأ فني: {ex.Message}");
+                return StatusCode(500, new { response = $"خطأ فني داخلي: {ex.Message}" });
             }
         }
     }
 
-    public class ChatRequest { public string Prompt { get; set; } }
+    public class ChatRequest
+    {
+        [JsonPropertyName("prompt")]
+        public string Prompt { get; set; }
+    }
 }

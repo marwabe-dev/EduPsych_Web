@@ -1,11 +1,8 @@
 ﻿using ClosedXML.Excel;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using EduPsych_Web.Data;
 using EduPsych_Web.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EduPsych_Web.Controllers
 {
@@ -240,14 +237,16 @@ namespace EduPsych_Web.Controllers
 
         public async Task<IActionResult> PsychSupportManagement()
         {
-            var counselorsData = await _context.Counselors.Include(c => c.User).Select(c => new {
+            var counselorsData = await _context.Counselors.Include(c => c.User).Select(c => new
+            {
                 FullName = c.User.first_name + " " + c.User.last_name,
                 SessionCount = _context.CounselSessions.Count(s => s.counselor_id == c.id),
                 Revenue = _context.Payments.Where(p => p.counsel_session_id != null && _context.CounselSessions.Any(cs => cs.id == p.counsel_session_id && cs.counselor_id == c.id)).Sum(p => (decimal?)p.amount) ?? 0,
                 UserRating = 4.2
             }).ToListAsync();
 
-            var rankedStaff = counselorsData.Select(c => new {
+            var rankedStaff = counselorsData.Select(c => new
+            {
                 c.FullName,
                 c.SessionCount,
                 c.Revenue,
@@ -261,7 +260,8 @@ namespace EduPsych_Web.Controllers
 
         public async Task<IActionResult> DownloadReport()
         {
-            var data = await _context.Counselors.Include(c => c.User).Select(c => new {
+            var data = await _context.Counselors.Include(c => c.User).Select(c => new
+            {
                 FullName = c.User.first_name + " " + c.User.last_name,
                 SessionCount = _context.CounselSessions.Count(s => s.counselor_id == c.id),
                 Revenue = _context.Payments.Where(p => p.counsel_session_id != null && _context.CounselSessions.Any(cs => cs.id == p.counsel_session_id && cs.counselor_id == c.id)).Sum(p => (decimal?)p.amount) ?? 0
@@ -292,7 +292,8 @@ namespace EduPsych_Web.Controllers
         public async Task<IActionResult> EduAcademicPerformance()
         {
             var teachers = await _context.Teachers.Include(t => t.User).ToListAsync();
-            var teacherStats = teachers.Select(t => {
+            var teacherStats = teachers.Select(t =>
+            {
                 var ids = _context.Lessons.Where(l => l.teacher_id == t.id).Select(l => l.id).ToList();
                 int count = _context.EducationalSessions.Count(s => ids.Contains(s.lesson_id));
                 decimal rev = _context.Payments.Where(p => p.educational_session_id != null && _context.EducationalSessions.Any(s => s.id == p.educational_session_id && ids.Contains(s.lesson_id))).Sum(p => (decimal?)p.amount) ?? 0;
@@ -315,7 +316,8 @@ namespace EduPsych_Web.Controllers
             // جلب الدورات وأسعارها (التي أضافها الأساتذة)
             // نفترض أن جدول الدورات اسمه Courses وبه حقل title و price
             ViewBag.CoursePrices = await _context.Courses
-                .Select(c => new {
+                .Select(c => new
+                {
                     title = c.title,
                     price = c.price
                 })
@@ -417,6 +419,37 @@ namespace EduPsych_Web.Controllers
 
             await _context.SaveChangesAsync();
             return RedirectToAction("PendingDeposits");
+        }
+
+
+
+
+        // عرض قائمة طلبات التوظيف (الأساتذة والمرشدين بانتظار التفعيل)
+        public async Task<IActionResult> RecruitmentRequests()
+        {
+            // جلب المستخدمين الذين سجلوا كأستاذ (3) أو مرشد (5) ولم يتم تفعيلهم بعد
+            var pendingExperts = await _context.Users
+                .Include(u => u.Role)
+                .Where(u => u.is_verified == false && (u.role_id == 3 || u.role_id == 5))
+                .OrderByDescending(u => u.created_at)
+                .ToListAsync();
+
+            return View(pendingExperts);
+        }
+
+        // أكشن "قبول طلب التوظيف"
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveExpert(long id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user != null)
+            {
+                user.is_verified = true; // تفعيل الحساب
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "تم تفعيل حساب الخبير بنجاح، يمكنه الآن الدخول للمنصة.";
+            }
+            return RedirectToAction(nameof(RecruitmentRequests));
         }
     }
 }

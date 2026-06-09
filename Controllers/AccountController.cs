@@ -1,11 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using EduPsych_Web.Data;
+﻿using EduPsych_Web.Data;
 using EduPsych_Web.Models;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EduPsych_Web.Controllers
 {
@@ -23,6 +19,7 @@ namespace EduPsych_Web.Controllers
         // ==========================================
         [HttpGet]
         public IActionResult Login() => View();
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(string email, string password)
@@ -33,48 +30,34 @@ namespace EduPsych_Web.Controllers
                 return View();
             }
 
-            // تنظيف البيانات المدخلة
             var cleanEmail = email.Trim().ToLower();
             var cleanPassword = password.Trim();
 
-            // البحث عن المستخدم باستخدام LINQ (أضمن وأسرع)
             var user = await _context.Users
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.email.ToLower() == cleanEmail && u.password == cleanPassword);
 
             if (user != null)
             {
-                // حفظ البيانات في الجلسة
+                // حظر الأساتذة والمرشدين غير المفعلين
+                if ((user.role_id == 3 || user.role_id == 5) && user.is_verified == false)
+                {
+                    ViewBag.Error = "عذراً، حسابك  قيد المراجعة. لا يمكنك الدخول حتى يتم دراسة ملفك وقبوله من طرف الإدارة.";
+                    return View();
+                }
+
                 HttpContext.Session.SetInt32("UserId", (int)user.id);
                 HttpContext.Session.SetString("UserName", $"{user.first_name} {user.last_name}");
+                HttpContext.Session.SetString("UserRole", user.Role?.name ?? "");
 
-                // توجيه المستخدم بناءً على رقم الرتبة (Role ID)
-                // ملاحظة: تأكد من مطابقة هذه الأرقام مع جدول roles في قاعدة البيانات
                 switch (user.role_id)
                 {
-                    case 1:
-                    case 6: // أضفنا الرقم 6 لأن الأدمن عندك يحمل هذا الرقم
-                        HttpContext.Session.SetString("UserRole", "Admin");
-                        return RedirectToAction("Index", "Admin");
-
-                    case 2: // Student
-                        HttpContext.Session.SetString("UserRole", "Student");
-                        return RedirectToAction("Index", "Student");
-
-                    case 3: // Teacher
-                        HttpContext.Session.SetString("UserRole", "Teacher");
-                        return RedirectToAction("Index", "Teacher");
-
-                    case 4: // Parent
-                        HttpContext.Session.SetString("UserRole", "Parent");
-                        return RedirectToAction("Index", "Parent");
-
-                    case 5: // Counselor
-                        HttpContext.Session.SetString("UserRole", "Counselor");
-                        return RedirectToAction("Index", "Counselor");
-
-                    default:
-                        return RedirectToAction("Index", "Home");
+                    case 1: case 6: return RedirectToAction("Index", "Admin");
+                    case 2: return RedirectToAction("Index", "Student");
+                    case 3: return RedirectToAction("Index", "Teacher");
+                    case 4: return RedirectToAction("Index", "Parent");
+                    case 5: return RedirectToAction("Index", "Counselor");
+                    default: return RedirectToAction("Index", "Home");
                 }
             }
 
@@ -88,93 +71,106 @@ namespace EduPsych_Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Register()
         {
-            // 1. جلب الصفوف (للطالب)
-            ViewBag.Classes = await _context.Classes.AsNoTracking().ToListAsync();
-
-            // 2. جلب تخصصات الأساتذة (من جدول specialization)
-            ViewBag.TeacherSpecs = await _context.specialization.AsNoTracking().ToListAsync();
-
-            // 3. جلب تخصصات المرشدين (من جدول psych_specialization)
-            ViewBag.CounselorSpecs = await _context.PsychSpecializations.AsNoTracking().ToListAsync();
-
+            await LoadRegisterData();
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(string FullName, string Email, string Phone, string Password, int RoleId, long? ClassId)
+        public async Task<IActionResult> Register(string FullName, string Email, string Phone, string Password, int RoleId,
+            long? ClassId, long? SpecializationId, long? StudentId, long? CounselorSpecId, IFormFile? docFile)
         {
             try
             {
-                // 1. التحقق من وجود البريد الإلكتروني
                 if (await _context.Users.AnyAsync(u => u.email.ToLower() == Email.Trim().ToLower()))
                 {
                     ViewBag.Error = "هذا البريد الإلكتروني مسجل بالفعل";
-                    ViewBag.Classes = await _context.Classes.ToListAsync();
+                    await LoadRegisterData();
                     return View();
                 }
 
-                // 2. تقسيم الاسم
+                // معالجة رفع الملف (الشهادات/CV)
+                string? documentUrl = null;
+                if (docFile != null && docFile.Length > 0)
+                {
+                    // تأكدي من وجود المجلد: wwwroot/uploads/documents
+                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "documents");
+                    if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(docFile.FileName);
+                    string filePath = Path.Combine(uploadsFolder, fileName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await docFile.CopyToAsync(fileStream);
+                    }
+                    documentUrl = "/uploads/documents/" + fileName;
+                }
+
                 var names = FullName.Trim().Split(' ');
                 string firstName = names[0];
                 string lastName = names.Length > 1 ? string.Join(" ", names.Skip(1)) : " ";
 
-                // 3. إنشاء كائن المستخدم (تعديل phone إلى phone_number)
+                bool autoVerify = (RoleId == 2 || RoleId == 4);
+
                 var newUser = new User
                 {
                     first_name = firstName,
                     last_name = lastName,
                     email = Email.Trim().ToLower(),
                     password = Password.Trim(),
-
-                    // التعديل هنا: نستخدم phone_number ليطابق العمود الجديد في PostgreSQL والموديل
                     phone_number = Phone,
-
                     role_id = RoleId,
+                    is_verified = autoVerify,
+                    document_url = documentUrl, // حفظ رابط الملف هنا
                     created_at = DateTime.Now
                 };
 
                 _context.Users.Add(newUser);
                 await _context.SaveChangesAsync();
 
-                // 4. إنشاء السجل الفرعي بناءً على الدور (Student, Teacher, etc.)
-                if (RoleId == 2) // Student
+                // توزيع البيانات على الجداول الفرعية
+                if (RoleId == 2)
                 {
-                    var student = new Student { user_id = newUser.id, class_id = ClassId ?? 0 };
-                    _context.Students.Add(student);
+                    _context.Students.Add(new Student { user_id = newUser.id, class_id = ClassId ?? 0 });
                 }
-                else if (RoleId == 3) // Teacher
+                else if (RoleId == 3)
                 {
-                    var teacher = new Teacher { user_id = newUser.id, hourly_price = 0 };
-                    _context.Teachers.Add(teacher);
-
-                    // ملاحظة: لا حاجة لإضافة phone_number هنا لأننا وضعناه في كائن newUser (جدول users)
+                    _context.Teachers.Add(new Teacher { user_id = newUser.id, specialization_id = SpecializationId });
                 }
-                else if (RoleId == 4) // Parent
+                else if (RoleId == 4)
                 {
-                    var parent = new Parent { user_id = newUser.id, created_at = DateTime.Now };
-                    _context.Parents.Add(parent);
+                    _context.Parents.Add(new Parent { user_id = newUser.id, student_id = StudentId, created_at = DateTime.Now });
                 }
-                else if (RoleId == 5) // Counselor
+                else if (RoleId == 5)
                 {
-                    var counselor = new Counselor { user_id = newUser.id, hourly_price = 0 };
-                    _context.Counselors.Add(counselor);
+                    _context.Counselors.Add(new Counselor { user_id = newUser.id, specialization_id = CounselorSpecId });
                 }
 
                 await _context.SaveChangesAsync();
+
+                if (!autoVerify)
+                {
+                    TempData["Warning"] = "تم استلام طلبك بنجاح. يرجى انتظار مراجعة الإدارة لشهاداتك وتفعيل حسابك.";
+                }
+
                 return RedirectToAction("Login");
             }
             catch (Exception ex)
             {
                 ViewBag.Error = "حدث خطأ أثناء التسجيل: " + ex.Message;
-                ViewBag.Classes = await _context.Classes.ToListAsync();
+                await LoadRegisterData();
                 return View();
             }
         }
 
-        // ==========================================
-        // 3. تسجيل الخروج (Logout)
-        // ==========================================
+        private async Task LoadRegisterData()
+        {
+            ViewBag.Classes = await _context.Classes.AsNoTracking().ToListAsync();
+            ViewBag.TeacherSpecs = await _context.specialization.AsNoTracking().ToListAsync();
+            ViewBag.CounselorSpecs = await _context.PsychSpecializations.AsNoTracking().ToListAsync();
+        }
+
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();

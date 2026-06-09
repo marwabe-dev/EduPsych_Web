@@ -1,9 +1,9 @@
 ﻿using EduPsych_Web.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 namespace EduPsych_Web.Controllers
 {

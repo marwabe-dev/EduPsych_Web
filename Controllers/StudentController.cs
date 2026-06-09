@@ -1,15 +1,9 @@
-﻿using EduPsych_Web.Data;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using EduPsych_Web.Data;
 using EduPsych_Web.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 
 namespace EduPsych_Web.Controllers
@@ -88,7 +82,7 @@ namespace EduPsych_Web.Controllers
         }
 
         // اختيار المادة
-       
+
 
         // 3️⃣ الدعم النفسي والمرشدين
         public async Task<IActionResult> PsychologicalSupport()
@@ -157,7 +151,7 @@ namespace EduPsych_Web.Controllers
             return View();
         }
 
-        
+
         public async Task<IActionResult> SelectSubject(long streamId)
         {// جلب الشعبة الحالية لمعرفة الصف التابعة له
          // جلب المواد المرتبطة بالشعبة
@@ -172,59 +166,45 @@ namespace EduPsych_Web.Controllers
         // هذه هي الميثود الجديدة التي تفتح "تفاصيل المادة" (الدروس والتمارين)
 
         // 1. ميثود تفاصيل المادة (تأكد أنها نسخة واحدة فقط في الملف)
+        // 1. ميثود تفاصيل المادة (تم إصلاح الخطأ البرمجي وتوحيد البيانات)
         public async Task<IActionResult> SubjectDetails(long subjectId)
         {
-            // جلب بيانات المادة
-            var subject = await _context.Subjects
-                .FirstOrDefaultAsync(s => s.id == subjectId);
-
+            var subject = await _context.Subjects.FirstOrDefaultAsync(s => s.id == subjectId);
             if (subject == null) return NotFound();
 
-            // جلب الدروس التابعة لهذه المادة
+            // جلب معرفات المواد المتشابهة لتفادي أخطاء الشعب الدراسي
+            var similarSubjectIds = await _context.Subjects
+                .Where(s => s.name == subject.name)
+                .Select(s => s.id)
+                .ToListAsync();
+
+            // 🎯 التعديل الصارم: جلب الدروس المجانية العامة التي لا تتبع أي دورة أو حصة مباشرة
             var lessons = await _context.Lessons
-                .Where(l => l.subject_id == subjectId)
-                .ToListAsync();
+                .Where(l => similarSubjectIds.Contains(l.subject_id)
+                            && !l.title.StartsWith("[تمرين مضاف]")
+                            && l.is_free == true
+                            && l.course_id == null) // تأكيد عدم تبعيتها لدورة مدفوعة
+                .ToListAsync() ?? new List<Lesson>();
 
-            // جلب التمارين التابعة لدروس هذه المادة
-            var lessonIds = lessons.Select(l => l.id).ToList();
             var exercises = await _context.Exercises
-                .Where(e => lessonIds.Contains(e.lesson_id))
-                .ToListAsync();
+                .Include(e => e.Lesson)
+                .Where(e => _context.Lessons.Any(l => l.id == e.lesson_id && similarSubjectIds.Contains(l.subject_id) && l.is_free == true))
+                .ToListAsync() ?? new List<Exercise>();
 
-            // جلب الاختبارات (استخدمنا Try-Catch مؤقتاً لتجنب الكراش إذا لم تضف DbSet Exams بعد)
+            var exams = new List<Exam>();
             try
             {
-                ViewBag.Exams = await _context.Exams
-                    .Where(ex => ex.subject_id == subjectId)
+                exams = await _context.Exams
+                    .Where(ex => similarSubjectIds.Contains(ex.subject_id))
                     .ToListAsync();
             }
-            catch
-            {
-                ViewBag.Exams = new List<Exam>(); // قائمة فارغة في حال عدم وجود الجدول
-            }
+            catch { }
 
             ViewBag.Lessons = lessons;
             ViewBag.Exercises = exercises;
+            ViewBag.Exams = exams;
 
             return View(subject);
-        }
-        // GET: Student/BookSession?counselorId=2
-        public async Task<IActionResult> BookPsychSession(long counselorId)
-        {
-            var counselor = await _context.Counselors
-        .Include(c => c.User)
-        .Include(c => c.PsychSpecialization)
-        .FirstOrDefaultAsync(c => c.id == counselorId);
-
-            if (counselor == null)
-            {
-                return NotFound("عذراً، لم يتم العثور على هذا المرشد.");
-            }
-
-            ViewBag.SpecName = counselor.PsychSpecialization?.name ?? "مستشار نفسي";
-
-            // 🔴 التصحيح هنا: يجب أن نكتب اسم الملف الذي أنشأته حرفياً 🔴
-            return View("BookSessionpsy", counselor);
         }
 
         [HttpPost]
@@ -334,28 +314,23 @@ namespace EduPsych_Web.Controllers
         }
 
 
-       
 
 
 
-        // ميثود استكشاف الأساتذة بناءً على المادة
         public async Task<IActionResult> ExploreTeachers(long subjectId)
         {
-            // 1. جلب اسم المادة للعرض في الواجهة
+            // 1. جلب اسم المادة فقط لتفادي أي أخطاء في العلاقات
             var subject = await _context.Subjects.FindAsync(subjectId);
-            if (subject == null) return NotFound();
 
-            // 2. جلب قائمة المعرفات (IDs) للأساتذة الذين لديهم دروس في هذه المادة
-            var teacherIds = await _context.Lessons
-                .Where(l => l.subject_id == subjectId)
-                .Select(l => l.teacher_id)
-                .Distinct()
-                .ToListAsync();
+            if (subject == null) return NotFound("المادة غير موجودة.");
 
-            // 3. جلب بيانات هؤلاء الأساتذة مع بياناتهم الشخصية من جدول Users
+            // 2. تصفية الأساتذة: جلب الأساتذة الذين يطابق تخصصهم اسم هذه المادة بدقة
             var teachers = await _context.Teachers
                 .Include(t => t.User)
-                .Where(t => teacherIds.Contains(t.id))
+                .Include(t => t.Specialization) // جلب جدول التخصص المرتبط بالأستاذ
+                .Where(t => t.specialization_id != null &&
+                            (t.Specialization.name.ToLower().Contains(subject.name.ToLower()) ||
+                             subject.name.ToLower().Contains(t.Specialization.name.ToLower())))
                 .ToListAsync();
 
             ViewBag.SubjectName = subject.name;
@@ -364,34 +339,41 @@ namespace EduPsych_Web.Controllers
             return View(teachers);
         }
 
-
-        // ميثود عرض ملف الأستاذ وحجز حصة
-        public async Task<IActionResult> TeacherProfile(long id, long subjectId)
+        // ميثود استكشاف الأساتذة بناءً على المادة
+        // 🆕 6️⃣ عرض الملف الشخصي للأستاذ (TeacherProfile)
+        // 🆕 6️⃣ عرض الملف الشخصي للأستاذ (TeacherProfile) - متوافق كلياً مع الـ View
+        // 🆕 6️⃣ عرض الملف الشخصي للأستاذ (TeacherProfile)
+        // 🆕 6️⃣ عرض الملف الشخصي للأستاذ (TeacherProfile)
+        public async Task<IActionResult> TeacherProfile(long id)
         {
-            // 1. جلب بيانات الأستاذ مع معلومات المستخدم (الاسم، الصورة..)
+            // 1. جلب بيانات الأستاذ مع معلومات المستخدم الخاص به
             var teacher = await _context.Teachers
                 .Include(t => t.User)
                 .FirstOrDefaultAsync(t => t.id == id);
 
             if (teacher == null) return NotFound();
 
-            // 2. جلب الدروس الثابتة لهذه المادة المرتبطة بهذا الأستاذ
-            var lessons = await _context.Lessons
-                .Where(l => l.subject_id == subjectId && l.teacher_id == id)
+            // 2. جلب الحصص المباشرة (المعروضة للحجز الخاص) -> حيث يكون is_free == false و teacher_id مطابقتين
+            var liveSessions = await _context.Lessons
+                .Where(l => l.teacher_id == id && l.is_free == false)
+                .OrderByDescending(l => l.created_at)
                 .ToListAsync();
 
-            // 3. جلب اسم المادة لعرضها في العنوان
-            var subject = await _context.Subjects.FindAsync(subjectId);
+            // 3. جلب المستندات والمذكرات المجانية للمكتبة -> حيث يكون is_free == true
+            var freeLessons = await _context.Lessons
+                .Where(l => l.teacher_id == id && l.is_free == true)
+                .OrderByDescending(l => l.created_at)
+                .ToListAsync();
 
-            ViewBag.Lessons = lessons;
-            ViewBag.SubjectName = subject?.name ?? "المادة";
-            ViewBag.SubjectId = subjectId;
+            // 4. إرسال البيانات إلى الـ View عبر الـ ViewBag والـ Model
+            ViewBag.LiveSessions = liveSessions;
+            ViewBag.Lessons = freeLessons;
+
+            // تأكد من جلب اسم المادة بالشكل المناسب لتفادي الاختفاء (مثال تقديري)
+            ViewBag.SubjectName = "المادة المختارة";
 
             return View(teacher);
         }
-
-
-
         // 5️⃣ ميثود فتح صفحة تحديد موعد الحصة (GET)
         public async Task<IActionResult> BookSession(long lessonId, string type = "Online")
         {
@@ -482,7 +464,7 @@ namespace EduPsych_Web.Controllers
 
 
 
-    
+
 
 
         [HttpPost]
@@ -622,7 +604,7 @@ namespace EduPsych_Web.Controllers
                 return BadRequest("خطأ فني: " + ex.Message);
             }
 
-            return BadRequest("فشل إنشاء جلسة الدفع، تأكد من مفتاح API لشارجيلي."); 
+            return BadRequest("فشل إنشاء جلسة الدفع، تأكد من مفتاح API لشارجيلي.");
         }
 
 
@@ -775,8 +757,6 @@ namespace EduPsych_Web.Controllers
 
 
 
-
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BuyCourse(long courseId)
@@ -853,6 +833,7 @@ namespace EduPsych_Web.Controllers
                 }
             }
         }
+
 
 
 
@@ -1081,5 +1062,168 @@ namespace EduPsych_Web.Controllers
             TempData["Success"] = "تم دفع ثمن الحصة بنجاح وتأكيد موعدك.";
             return RedirectToAction("Index");
         }
+
+
+
+
+
+
+
+
+
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PaySession(long sessionId)
+        {
+            try
+            {
+                // 1. التحقق من تسجيل دخول المستخدم (التلميذ)
+                int? userId = HttpContext.Session.GetInt32("UserId");
+                if (userId == null) return RedirectToAction("Login", "Account");
+
+                // جلب بيانات الطالب الأساسية
+                var student = await _context.Students.FirstOrDefaultAsync(s => s.user_id == userId);
+                if (student == null)
+                {
+                    TempData["Error"] = "بيانات الطالب غير موجودة في النظام.";
+                    return RedirectToAction("MyWallet");
+                }
+
+                // جلب محفظة الطالب الرقمية
+                var wallet = await _context.StudentWallets.FirstOrDefaultAsync(w => w.student_id == student.id);
+                if (wallet == null)
+                {
+                    TempData["Error"] = "عذراً، لم نتمكن من الوصول لمحفظتك الرقمية.";
+                    return RedirectToAction("MyWallet");
+                }
+
+                decimal price = 0;
+                string sessionType = "";
+
+                // 2. الفحص الذكي بناءً على هيكلة جداول قاعدة البيانات الخاصة بك
+                var counselSession = await _context.CounselSessions
+                    .Include(c => c.Counselor)
+                    .FirstOrDefaultAsync(c => c.id == sessionId);
+
+                if (counselSession != null)
+                {
+                    // الجلسة نفسية: جلب السعر من جدول المرشد (hourly_price) كما هو مبين في السكربت الخاص بك
+                    price = counselSession.Counselor?.hourly_price ?? 1000;
+                    sessionType = "Counsel";
+                }
+                else
+                {
+                    // الحصة تعليمية: جلب الحصة مع ربطها بالدرس ثم الأستاذ للوصول لـ hourly_price
+                    var eduSession = await _context.EducationalSessions
+                        .Include(e => e.Lesson)
+                            .ThenInclude(l => l.Teacher)
+                        .FirstOrDefaultAsync(e => e.id == sessionId);
+
+                    if (eduSession != null)
+                    {
+                        // جلب السعر من حقل hourly_price الموجود في جدول teacher لديك
+                        price = eduSession.Lesson?.Teacher?.hourly_price ?? 1000;
+                        sessionType = "Edu";
+                    }
+                    else
+                    {
+                        TempData["Error"] = "عذراً، لم يتم العثور على الحصة أو الجلسة المحددة في قاعدة البيانات.";
+                        return RedirectToAction("MyWallet");
+                    }
+                }
+
+                // حماية إضافية لحالة الحقول الصفرية
+                if (price <= 0) price = 1000;
+
+                // 3. التحقق من كفاية الرصيد بالمحفظة (حقل balance)
+                if (wallet.balance < price)
+                {
+                    TempData["Error"] = $"رصيدك الحالي ({wallet.balance} دج) غير كافٍ. المطلوب هو {price} دج.";
+                    return RedirectToAction("MyWallet");
+                }
+
+                // 4. الخصم الصارم والآمن من محفظة التلميذ (-)
+                wallet.balance -= price;
+
+                // حساب توزيع الأرباح النصف بالنصف (50% للمنصة و 50% للمستشار أو الأستاذ)
+                decimal profitAmount = price * 0.5m;
+
+                // 5. تحديث الجداول وزيادة حساب الأستاذ أو المرشد (+)
+                if (sessionType == "Counsel")
+                {
+                    counselSession.status = "Confirmed";
+                    // ملاحظة: بما أن جدول counsel_session لا يحتوي على حقول للعمولات في قاعدة بياناتك،
+                    // قمنا بإلغاء كتابتها برمجياً لتجنب أي خطأ إضافي، وشحن محفظة المرشد مباشرة.
+
+                    if (counselSession.Counselor != null)
+                    {
+                        // ابحث عن محفظة المرشد، إذا لم تكن موجودة قم بإنشائها مسبقاً
+                        var cWallet = await _context.CounselorWallets.FirstOrDefaultAsync(w => w.counselor_id == counselSession.counselor_id);
+                        if (cWallet == null)
+                        {
+                            cWallet = new EduPsych_Web.Models.CounselorWallet
+                            {
+                                counselor_id = counselSession.counselor_id,
+                                total_earned = 0,
+                                withdrawn_amount = 0
+                            };
+                            _context.CounselorWallets.Add(cWallet);
+                        }
+
+                        cWallet.total_earned += profitAmount;
+                        cWallet.updated_at = DateTime.Now;
+                    }
+                }
+                else if (sessionType == "Edu")
+                {
+                    var eduSession = await _context.EducationalSessions
+                        .Include(e => e.Lesson)
+                        .FirstOrDefaultAsync(e => e.id == sessionId);
+
+                    eduSession.status = "Confirmed";
+
+                    if (eduSession.Lesson != null)
+                    {
+                        var teacherId = eduSession.Lesson.teacher_id;
+
+                        // جلب محفظة الأستاذ بناءً على جدول teacher_wallet الموجود في الـ SQL
+                        var tWallet = await _context.TeacherWallets.FirstOrDefaultAsync(w => w.teacher_id == teacherId);
+                        if (tWallet == null)
+                        {
+                            tWallet = new EduPsych_Web.Models.TeacherWallet
+                            {
+                                teacher_id = teacherId,
+                                total_earned = 0,
+                                withdrawn_amount = 0
+                            };
+                            _context.TeacherWallets.Add(tWallet);
+                        }
+
+                        tWallet.total_earned += profitAmount;
+                        tWallet.updated_at = DateTime.Now;
+                    }
+                }
+
+                // 6. حفظ الحصن المالي كاملاً في قاعدة البيانات
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = $"تم خصم ثمن الحصة ({price} دج) بنجاح. حصتك محفوظة وتم تحويل 50% للأستاذ/المستشار وتأكيد الموعد المباشر! 🎉";
+
+                if (sessionType == "Counsel")
+                    return RedirectToAction("Index"); // العودة لجدول الجلسات النفسية
+                else
+                    return RedirectToAction("MyEducationalLessons", "Student"); // العودة للحصص التعليمية
+            }
+            catch (Exception ex)
+            {
+                var innerMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                TempData["Error"] = $"خطأ أثناء معالجة الدفع: {innerMessage}";
+                return RedirectToAction("MyWallet");
+            }
+        }
+
+
     }
 }

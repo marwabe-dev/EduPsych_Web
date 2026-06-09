@@ -1,12 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using EduPsych_Web.Data;
+﻿using EduPsych_Web.Data;
 using EduPsych_Web.Models;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Threading.Tasks;
-using System.Linq;
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EduPsych_Web.Controllers
 {
@@ -24,8 +19,12 @@ namespace EduPsych_Web.Controllers
         public async Task<IActionResult> Index()
         {
             int? userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login", "Account");
+
             var counselor = await _context.Counselors
                 .FirstOrDefaultAsync(c => c.user_id == (long)userId);
+
+            if (counselor == null) return NotFound();
 
             // جلب المحفظة من الجدول الجديد counselor_wallet
             var wallet = await _context.CounselorWallets
@@ -34,12 +33,28 @@ namespace EduPsych_Web.Controllers
             // حساب الرصيد المتاح (الإجمالي - المسحوب)
             ViewBag.WalletBalance = (wallet?.total_earned ?? 0) - (wallet?.withdrawn_amount ?? 0);
 
-            // جلب الجلسات (بناءً على scheduled_at كما في SQL)
+            // جلب الجلسات بالكامل للمرشد الحالي
             var allSessions = await _context.CounselSessions
                 .Include(s => s.Student).ThenInclude(st => st.User)
                 .Where(s => s.counselor_id == counselor.id)
                 .OrderByDescending(s => s.scheduled_at)
                 .ToListAsync();
+
+            // 📊 ---------------------------------------------------------
+            // [إضافة برمجية جوهرية] حساب الإحصائيات وإرسالها لكروت الـ View
+            // ---------------------------------------------------------
+            var today = DateTime.Today;
+
+            ViewBag.TotalSessions = allSessions.Count;
+
+            // حساب الحجوزات الجديدة بانتظار التأكيد (Pending)
+            ViewBag.PendingSessions = allSessions.Count(s => s.status == "Pending");
+
+            // حساب جلسات اليوم (المطابقة لتاريخ اليوم الحالي)
+            ViewBag.TodaySessions = allSessions.Count(s => s.scheduled_at.Date == today);
+
+            // حساب الجلسات القادمة المعتمدة (Approved أو Paid وتاريخها مستقبلي)
+            ViewBag.UpcomingSessions = allSessions.Count(s => (s.status == "Approved" || s.status == "Paid") && s.scheduled_at >= DateTime.Now);
 
             return View(allSessions);
         }
@@ -61,6 +76,7 @@ namespace EduPsych_Web.Controllers
         }
 
         // --- 3. قبول الجلسة وإنشاء سجل دفع ---
+        // --- 1. تحديث دالة قبول الجلسة بالاسم الصحيح الموحد "Approved" ---
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AcceptSession(long sessionId)
@@ -71,7 +87,7 @@ namespace EduPsych_Web.Controllers
 
             if (session == null) return NotFound();
 
-            session.status = "Accepted";
+            session.status = "Approved"; // 🌟 تم التوحيد إلى Approved بدلاً من Accepted
             session.updated_at = DateTime.Now;
 
             var payment = await _context.Payments
@@ -84,7 +100,7 @@ namespace EduPsych_Web.Controllers
                     student_id = session.student_id,
                     counsel_session_id = session.id,
                     amount = session.Counselor?.hourly_price ?? 0,
-                    status = "Pending",
+                    status = "Pending", // دفع الطالب لا يزال معلقاً
                     created_at = DateTime.Now,
                     updated_at = DateTime.Now
                 };
@@ -134,7 +150,6 @@ namespace EduPsych_Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // --- 6. وظيفة طلب سحب الأرباح (جديد) ---
         [HttpPost]
         public async Task<IActionResult> RequestWithdrawal(decimal amount)
         {
@@ -148,20 +163,20 @@ namespace EduPsych_Web.Controllers
             {
                 var request = new WithdrawalRequest
                 {
-                    CounselorId = counselor.id, // تأكد من الاسم الصغير حسب SQL
+                    CounselorId = counselor.id, // نضع المعرف في خانة المرشد
+                    TeacherId = null,           // نترك خانة الأستاذ فارغة
                     Amount = amount,
                     Status = "Pending",
                     CreatedAt = DateTime.Now
                 };
 
-                // تحديث مبلغ المسحوبات في المحفظة فوراً لتعليق الرصيد
                 wallet.withdrawn_amount += amount;
-
                 _context.WithdrawalRequests.Add(request);
                 await _context.SaveChangesAsync();
+
                 return Json(new { success = true, message = "تم إرسال طلب السحب بنجاح" });
             }
-            return Json(new { success = false, message = "الرصيد غير كافٍ أو المبلغ غير مسموح به" });
+            return Json(new { success = false, message = "الرصيد غير كافٍ" });
         }
 
         public async Task<IActionResult> FinancialManagement()
@@ -186,5 +201,118 @@ namespace EduPsych_Web.Controllers
 
             return View(paidSessions);
         }
+
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> MyProfile()
+        {
+            var sessionUserId = HttpContext.Session.GetInt32("UserId");
+            if (sessionUserId == null) return RedirectToAction("Login", "Account");
+
+            long userId = Convert.ToInt64(sessionUserId);
+
+            // جلب المرشد مع بيانات المستخدم (User) والتخصص (PsychSpecialization)
+            var counselor = await _context.Counselors
+                .Include(c => c.User)
+                .Include(c => c.PsychSpecialization) // تأكدي أن هذا هو اسم العلاقة في الموديل
+                .FirstOrDefaultAsync(c => c.user_id == userId);
+
+            if (counselor == null) return NotFound();
+
+            return View(counselor);
+        }
+
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfile(Counselor updatedCounselor, string ccp, string rib, string phone, string phone_number, IFormFile? profilePicture)
+        {
+            var sessionUserId = HttpContext.Session.GetInt32("UserId");
+            if (sessionUserId == null) return RedirectToAction("Login", "Account");
+
+            long userId = Convert.ToInt64(sessionUserId);
+
+            // جلب بيانات المرشد مع بيانات المستخدم (User)
+            var counselor = await _context.Counselors
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.user_id == userId);
+
+            if (counselor != null && counselor.User != null)
+            {
+                // 1. تحديث أرقام الهاتف في جدول Users
+                counselor.User.phone = phone;
+                counselor.User.phone_number = phone_number;
+
+                // 2. معالجة رفع الصورة الشخصية
+                if (profilePicture != null && profilePicture.Length > 0)
+                {
+                    // تحديد مسار المجلد (wwwroot/uploads/profiles)
+                    string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profiles");
+                    if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+
+                    // إنشاء اسم فريد للصورة لمنع التكرار
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(profilePicture.FileName);
+                    string filePath = Path.Combine(folder, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await profilePicture.CopyToAsync(stream);
+                    }
+
+                    // حفظ مسار الصورة في قاعدة البيانات
+                    counselor.User.profile_picture_url = "/uploads/profiles/" + fileName;
+
+                    // 🌟 تحديث الـ Session فوراً لكي تظهر الصورة في الهيدر
+                    HttpContext.Session.SetString("UserProfilePicture", counselor.User.profile_picture_url);
+                }
+
+                // 3. تحديث بيانات المرشد الأخرى
+                counselor.hourly_price = updatedCounselor.hourly_price;
+                counselor.available_days = updatedCounselor.available_days;
+                counselor.bio = updatedCounselor.bio;
+                counselor.ccp_number = ccp;
+                counselor.rib_number = rib;
+
+                
+
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "تم تحديث البيانات والصورة بنجاح.";
+
+                // تحديث اسم المستخدم في الـ Session أيضاً لضمان مطابقة الهيدر لأي تعديل
+                HttpContext.Session.SetString("UserName", counselor.User.first_name + " " + counselor.User.last_name);
+            }
+
+            return RedirectToAction(nameof(MyProfile));
+        }
+
+
+
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> WithdrawalHistory()
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login", "Account");
+
+            // جلب بيانات المرشد
+            var counselor = await _context.Counselors
+                .FirstOrDefaultAsync(c => c.user_id == (long)userId);
+
+            if (counselor == null) return NotFound();
+
+            // جلب السجلات باستخدام الحقل الجديد CounselorId
+            var history = await _context.WithdrawalRequests
+                .Where(w => w.CounselorId == counselor.id) // التعديل هنا ليتطابق مع الموديل الجديد
+                .OrderByDescending(w => w.CreatedAt)
+                .ToListAsync();
+
+            return View(history);
+        }
+
     }
 }

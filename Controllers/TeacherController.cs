@@ -1,13 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using EduPsych_Web.Data;
+﻿using EduPsych_Web.Data;
 using EduPsych_Web.Models;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.IO;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace EduPsych_Web.Controllers
 {
@@ -20,7 +15,8 @@ namespace EduPsych_Web.Controllers
             _context = context;
         }
 
-        // لوحة التحكم الرئيسية
+        // 1️⃣ لوحة التحكم الرئيسية
+        // 1️⃣ لوحة التحكم الرئيسية
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -36,13 +32,13 @@ namespace EduPsych_Web.Controllers
 
             long currentTeacherId = teacher.id;
 
-            // 1. جلب الإشعارات
+            // أ. جلب الإشعارات
             ViewBag.Notifications = await _context.Notifications
                 .Where(n => n.teacher_id == currentTeacherId)
                 .OrderByDescending(n => n.created_at)
                 .Take(10).AsNoTracking().ToListAsync();
 
-            // 2. جلب الطلبات المعلقة
+            // ب. جلب الطلبات المعلقة (الحصص المباشرة المجدولة من الطلاب التي تنتظر القبول)
             var pendingData = await (from s in _context.EducationalSessions
                                      join l in _context.Lessons on s.lesson_id equals l.id
                                      join st in _context.Students on s.student_id equals st.id
@@ -55,18 +51,19 @@ namespace EduPsych_Web.Controllers
                                          Date = s.scheduled_at,
                                          LTitle = l.title,
                                          SName = u.first_name + " " + u.last_name,
-                                         CName = c.name
+                                         CName = c.name,
+                                         Type = s.session_type // أونلاين أو حضوري
                                      }).AsNoTracking().ToListAsync();
 
             ViewBag.PendingRequests = pendingData;
 
-            // 3. جلب الحصص القادمة
+            // ج. جلب الحصص القادمة (المقبولة، المدفوعة، أو المؤكدة) 🔥 [تم التعديل هنا] 🔥
             var upcomingData = await (from s in _context.EducationalSessions
                                       join l in _context.Lessons on s.lesson_id equals l.id
                                       join st in _context.Students on s.student_id equals st.id
                                       join u in _context.Users on st.user_id equals u.id
                                       where l.teacher_id == currentTeacherId &&
-                                            (s.status == "Accepted" || s.status == "Paid")
+                                            (s.status == "Accepted" || s.status == "Paid" || s.status == "Confirmed") // شملنا حالة Confirmed
                                       select new
                                       {
                                           Id = s.id,
@@ -79,10 +76,11 @@ namespace EduPsych_Web.Controllers
 
             ViewBag.UpcomingSessions = upcomingData;
 
-            // 4. جلب الدروس والتمارين
+            // د. جلب الدروس والتمارين المنشورة في "المكتبة المجانية" فقط
             ViewBag.TeacherLessons = await _context.Lessons
-                .Where(l => l.teacher_id == currentTeacherId)
-                .Select(l => new {
+                .Where(l => l.teacher_id == currentTeacherId && l.is_free == true && l.course_id == null)
+                .Select(l => new
+                {
                     id = l.id,
                     title = l.title,
                     pdf_url = l.pdf_url,
@@ -91,7 +89,7 @@ namespace EduPsych_Web.Controllers
                     Exercises = _context.Exercises.Where(ex => ex.lesson_id == l.id).Select(ex => new { ex.title, ex.file_url }).ToList()
                 }).AsNoTracking().ToListAsync();
 
-            // 5. المحفظة
+            // هـ. المحفظة
             var wallet = await _context.TeacherWallets
                 .Where(w => w.teacher_id == currentTeacherId)
                 .Select(w => new { balance = w.total_earned - w.withdrawn_amount })
@@ -99,14 +97,191 @@ namespace EduPsych_Web.Controllers
 
             ViewBag.WalletBalance = wallet?.balance ?? 0;
 
-            // 6. القوائم المنسدلة
+            // و. القوائم المنسدلة للنماذج (Modals)
             ViewBag.Subjects = await _context.Subjects.AsNoTracking().ToListAsync();
             ViewBag.Classes = await _context.Classes.AsNoTracking().ToListAsync();
 
             return View(teacher);
         }
 
-        // صفحة الملف الشخصي
+        // 2️⃣ [ميثود مضافة حديثاً] 🔥 أكشن إنشاء حصة تعليمية مباشرة معروضة للحجز
+        // 2️⃣ [ميثود محدثة] 🔥 أكشن إنشاء حصة تعليمية مباشرة وجدولتها للحجز
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateLiveSession(long subjectId, long classId, string sessionTitle, string description)
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.user_id == userId);
+            if (teacher == null) return Unauthorized();
+
+            if (string.IsNullOrEmpty(sessionTitle))
+            {
+                TempData["Error"] = "عنوان الحصة مطلوب.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // إنشاء السجل في جدول Lesson كدرس خاص متاح للحجز المباشر (is_free = false)
+            var liveLesson = new Lesson
+            {
+                subject_id = subjectId,
+                class_id = classId,
+                teacher_id = teacher.id,
+                title = sessionTitle,
+                description = string.IsNullOrEmpty(description) ? "حصة مخصصة للحجز المباشر" : description,
+                is_free = false, // false لكي تظهر في بروفايل الأستاذ كحصة خاصة للحجز وليست في المكتبة العامة
+                course_id = null,
+                created_at = DateTime.Now,
+                updated_at = DateTime.Now
+            };
+
+            _context.Lessons.Add(liveLesson);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "تم نشر عنوان الحصة المباشرة بنجاح، ويمكن للطلاب الآن حجزها واختيار الأوقات المناسبة لهم!";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // 3️⃣ قبول طلب الحصة (تتحول الحالة إلى Accepted لتظهر للتلميذ كلمة مقبول ليدفع)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AcceptSession(long sessionId)
+        {
+            var session = await _context.EducationalSessions.FindAsync(sessionId);
+            if (session == null) return NotFound();
+
+            session.status = "Accepted"; // حالة القبول التي تطلب من التلميذ الدفع
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "تم قبول الحصة بنجاح، في انتظار قيام التلميذ بالدفع من محفظته.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // 4️⃣ رفض طلب الحصة
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectSession(long sessionId)
+        {
+            var session = await _context.EducationalSessions.FindAsync(sessionId);
+            if (session == null) return NotFound();
+
+            session.status = "Rejected";
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "تم رفض الطلب بنجاح.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // 5️⃣ إضافة أو تحديث رابط قوقل ميت (Google Meet) بعد تأكيد الدفع
+        // 5️⃣ إضافة أو تحديث رابط قوقل ميت (Google Meet) بعد تأكيد الدفع 🔥 [مُعدلة وموحدة] 🔥
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateMeetingLink(long sessionId, string meetingLink)
+        {
+            var session = await _context.EducationalSessions.FindAsync(sessionId);
+            if (session == null) return NotFound();
+
+            // السلسلة المترابطة: التأكد من الدفع سواء كانت الحالة Confirmed أو Paid
+            if (session.status != "Confirmed" && session.status != "Paid")
+            {
+                TempData["Error"] = "لا يمكنك إضافة الرابط إلا بعد أن يقوم التلميذ بالدفع أولاً!";
+                return RedirectToAction(nameof(Index));
+            }
+
+            session.meeting_link = meetingLink;
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "تم تحديث رابط قوقل ميت بنجاح ووصل للتلميذ.";
+            return RedirectToAction(nameof(Index));
+        }
+        // 6️⃣ ميثود رفع المحتوى والدروس المجانية (تم تأمينها لكي لا تختلط بالحصص المباشرة)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddContent(long subjectId, long classId, string title, string description, string contentType, IFormFile? pdfFile, IFormFile? coverImage)
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.user_id == userId);
+            if (teacher == null) return Unauthorized();
+
+            string? uploadedFilePath = null;
+            if (pdfFile != null && pdfFile.Length > 0)
+            {
+                uploadedFilePath = await SaveFile(pdfFile, contentType.ToLower() + "s");
+            }
+
+            string? coverImagePath = "/uploads/pdf/default_cover.jpg";
+            if (coverImage != null && coverImage.Length > 0)
+            {
+                coverImagePath = await SaveFile(coverImage, "covers");
+            }
+
+            if (contentType == "Exercise")
+            {
+                var helperLesson = new Lesson
+                {
+                    subject_id = subjectId,
+                    class_id = classId,
+                    teacher_id = teacher.id,
+                    title = "[تمرين مضاف] " + title,
+                    description = description ?? "",
+                    video_url = coverImagePath,
+                    is_free = true, // صريح للمكتبة المجانية
+                    course_id = null,
+                    created_at = DateTime.Now,
+                    updated_at = DateTime.Now
+                };
+                _context.Lessons.Add(helperLesson);
+                await _context.SaveChangesAsync();
+
+                var newExercise = new Exercise
+                {
+                    lesson_id = helperLesson.id,
+                    title = title,
+                    description = description ?? "",
+                    file_url = uploadedFilePath,
+                    created_at = DateTime.Now,
+                    updated_at = DateTime.Now
+                };
+                _context.Exercises.Add(newExercise);
+            }
+            else if (contentType == "Exam")
+            {
+                var newExam = new Exam
+                {
+                    subject_id = subjectId,
+                    title = title,
+                    file_url = uploadedFilePath!,
+                    exam_type = coverImagePath,
+                    created_at = DateTime.Now
+                };
+                _context.Exams.Add(newExam);
+            }
+            else // إضافة درس مجاني للمكتبة العادية
+            {
+                var newLesson = new Lesson
+                {
+                    subject_id = subjectId,
+                    class_id = classId,
+                    teacher_id = teacher.id,
+                    title = title,
+                    description = description ?? "",
+                    video_url = coverImagePath,
+                    pdf_url = uploadedFilePath,
+                    pdf_summary_url = uploadedFilePath,
+                    is_free = true, // صريحة جداً للمكتبة المجانية
+                    course_id = null,
+                    created_at = DateTime.Now,
+                    updated_at = DateTime.Now
+                };
+                _context.Lessons.Add(newLesson);
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "تم نشر المحتوى بنجاح في المكتبة المجانية!";
+            return RedirectToAction(nameof(Lessons));
+        }
+
+        // صفحة الملف الشخصي للأستاذ
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
@@ -121,7 +296,7 @@ namespace EduPsych_Web.Controllers
 
             if (teacher == null) return NotFound();
 
-            ViewBag.LessonsCount = await _context.Lessons.CountAsync(l => l.teacher_id == teacher.id);
+            ViewBag.LessonsCount = await _context.Lessons.CountAsync(l => l.teacher_id == teacher.id && l.is_free == true);
 
             var sessionsStatus = await (from s in _context.EducationalSessions
                                         join l in _context.Lessons on s.lesson_id equals l.id
@@ -144,7 +319,7 @@ namespace EduPsych_Web.Controllers
             return View(teacher);
         }
 
-        // صفحة الدورات التدريبية (تمت إضافة Include للـ Class)
+        // صفحة الدورات التدريبية المدفوعة
         [HttpGet]
         public async Task<IActionResult> Courses()
         {
@@ -156,7 +331,7 @@ namespace EduPsych_Web.Controllers
 
             var courses = await _context.Courses
                 .Include(c => c.Subject)
-                .Include(c => c.Class) // ضروري لعرض اسم المستوى
+                .Include(c => c.Class)
                 .Where(c => c.teacher_id == teacher.id)
                 .OrderByDescending(c => c.created_at)
                 .AsNoTracking()
@@ -165,99 +340,209 @@ namespace EduPsych_Web.Controllers
             return View(courses);
         }
 
-        // --- الأكشنز الخاصة بالعمليات (Post) ---
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AcceptSession(long sessionId)
+        // صفحة إدارة المكتبة المجانية
+        [HttpGet]
+        public async Task<IActionResult> Lessons()
         {
-            var session = await _context.EducationalSessions.FindAsync(sessionId);
-            if (session == null) return NotFound();
-            session.status = "Accepted";
-            await _context.SaveChangesAsync();
-            TempData["Success"] = "تم قبول الحصة بنجاح.";
-            return RedirectToAction(nameof(Index));
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login", "Account");
+
+            var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.user_id == userId);
+            if (teacher == null) return NotFound();
+
+            var freeLessons = await _context.Lessons
+                .Include(l => l.Subject)
+                .Include(l => l.Class)
+                .Where(l => l.teacher_id == teacher.id && l.is_free == true && l.course_id == null)
+                .OrderByDescending(l => l.created_at)
+                .ToListAsync();
+
+            ViewBag.subject_id = new SelectList(await _context.Subjects.AsNoTracking().ToListAsync(), "id", "name");
+            ViewBag.class_id = new SelectList(await _context.Classes.AsNoTracking().ToListAsync(), "id", "name");
+
+            return View(freeLessons);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateMeetingLink(long sessionId, string meetingLink)
+        public async Task<IActionResult> EditLesson(long id, string title, string description)
         {
-            var session = await _context.EducationalSessions.FindAsync(sessionId);
-            if (session == null) return NotFound();
-            session.meeting_link = meetingLink;
+            var lesson = await _context.Lessons.FindAsync(id);
+            if (lesson == null)
+            {
+                var formId = Request.Form["id"];
+                if (!string.IsNullOrEmpty(formId))
+                    lesson = await _context.Lessons.FindAsync(Convert.ToInt64(formId));
+            }
+
+            if (lesson == null) return NotFound();
+
+            lesson.title = title;
+            lesson.description = description;
+            lesson.updated_at = DateTime.Now;
+
+            _context.Update(lesson);
             await _context.SaveChangesAsync();
-            TempData["Success"] = "تم تحديث رابط الحصة بنجاح.";
-            return RedirectToAction(nameof(Index));
+
+            TempData["Success"] = "تم تحديث البيانات بنجاح!";
+            return RedirectToAction(nameof(Lessons));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RejectSession(long sessionId)
+        public async Task<IActionResult> DeleteLesson(long id)
         {
-            var session = await _context.EducationalSessions.FindAsync(sessionId);
-            if (session == null) return NotFound();
-            session.status = "Rejected";
+            var lesson = await _context.Lessons.FindAsync(id);
+            if (lesson != null)
+            {
+                if (!string.IsNullOrEmpty(lesson.pdf_url))
+                {
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", lesson.pdf_url.TrimStart('/'));
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                    }
+                }
+
+                _context.Lessons.Remove(lesson);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "تم حذف الدرس بنجاح.";
+            }
+            else
+            {
+                TempData["Error"] = "الدرس غير موجود.";
+            }
+
+            return RedirectToAction(nameof(Lessons));
+        }
+
+        // صفحة عرض محفظة الأستاذ للأرباح
+        [HttpGet]
+        public async Task<IActionResult> Wallet()
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login", "Account");
+
+            var teacher = await _context.Teachers
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.user_id == userId);
+
+            if (teacher == null) return NotFound();
+
+            // جلب سجل السحوبات
+            ViewBag.WithdrawalHistory = await _context.WithdrawalRequests
+                .Where(r => r.TeacherId == teacher.id)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+
+            // جلب مبيعات الدورات
+            var courseSales = await _context.CourseEnrollments
+                .Include(e => e.Course)
+                .Include(e => e.Student).ThenInclude(s => s.User)
+                .Where(e => e.Course.teacher_id == teacher.id)
+                .ToListAsync();
+
+            // جلب الحصص المباشرة (التعليمية) التي تم دفعها أو تأكيدها أو اكتمالها 
+            // 🚨 التعديل هنا: نحسب كل حصة دفع التلميذ ثمنها للأستاذ (Paid أو Confirmed أو Completed)
+            var teacherSessions = await _context.EducationalSessions
+                .Include(s => s.Lesson).ThenInclude(l => l.Teacher)
+                .Include(s => s.Student).ThenInclude(st => st.User)
+                .Where(s => s.Lesson.teacher_id == teacher.id && (s.status == "Completed" || s.status == "Confirmed" || s.status == "Paid"))
+                .ToListAsync();
+
+            decimal totalCourseEarnings = courseSales.Sum(e => e.teacher_commission);
+            decimal totalSessionEarnings = teacherSessions.Sum(s => (s.Lesson?.Teacher?.hourly_price ?? 0m) * 0.50m);
+
+            // جلب المحفظة
+            var wallet = await _context.TeacherWallets.FirstOrDefaultAsync(w => w.teacher_id == teacher.id);
+            if (wallet == null)
+            {
+                wallet = new TeacherWallet { teacher_id = teacher.id, total_earned = 0, withdrawn_amount = 0 };
+                _context.TeacherWallets.Add(wallet);
+            }
+
+            // تحديث الإجمالي بشكل صحيح ليشمل الحصص المدفوعة الجديدة
+            wallet.total_earned = totalCourseEarnings + totalSessionEarnings;
+            wallet.updated_at = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
-            TempData["Success"] = "تم رفض الطلب بنجاح.";
-            return RedirectToAction(nameof(Index));
+
+            ViewBag.CourseSales = courseSales.OrderByDescending(e => e.enrolled_at).Take(10).ToList();
+            ViewBag.SessionEarnings = teacherSessions.OrderByDescending(s => s.scheduled_at).Take(10).ToList();
+
+            return View(wallet);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddContent(long subjectId, long classId, string title, string description,
-            string exerciseTitle, string exerciseDescription, IFormFile? pdfFile, IFormFile? exercisePdf)
+        public async Task<IActionResult> UpdateBankDetails(string ccp, string rib)
         {
             int? userId = HttpContext.Session.GetInt32("UserId");
             var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.user_id == userId);
-            if (teacher == null) return Unauthorized();
 
-            string? lessonPdfPath = null;
-            string? exercisePdfPath = null;
-            if (pdfFile != null) lessonPdfPath = await SaveFile(pdfFile, "pdf");
-            if (exercisePdf != null) exercisePdfPath = await SaveFile(exercisePdf, "exercises");
-
-            var newLesson = new Lesson
+            if (teacher != null)
             {
-                subject_id = subjectId,
-                class_id = classId,
-                teacher_id = teacher.id,
-                title = title,
-                description = description ?? "",
-                pdf_url = lessonPdfPath,
-                created_at = DateTime.Now,
-                updated_at = DateTime.Now
-            };
-            _context.Lessons.Add(newLesson);
-            await _context.SaveChangesAsync();
-
-            if (!string.IsNullOrEmpty(exerciseTitle))
-            {
-                _context.Exercises.Add(new Exercise
-                {
-                    lesson_id = newLesson.id,
-                    title = exerciseTitle,
-                    description = exerciseDescription ?? "",
-                    file_url = exercisePdfPath,
-                    created_at = DateTime.Now,
-                    updated_at = DateTime.Now
-                });
+                teacher.ccp_number = ccp;
+                teacher.rib_number = rib;
                 await _context.SaveChangesAsync();
+                TempData["Success"] = "تم تحديث بيانات الحساب البنكي/البريدي بنجاح.";
             }
-            TempData["Success"] = "تم نشر الدرس بنجاح!";
-            return RedirectToAction(nameof(Index));
+
+            return RedirectToAction(nameof(Wallet));
         }
 
-        private async Task<string> SaveFile(IFormFile file, string folder)
+        // 2️⃣ تحديث دالة تقديم طلب السحب (RequestWithdrawal) لحماية الرصيد من الخصم المزدوج
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RequestWithdrawal(decimal amount)
         {
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", folder);
-            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-            var fileName = Guid.NewGuid() + "_" + Path.GetFileName(file.FileName);
-            using (var stream = new FileStream(Path.Combine(path, fileName), FileMode.Create))
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login", "Account");
+
+            var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.user_id == userId);
+            if (teacher == null) return NotFound();
+
+            var wallet = await _context.TeacherWallets.FirstOrDefaultAsync(w => w.teacher_id == teacher.id);
+            if (wallet == null) return BadRequest("المحفظة غير موجودة");
+
+            decimal available = wallet.total_earned - wallet.withdrawn_amount;
+
+            if (amount > available || amount < 2000)
             {
-                await file.CopyToAsync(stream);
+                TempData["Error"] = "المبلغ غير صالح! يجب أن يكون على الأقل 2000 دج ولا يتجاوز رصيدك المتاح.";
+                return RedirectToAction(nameof(Wallet));
             }
-            return $"/uploads/{folder}/{fileName}";
+
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var withdrawalRequest = new WithdrawalRequest
+                    {
+                        TeacherId = teacher.id,
+                        Amount = amount,
+                        Status = "Pending",
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.WithdrawalRequests.Add(withdrawalRequest);
+
+                    wallet.withdrawn_amount += amount;
+                    wallet.updated_at = DateTime.UtcNow;
+                    _context.Update(wallet);
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    TempData["Success"] = $"تم إرسال طلب سحب مبلغ {amount} دج بنجاح.";
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    TempData["Error"] = "حدث خطأ أثناء معالجة الطلب.";
+                }
+            }
+
+            return RedirectToAction(nameof(Wallet));
         }
 
         [HttpGet]
@@ -303,7 +588,7 @@ namespace EduPsych_Web.Controllers
             if (course == null) return NotFound();
 
             ViewBag.Subjects = await _context.Subjects.AsNoTracking().ToListAsync();
-            ViewBag.Classes = await _context.Classes.AsNoTracking().ToListAsync(); // إضافة القائمة المنسدلة للصف الدراسي
+            ViewBag.Classes = await _context.Classes.AsNoTracking().ToListAsync();
             return View(course);
         }
 
@@ -322,7 +607,7 @@ namespace EduPsych_Web.Controllers
                 existingCourse.description = course.description;
                 existingCourse.price = course.price;
                 existingCourse.subject_id = course.subject_id;
-                existingCourse.class_id = course.class_id; // تحديث الصف الدراسي
+                existingCourse.class_id = course.class_id;
                 existingCourse.promo_video_url = course.promo_video_url;
 
                 if (thumbnail != null)
@@ -355,238 +640,68 @@ namespace EduPsych_Web.Controllers
             return RedirectToAction(nameof(Courses));
         }
 
-
-
-        public async Task<IActionResult> MyCourses()
+        private async Task<string> SaveFile(IFormFile file, string folder)
         {
-            // 1. جلب معرف المستخدم الحالي (الأستاذ) من الجلسة
-            int? userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return RedirectToAction("Login", "Account");
-
-            var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.user_id == userId);
-            if (teacher == null) return NotFound();
-
-            // 2. جلب دورات الأستاذ
-            var courses = await _context.Courses
-                .Include(c => c.Subject)
-                .Where(c => c.teacher_id == teacher.id)
-                .ToListAsync();
-
-            // 3. جلب كل الاشتراكات في دورات هذا الأستاذ لعرضها في المودال
-            ViewBag.AllEnrollments = await _context.CourseEnrollments
-                .Include(e => e.Student)
-                    .ThenInclude(s => s.User)
-                .Where(e => e.Course.teacher_id == teacher.id)
-                .ToListAsync();
-
-            return View(courses);
-        }
-        public async Task<IActionResult> Lessons()
-        {
-            // 1. الحصول على معرف الأستاذ من الجلسة
-            int? userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return RedirectToAction("Login", "Account");
-
-            var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.user_id == userId);
-            if (teacher == null) return NotFound();
-
-            // 2. جلب الدروس المجانية فقط (المكتبة المجانية)
-            // وجلب الدروس التي ليست جزءاً من دورة مدفوعة أو التي تم تحديدها كمجانية
-            var freeLessons = await _context.Lessons
-                .Include(l => l.Subject)
-                .Include(l => l.Class)
-                .Where(l => l.teacher_id == teacher.id && l.is_free == true)
-                .OrderByDescending(l => l.created_at)
-                .ToListAsync();
-
-            return View(freeLessons);
-        }
-
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditLesson(long id, string title, string video_url, string pdf_url, string description)
-        {
-            var lesson = await _context.Lessons.FindAsync(id);
-            if (lesson == null) return NotFound();
-
-            // تحديث البيانات
-            lesson.title = title;
-            lesson.video_url = video_url;
-            lesson.pdf_url = pdf_url;
-            lesson.description = description;
-            lesson.updated_at = DateTime.UtcNow;
-
-            _context.Update(lesson);
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "تم تحديث الدرس بنجاح";
-            return RedirectToAction(nameof(Lessons));
-        }
-
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateLesson(Lesson lesson)
-        {
-            // جلب معرف الأستاذ من السيشن
-            int? userId = HttpContext.Session.GetInt32("UserId");
-            var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.user_id == userId);
-
-            if (teacher != null)
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", folder);
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+            var fileName = Guid.NewGuid() + "_" + Path.GetFileName(file.FileName);
+            using (var stream = new FileStream(Path.Combine(path, fileName), FileMode.Create))
             {
-                lesson.teacher_id = teacher.id;
-                lesson.is_free = true; // نحدد أنه مجاني لأنه في المكتبة المجانية
-                lesson.created_at = DateTime.UtcNow;
-                lesson.updated_at = DateTime.UtcNow;
-
-                _context.Lessons.Add(lesson);
-                await _context.SaveChangesAsync();
-
-                TempData["Success"] = "تم نشر الدرس المجاني بنجاح!";
+                await file.CopyToAsync(stream);
             }
-
-            return RedirectToAction(nameof(Lessons));
+            return $"/uploads/{folder}/{fileName}";
         }
 
-
-
-
-
-
-        public async Task<IActionResult> Wallet()
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfileInfo(long id, decimal hourlyPrice, string bio, IFormFile? profileImage)
         {
-            int? userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return RedirectToAction("Login", "Account");
+            ModelState.Remove("User");
+            ModelState.Remove("Specialization");
 
             var teacher = await _context.Teachers
                 .Include(t => t.User)
-                .FirstOrDefaultAsync(t => t.user_id == userId);
+                .FirstOrDefaultAsync(t => t.id == id);
 
-            if (teacher == null) return NotFound();
+            if (teacher == null) return NotFound("عذراً، لم يتم العثور على الأستاذ.");
 
-            // جلب سجل السحوبات (الجديد)
-            ViewBag.WithdrawalHistory = await _context.WithdrawalRequests
-                .Where(r => r.TeacherId == teacher.id)
-                .OrderByDescending(r => r.CreatedAt)
-                .ToListAsync();
-
-            // جلب مبيعات الدورات
-            var courseSales = await _context.CourseEnrollments
-                .Include(e => e.Course)
-                .Include(e => e.Student).ThenInclude(s => s.User)
-                .Where(e => e.Course.teacher_id == teacher.id)
-                .ToListAsync();
-
-            decimal totalCourseEarnings = courseSales.Sum(e => e.teacher_commission);
-
-            // جلب الحصص المكتملة
-            var completedSessions = await _context.EducationalSessions
-                .Include(s => s.Lesson).ThenInclude(l => l.Teacher)
-                .Include(s => s.Student).ThenInclude(st => st.User)
-                .Where(s => s.Lesson.teacher_id == teacher.id && s.status == "Completed")
-                .ToListAsync();
-
-            decimal totalSessionEarnings = completedSessions.Sum(s => (s.Lesson?.Teacher?.hourly_price ?? 0m) * 0.50m);
-
-            // تحديث المحفظة
-            var wallet = await _context.TeacherWallets.FirstOrDefaultAsync(w => w.teacher_id == teacher.id);
-            if (wallet == null)
+            try
             {
-                wallet = new TeacherWallet { teacher_id = teacher.id, total_earned = 0, withdrawn_amount = 0 };
-                _context.TeacherWallets.Add(wallet);
-            }
-
-            wallet.total_earned = totalCourseEarnings + totalSessionEarnings;
-            wallet.updated_at = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-
-            ViewBag.CourseSales = courseSales.OrderByDescending(e => e.enrolled_at).Take(10).ToList();
-            ViewBag.SessionEarnings = completedSessions.OrderByDescending(s => s.scheduled_at).Take(10).ToList();
-
-            return View(wallet);
-        }
-
-        // 2. ميثود جديدة لتحديث بيانات الـ CCP و RIB (لكي يراها الأدمن)
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateBankDetails(string ccp, string rib)
-        {
-            int? userId = HttpContext.Session.GetInt32("UserId");
-            var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.user_id == userId);
-
-            if (teacher != null)
-            {
-                teacher.ccp_number = ccp;
-                teacher.rib_number = rib;
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "تم تحديث بيانات الحساب البنكي/البريدي بنجاح.";
-            }
-
-            return RedirectToAction(nameof(Wallet));
-        }
-
-
-
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RequestWithdrawal(decimal amount)
-        {
-            // 1. التأكد من هوية الأستاذ
-            int? userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return RedirectToAction("Login", "Account");
-
-            var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.user_id == userId);
-            if (teacher == null) return NotFound();
-
-            // 2. جلب المحفظة
-            var wallet = await _context.TeacherWallets.FirstOrDefaultAsync(w => w.teacher_id == teacher.id);
-            if (wallet == null) return BadRequest("المحفظة غير موجودة");
-
-            // 3. حساب الرصيد المتاح
-            decimal available = wallet.total_earned - wallet.withdrawn_amount;
-
-            // 4. التحقق من صحة المبلغ
-            if (amount > available || amount < 2000)
-            {
-                TempData["Error"] = "المبلغ غير صالح! يجب أن يكون على الأقل 2000 دج ولا يتجاوز رصيدك المتاح.";
-                return RedirectToAction(nameof(Wallet));
-            }
-
-            using (var transaction = await _context.Database.BeginTransactionAsync())
-            {
-                try
+                if (profileImage != null && profileImage.Length > 0)
                 {
-                    // 5. إنشاء سجل طلب السحب (هذا هو الجزء الذي كان ناقصاً!)
-                    var withdrawalRequest = new WithdrawalRequest
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profiles");
+                    if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                    var uniqueFileName = $"teacher_{id}_{Guid.NewGuid().ToString().Substring(0, 8)}{Path.GetExtension(profileImage.FileName)}";
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
-                        TeacherId = teacher.id,
-                        Amount = amount,
-                        Status = "Pending",
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    _context.WithdrawalRequests.Add(withdrawalRequest);
+                        await profileImage.CopyToAsync(fileStream);
+                    }
 
-                    // 6. تحديث المحفظة (إضافة المبلغ للمسحوبات)
-                    wallet.withdrawn_amount += amount;
-                    wallet.updated_at = DateTime.UtcNow;
-                    _context.Update(wallet);
-
-                    // حفظ التغييرات والالتزام بالمعاملة
-                    await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
-
-                    TempData["Success"] = $"تم إرسال طلب سحب مبلغ {amount} دج بنجاح.";
+                    if (teacher.User != null)
+                    {
+                        teacher.User.profile_picture_url = uniqueFileName;
+                        _context.Entry(teacher.User).State = EntityState.Modified;
+                    }
                 }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    TempData["Error"] = "حدث خطأ أثناء معالجة الطلب.";
-                }
+
+                teacher.hourly_price = hourlyPrice;
+                teacher.bio = bio;
+                teacher.updated_at = DateTime.Now;
+
+                _context.Teachers.Update(teacher);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = "تم تحديث البيانات بنجاح!";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "حدث خطأ أثناء الحفظ: " + ex.Message;
             }
 
-            return RedirectToAction(nameof(Wallet));
+            return RedirectToAction("Profile");
         }
     }
 }
