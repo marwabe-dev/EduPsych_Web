@@ -2,22 +2,24 @@ using EduPsych_Web.Data;
 using EduPsych_Web.Hubs;
 using Microsoft.EntityFrameworkCore;
 
-// حل مشكلة توافق الوقت مع PostgreSQL
+// 🟢 [تعديل هام جداً] وضع مفاتيح حلول مشاكل سيرفر Linux و PostgreSQL في أول السطور تماماً
+AppContext.SetSwitch("System.Net.Http.UseSocketsHttpHandler", false);
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ----------------------------------------------------------------------------------
-// 1️⃣ [تعديل جوهري] جلب سلسلة الاتصال المتوافقة مع جهازكِ المحلي ومع سيرفر Render أونلاين
+// 1️⃣ جلب سلسلة الاتصال المتوافقة مع جهازكِ المحلي ومع سيرفر Render أونلاين
 // ----------------------------------------------------------------------------------
 var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings.DefaultConnection")
                       ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
-// ----------------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------------
 // 2️⃣ إضافة خدمة الـ Session
+// ----------------------------------------------------------------------------------
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -39,7 +41,7 @@ builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 
 // ----------------------------------------------------------------------------------
-// ⚙️ [إضافة سحرية للـ MVP] تطبيق الهجرات تلقائياً وإنشاء الجداول على Neon عند إقلاع السيرفر
+// ⚙️ تطبيق الهجرات تلقائياً وإنشاء الجداول على Neon عند إقلاع السيرفر
 // ----------------------------------------------------------------------------------
 using (var scope = app.Services.CreateScope())
 {
@@ -54,8 +56,8 @@ using (var scope = app.Services.CreateScope())
         // يتجاوز الخطأ إذا كانت الجداول موجودة مسبقاً لمنع انهيار التطبيق
     }
 }
-// ----------------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------------
 // إعدادات البيئة
 if (!app.Environment.IsDevelopment())
 {
