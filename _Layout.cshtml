@@ -1,0 +1,140 @@
+﻿@using Microsoft.AspNetCore.Http
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - RAFIQNI</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+    <!-- استدعاء ملف التنسيقات المنفصل للشات هنا -->
+    <link rel="stylesheet" href="~/css/ai-chat.css" asp-append-version="true" />
+</head>
+<body>
+
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-global">
+            <div class="container d-flex align-items-center justify-content-between">
+
+                <a class="brand-wrapper order-1" asp-controller="Home" asp-action="Index">
+                    <img src="/images/logo-rafqni.png" alt="RAFIQNI Logo" onerror="this.style.display='none';">
+                    <span class="brand-text">RAFIQNI</span>
+                </a>
+
+                <button class="navbar-toggler border-0 order-3 order-lg-2 p-1" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+                    <span class="bi bi-list fs-2 text-dark"></span>
+                </button>
+
+                <div class="collapse navbar-collapse order-4 order-lg-3 justify-content-center" id="mainNavbar">
+                    <ul class="navbar-nav text-center my-3 my-lg-0 gap-1">
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-premium active" href="#hero">الرئيسية</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-premium" href="#features">المميزات</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-premium" href="#about">من نحن</a>
+                        </li>
+
+                        @{
+                            var role = Context.Session.GetString("UserRole");
+                            var userName = Context.Session.GetString("UserName");
+                        }
+
+                        @if (role == "Admin")
+                        {
+                            <li class="nav-item"><a class="nav-link nav-link-premium" asp-controller="Admin" asp-action="Dashboard">لوحة التحكم</a></li>
+                        }
+                        else if (role == "Student")
+                        {
+                            <li class="nav-item"><a class="nav-link nav-link-premium" asp-controller="Student" asp-action="MyEducationalLessons">دروسي</a></li>
+                        }
+                        else if (role == "Teacher")
+                        {
+                            <li class="nav-item"><a class="nav-link nav-link-premium" asp-controller="Teacher" asp-action="Index">إدارة الحصص</a></li>
+                        }
+                    </ul>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 flex-nowrap order-2 order-lg-4">
+                    @if (role != null)
+                    {
+                        <div class="dropdown">
+                            <div class="user-capsule" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle fs-4" style="color: var(--brand-primary);"></i>
+                                <div class="text-start d-none d-sm-block">
+                                    <div class="fw-semibold small text-dark" style="line-height: 1.1;">@userName</div>
+                                    <span class="user-capsule-badge">@role</span>
+                                </div>
+                                <i class="bi bi-chevron-down text-muted" style="font-size: 0.75rem;"></i>
+                            </div>
+                            <ul class="dropdown-menu dropdown-menu-start dropdown-menu-premium shadow border-0 mt-2">
+                                <li>
+                                    <a class="dropdown-item dropdown-item-premium text-danger d-flex align-items-center gap-2" asp-controller="Account" asp-action="Logout">
+                                        <i class="bi bi-box-arrow-right fs-5"></i>
+                                        <span>تسجيل الخروج</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-premium-ghost d-none d-sm-inline-flex">
+                            تسجيل الدخول
+                        </a>
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-premium-solid">
+                            إنشاء حساب <span class="d-none d-sm-inline">مجاني</span>
+                        </a>
+                    }
+                </div>
+
+            </div>
+        </nav>
+    </header>
+
+    <main id="main-wrapper-area" role="main" class="pb-3">
+        @RenderBody()
+    </main>
+
+    @if (role == "Student")
+    {
+        <div id="ai-chat-launcher" onclick="toggleAiSidebar()" style="position: fixed; bottom: 20px; right: 20px; background: #0d9488; color: white; padding: 10px 20px; border-radius: 50px; cursor: pointer; z-index: 9999; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 25px rgba(13, 148, 136, 0.3); transition: 0.3s ease;">
+            <i class="bi bi-robot fs-4"></i>
+            <span class="fw-bold" style="font-size: 0.9rem;">اسأل رافقني</span>
+        </div>
+
+        <div id="ai-sidebar">
+            <div style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); padding: 20px; color: white; display: flex; justify-content: space-between; align-items: center;">
+                <span class="fw-bold"><i class="bi bi-stars"></i> مساعد RAFIQNI</span>
+                <button onclick="toggleAiSidebar()" class="btn-close btn-close-white" style="background:none; border:none; color:white; font-size:24px; opacity: 0.9;">&times;</button>
+            </div>
+            <div id="ai-chat-messages" style="flex: 1; padding: 20px; overflow-y: auto; background: #f8fbfb; display: flex; flex-direction: column; gap: 15px;">
+                <div class="ai-bubble" style="background: white; align-self: flex-start;">أهلاً بك يا @userName! كيف أساعدك في رحلتك التعليمية اليوم؟</div>
+            </div>
+            <div style="padding: 15px; border-top: 1px solid #eee; background: #fff;">
+                <div style="background: #f1f5f5; border-radius: 50px; padding: 5px 15px; display: flex; align-items: center;">
+                    <input type="text" id="ai-sidebar-input" placeholder="اكتب سؤالك..." style="flex:1; border:none; background:none; outline:none; font-size: 0.95rem;" onkeypress="if(event.key==='Enter') callRafiqniAi()">
+                    <button onclick="callRafiqniAi()" style="background:#0d9488; color:white; border:none; width:35px; height:35px; border-radius:50%; display: flex; align-items: center; justify-content: center;"><i class="bi bi-send-fill"></i></button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- استدعاء ملف الـ JavaScript المنفصل للشات هنا -->
+    <script src="~/js/ai-chat.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
