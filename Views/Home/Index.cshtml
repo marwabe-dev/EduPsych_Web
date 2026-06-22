@@ -1,4 +1,5 @@
 ﻿@{
+    
     ViewData["Title"] = "RAFIQNI - المنصة الأولى للتعليم والدعم النفسي";
 }
 
@@ -12,7 +13,7 @@
         transform: translateY(-15px); /* رفع الصورة بشكل خاص إضافي لتبدو متناسقة */
         transition: transform 0.3s ease;
     }
-    
+
     .platform-brand {
         font-family: 'Cairo', sans-serif;
         font-size: 2.8rem !important;
@@ -73,8 +74,8 @@
         }
 
     /* ==========================================
-              تنسيق قسم الفيديو التعريفي المستقل
-           ========================================== */
+                  تنسيق قسم الفيديو التعريفي المستقل
+               ========================================== */
     .promo-video-section {
         background: linear-gradient(180deg, #ffffff 0%, #f0fdfa 100%);
         padding: 60px 0;
@@ -120,8 +121,8 @@
         }
 
     /* ==========================================
-               تأثيرات وألوان الفوتر المحسنة (الملونة)
-            ========================================== */
+                   تأثيرات وألوان الفوتر المحسنة (الملونة)
+                ========================================== */
     .luxury-footer {
         background-color: #0b1312;
         color: #e2e8f0;
@@ -320,6 +321,9 @@
         color: #0d9488;
         font-weight: 700;
     }
+
+
+    
 </style>
 
 <div class="container-fluid p-0" dir="rtl">
@@ -342,7 +346,7 @@
                 </p>
                 <div class="cta-group">
                     <a asp-controller="Account" asp-action="Register" class="btn-register-now">
-                        ابدأ الآن - سجل مجاناً
+                        ابدأ رحلتك الان
                     </a>
                 </div>
 
@@ -363,7 +367,7 @@
             </div>
 
             <div class="hero-image-side">
-                <img src="/images/hero-educ.jpg" class="main-hero-img" alt="EducPsycho Illustration" />
+                <img src="/images/hero-educ.png" class="main-hero-img" alt="EducPsycho Illustration" />
             </div>
         </div>
     </section>
@@ -376,7 +380,7 @@
             </div>
             <div class="video-lux-container">
                 <video controls controlsList="nodownload" playsinline preload="metadata">
-                    <source src="/videos/promo-video.mp4" type="video/mp4">
+                    <source src="/videos/promo-video1.mp4" type="video/mp4">
                     عذراً، متصفحك لا يدعم تشغيل هذا الفيديو التعريفي.
                 </video>
             </div>
@@ -587,7 +591,7 @@
 <footer class="luxury-footer" dir="rtl">
     <div class="container">
         <div class="row g-5">
-            
+
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="footer-brand-title">RAFIQNI | رافقني</div>
                 <p class="footer-desc mb-4">
@@ -628,7 +632,7 @@
                 <h5 class="footer-heading">تحميل التطبيق الرسمي</h5>
                 <p class="footer-desc mb-3">تابع دروسك واستشاراتك النفسية من أي مكان عبر تطبيق الهاتف المحمول.</p>
                 <div class="footer-app-badges">
-                    
+
                     <a href="#" class="app-badge-item google-play-badge">
                         <i class="bi bi-google-play"></i>
                         <div class="app-badge-text text-end">
@@ -636,7 +640,7 @@
                             <strong>Google Play</strong>
                         </div>
                     </a>
-                    
+
                     <a href="#" class="app-badge-item app-store-badge">
                         <i class="bi bi-apple"></i>
                         <div class="app-badge-text text-end">
@@ -644,7 +648,7 @@
                             <strong>App Store</strong>
                         </div>
                     </a>
-                    
+
                 </div>
             </div>
 
@@ -656,9 +660,10 @@
         </div>
     </div>
 </footer>
-
+   
 @section Scripts {
     <script>
+        // 1. مصفوفة البيانات (مُعرفة مرة واحدة فقط)
         const experts = [
             ["علي", "بن عيسى", "الرياضيات", "ali_ben_aissa.jpg", 5],
             ["سارة", "حداد", "الفيزياء", "sara_hadad.jpg", 4],
@@ -667,6 +672,7 @@
             ["يوسف", "كريم", "تطوير الذات", "youssef_karim.jpg", 5]
         ];
 
+        // 2. دالة توليد النجوم
         function generateStars(rating) {
             let stars = '';
             for (let i = 1; i <= 5; i++) {
@@ -675,127 +681,71 @@
             return stars;
         }
 
+        // 3. تهيئة عناصر الصفحة وقسم النخبة ونظام الآراء والعدادات
         document.addEventListener("DOMContentLoaded", () => {
+
+            // --- أولاً: بناء قسم النخبة وتشغيل الـ Swiper بسلاسة ---
             const wrapper = document.getElementById("expertsWrapper");
-            if(wrapper) {
+            if (wrapper) {
+                wrapper.innerHTML = ""; // تنظيف المحتوى القديم منعاً للتكرار
+
+                // بناء وحقن المربعات أولاً في الـ HTML
                 experts.forEach((e) => {
                     const slide = document.createElement("div");
                     slide.className = "swiper-slide";
                     const imageUrl = `/images/experts/${e[3]}`;
 
                     slide.innerHTML = `
-                    <div class="expert-circle-item">
-                        <div class="expert-avatar-wrapper">
-                            <img src="${imageUrl}" class="expert-img-circle" alt="Expert" onerror="this.src='/images/avatar-placeholder.png'">
+                    <div class="expert-square-card">
+                        <div class="expert-image-box">
+                            <img src="${imageUrl}" class="expert-img-square" alt="${e[0]} ${e[1]}" onerror="this.src='/images/avatar-placeholder.png'">
+                            <div class="expert-badge-specialty">${e[2]}</div>
                         </div>
-                        <div class="expert-details">
-                            <div class="expert-rating">${generateStars(e[4])}</div>
-                            <h5 class="expert-name">${e[0]} ${e[1]}</h5>
-                            <span class="expert-specialty">${e[2]}</span>
+                        <div class="expert-info-box">
+                            <h5 class="expert-name-title">${e[0]} ${e[1]}</h5>
+                            <div class="expert-stars-rating">${generateStars(e[4])}</div>
                         </div>
                     </div>`;
                     wrapper.appendChild(slide);
                 });
+
+                // تأخير بسيط جداً لضمان استقرار الهيكل قبل تشغيل الـ Swiper منعاً لأي تعطل أو قفز
+                setTimeout(() => {
+                    try {
+                        new Swiper(".elite-swiper", {
+                            slidesPerView: 1.2,
+                            spaceBetween: 15,
+                            loop: true,
+                            observer: true,         // مراقبة التغييرات في العناصر لمنع التجميد
+                            observeParents: true,   // مراقبة العناصر الأب لضمان التجاوب المستمر
+                            autoplay: { delay: 3500, disableOnInteraction: false },
+                            pagination: { el: ".swiper-pagination", clickable: true },
+                            breakpoints: {
+                                400: { slidesPerView: 2, spaceBetween: 15 },
+                                768: { slidesPerView: 3, spaceBetween: 20 },
+                                1024: { slidesPerView: 4, spaceBetween: 25 },
+                                1400: { slidesPerView: 5, spaceBetween: 25 }
+                            }
+                        });
+                    } catch (error) {
+                        console.error("Swiper initialization failed:", error);
+                    }
+                }, 50);
             }
 
-            new Swiper(".elite-swiper", {
-                slidesPerView: 2,
-                spaceBetween: 10,
-                loop: true,
-                autoplay: { delay: 3000 },
-                pagination: { el: ".swiper-pagination", clickable: true },
-                breakpoints: {
-                    640: { slidesPerView: 3, spaceBetween: 15 },
-                    1024: { slidesPerView: 4, spaceBetween: 20 },
-                    1400: { slidesPerView: 6, spaceBetween: 20 }
-                }
-            });
-        });
-
-        let allReviews = [
-            { name: "أحمد بن علي", text: "المنصة غيرت طريقتي في الدراسة تماماً، الأساتذة قمة في الاحترافية.", rating: 5, date: "15 أبريل 2026", initials: "أب" },
-            { name: "سارة محمود", text: "شكراً RAFIQNI على الدعم النفسي قبل الامتحانات، شعرت براحة كبيرة.", rating: 5, date: "10 أبريل 2026", initials: "سم" },
-            { name: "ياسين جبار", text: "تنظيم الوقت كان أكبر عائق لي، وبفضل المرشدين وجدت طريقي الصحيح.", rating: 4, date: "05 أبريل 2026", initials: "يج" }
-        ];
-
-        let currentReviewIndex = 0;
-
-        function displayReview() {
-            if(!document.getElementById('revName')) return;
-            const rev = allReviews[currentReviewIndex];
-            document.getElementById('revName').innerText = rev.name;
-            document.getElementById('revText').innerText = `"${rev.text}"`;
-            document.getElementById('revNumber').innerText = rev.rating;
-            document.getElementById('revDate').innerText = rev.date;
-            document.getElementById('revInitials').innerText = rev.initials;
-            
-            let starsHtml = "";
-            for(let i=0; i<5; i++) {
-                starsHtml += i < rev.rating ? '<i class="bi bi-star-fill"></i>' : '<i class="bi bi-star"></i>';
-            }
-            document.getElementById('revStars').innerHTML = starsHtml;
-            updateDots();
-        }
-
-        function updateDots() {
-            let dotsHtml = "";
-            allReviews.forEach((_, index) => {
-                dotsHtml += `<span class="dot ${index === currentReviewIndex ? 'active' : ''}"></span>`;
-            });
-            document.getElementById('revDots').innerHTML = dotsHtml;
-        }
-
-        function nextReview() {
-            currentReviewIndex = (currentReviewIndex + 1) % allReviews.length;
+            // --- ثانياً: تشغيل عرض الآراء الأولية ---
             displayReview();
-        }
 
-        function prevReview() {
-            currentReviewIndex = (currentReviewIndex - 1 + allReviews.length) % allReviews.length;
-            displayReview();
-        }
-
-        function openReviewModal() { document.getElementById('addReviewModal').style.display = 'flex'; }
-        function closeReviewModal() { document.getElementById('addReviewModal').style.display = 'none'; }
-
-        function submitReview() {
-            const name = document.getElementById('newUserName').value;
-            const text = document.getElementById('newUserReview').value;
-            const rating = document.getElementById('newUserRating').value;
-            
-            if(name && text) {
-                const initials = name.split(" ").map(n => n[0]).join("").toUpperCase();
-                const newEntry = {
-                    name: name,
-                    text: text,
-                    rating: parseInt(rating),
-                    date: "اليوم",
-                    initials: initials
-                };
-                    
-                allReviews.unshift(newEntry);
-                currentReviewIndex = 0;
-                displayReview();
-                closeReviewModal();
-                    
-                document.getElementById('newUserName').value = "";
-                document.getElementById('newUserReview').value = "";
-            } else {
-                alert("يرجى ملء جميع الحقول");
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", displayReview);
-
-        document.addEventListener("DOMContentLoaded", () => {
+            // --- ثالثاً: تشغيل عداد الإحصائيات الذكي ---
             const counters = document.querySelectorAll('.stat-number-metallic');
-            
+
             const startCounting = (counter) => {
                 const target = parseInt(counter.getAttribute('data-target'), 10);
+                if (isNaN(target)) return;
                 const speed = 40;
                 const increment = target / speed;
                 let current = 0;
-                
+
                 const updateNumber = () => {
                     current += increment;
                     if (current < target) {
@@ -824,5 +774,80 @@
                 counters.forEach(counter => startCounting(counter));
             }
         });
+
+        // 4. نظام التقييمات والآراء (Reviews) خارج حدث التحميل لمناداة الوظائف من الـ HTML
+        let allReviews = [
+            { name: "أحمد بن علي", text: "المنصة غيرت طريقتي في الدراسة تماماً، الأساتذة قمة في الاحترافية.", rating: 5, date: "15 أفريل 2026", initials: "A" },
+            { name: "سارة محمود", text: "شكراً RAFIQNI على الدعم النفسي قبل الامتحانات، شعرت براحة كبيرة.", rating: 5, date: "10 أفريل 2026", initials: "S" },
+            { name: "ياسين جبار", text: "تنظيم الوقت كان أكبر عائق لي، وبفضل المرشدين وجدت طريقي الصحيح.", rating: 4, date: "05 أفريل 2026", initials: "Y" }
+        ];
+
+        let currentReviewIndex = 0;
+
+        function displayReview() {
+            if(!document.getElementById('revName')) return;
+            const rev = allReviews[currentReviewIndex];
+            document.getElementById('revName').innerText = rev.name;
+            document.getElementById('revText').innerText = `"${rev.text}"`;
+            document.getElementById('revNumber').innerText = rev.rating;
+            document.getElementById('revDate').innerText = rev.date;
+            document.getElementById('revInitials').innerText = rev.initials;
+
+            let starsHtml = "";
+            for(let i=0; i<5; i++) {
+                starsHtml += i < rev.rating ? '<i class="bi bi-star-fill"></i>' : '<i class="bi bi-star"></i>';
+            }
+            document.getElementById('revStars').innerHTML = starsHtml;
+            updateDots();
+        }
+
+        function updateDots() {
+            if(!document.getElementById('revDots')) return;
+            let dotsHtml = "";
+            allReviews.forEach((_, index) => {
+                dotsHtml += `<span class="dot ${index === currentReviewIndex ? 'active' : ''}"></span>`;
+            });
+            document.getElementById('revDots').innerHTML = dotsHtml;
+        }
+
+        function nextReview() {
+            currentReviewIndex = (currentReviewIndex + 1) % allReviews.length;
+            displayReview();
+        }
+
+        function prevReview() {
+            currentReviewIndex = (currentReviewIndex - 1 + allReviews.length) % allReviews.length;
+            displayReview();
+        }
+
+        function openReviewModal() { document.getElementById('addReviewModal').style.display = 'flex'; }
+        function closeReviewModal() { document.getElementById('addReviewModal').style.display = 'none'; }
+
+        function submitReview() {
+            const name = document.getElementById('newUserName').value;
+            const text = document.getElementById('newUserReview').value;
+            const rating = document.getElementById('newUserRating').value;
+
+            if(name && text) {
+                const initials = name.split(" ").map(n => n[0]).join("").toUpperCase();
+                const newEntry = {
+                    name: name,
+                    text: text,
+                    rating: parseInt(rating),
+                    date: "اليوم",
+                    initials: initials
+                };
+
+                allReviews.unshift(newEntry);
+                currentReviewIndex = 0;
+                displayReview();
+                closeReviewModal();
+
+                document.getElementById('newUserName').value = "";
+                document.getElementById('newUserReview').value = "";
+            } else {
+                alert("يرجى ملء جميع الحقول");
+            }
+        }
     </script>
 }
